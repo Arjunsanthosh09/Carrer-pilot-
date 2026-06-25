@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="auth-wrap">
+    <div class="auth-side">
+        <div>
+            <div class="brand">
+                <div class="brand-mark">CP</div>
+                CareerPilot AI
+            </div>
+            <div class="auth-headline" style="margin-top:60px;">
+                Welcome back, <span>captain</span>.
+            </div>
+            <p class="auth-sub">Sign in to continue tracking your placement readiness, skills, and interview prep.</p>
+            <div class="gauge-mini">
+                <div class="gauge-mini-item"><div class="gauge-mini-num">12,400+</div><div class="gauge-mini-label">Students tracked</div></div>
+                <div class="gauge-mini-item"><div class="gauge-mini-num">340</div><div class="gauge-mini-label">Partner companies</div></div>
+                <div class="gauge-mini-item"><div class="gauge-mini-num">91%</div><div class="gauge-mini-label">Readiness improved</div></div>
+            </div>
+        </div>
+        <div class="auth-quote">"Placement preparation shouldn't start in the final semester. CareerPilot keeps every student instrument-checked from day one." — Placement Cell, demo college</div>
+    </div>
+
+    <div class="auth-form-col">
+        <form class="auth-form" method="POST" action="{{ url_for('auth.login') }}">
+            <h2>Log in</h2>
+            <p class="sub">Access your CareerPilot AI account</p>
+
+            <div class="role-toggle">
+                <button type="button" class="active" onclick="setRole('student')">I'm a student</button>
+                <button type="button" onclick="setRole('officer')">I'm a placement officer</button>
+            </div>
+            <input type="hidden" name="role" id="role-input" value="student">
+
+            <div class="field">
+                <label>Email address</label>
+                <input type="email" name="email" placeholder="you@college.edu" required>
+            </div>
+            <div class="field">
+                <label>Password</label>
+                <input type="password" name="password" placeholder="••••••••" required>
+            </div>
+
+            <button class="auth-submit" type="submit">Log in to dashboard</button>
+
+            <p class="auth-footer-link">Don't have an account? <a href="{{ url_for('auth.signup') }}">Create one</a></p>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function setRole(role) {
+    document.getElementById('role-input').value = role;
+    const btns = document.querySelectorAll('.role-toggle button');
+    btns.forEach(b => b.classList.remove('active'));
+    document.querySelector(`.role-toggle button[onclick="setRole('${role}')"]`).classList.add('active');
+}
+</script>
+{% endblock %}

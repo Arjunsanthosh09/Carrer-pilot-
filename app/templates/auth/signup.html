@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="auth-wrap">
+    <div class="auth-side">
+        <div>
+            <div class="brand">
+                <div class="brand-mark">CP</div>
+                CareerPilot AI
+            </div>
+            <div class="auth-headline" style="margin-top:60px;">
+                Start your <span>readiness</span> journey.
+            </div>
+            <p class="auth-sub">Build your profile once — resume, skills, and projects all flow from it automatically.</p>
+            <div class="gauge-mini">
+                <div class="gauge-mini-item"><div class="gauge-mini-num">12,400+</div><div class="gauge-mini-label">Students tracked</div></div>
+                <div class="gauge-mini-item"><div class="gauge-mini-num">340</div><div class="gauge-mini-label">Partner companies</div></div>
+                <div class="gauge-mini-item"><div class="gauge-mini-num">91%</div><div class="gauge-mini-label">Readiness improved</div></div>
+            </div>
+        </div>
+        <div class="auth-quote">"Placement preparation shouldn't start in the final semester. CareerPilot keeps every student instrument-checked from day one." — Placement Cell, demo college</div>
+    </div>
+
+    <div class="auth-form-col">
+        <form class="auth-form" method="POST" action="{{ url_for('auth.signup') }}">
+            <h2>Create your account</h2>
+            <p class="sub">Set up your CareerPilot AI profile</p>
+
+            <div class="role-toggle">
+                <button type="button" class="active" onclick="setRole('student')">I'm a student</button>
+                <button type="button" onclick="setRole('officer')">I'm a placement officer</button>
+            </div>
+            <input type="hidden" name="role" id="role-input" value="student">
+
+            <div class="field">
+                <label>Full name</label>
+                <input type="text" name="full_name" placeholder="e.g. Arjun Santhosh" required>
+            </div>
+            <div class="field">
+                <label>College email</label>
+                <input type="email" name="email" placeholder="you@college.edu" required>
+            </div>
+
+            <div class="grid g2" style="gap:12px; display:grid; grid-template-columns:1fr 1fr;">
+                <div class="field">
+                    <label>Department</label>
+                    <select name="department">
+                        <option>Computer Science</option>
+                        <option>ECE</option>
+                        <option>IT</option>
+                        <option>Mechanical</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Year</label>
+                    <select name="year">
+                        <option>1st Year</option>
+                        <option>2nd Year</option>
+                        <option>3rd Year</option>
+                        <option selected>Final Year</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Password</label>
+                <input type="password" name="password" placeholder="Create a password" required>
+            </div>
+
+            <button class="auth-submit" type="submit">Create account</button>
+
+            <p class="auth-footer-link">Already registered? <a href="{{ url_for('auth.login') }}">Log in</a></p>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function setRole(role) {
+    document.getElementById('role-input').value = role;
+    const btns = document.querySelectorAll('.role-toggle button');
+    btns.forEach(b => b.classList.remove('active'));
+    document.querySelector(`.role-toggle button[onclick="setRole('${role}')"]`).classList.add('active');
+}
+</script>
+{% endblock %}
