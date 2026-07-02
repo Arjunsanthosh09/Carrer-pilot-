@@ -9,10 +9,8 @@ def create_app(config_class=Config):
     db.init_app(app)
     login_manager.init_app(app)
 
-    # Import models so they are registered
     from app import models
 
-    # Register blueprints
     from app.auth.routes import auth_bp
     from app.student.routes import student_bp
     from app.officer.routes import officer_bp
