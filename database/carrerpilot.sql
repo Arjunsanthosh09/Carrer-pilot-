@@ -83,17 +83,15 @@ CREATE TABLE project (
 -- ============================================================
 -- 7. Placement drives (created by officer)
 -- ============================================================
-CREATE TABLE placement_drive (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    company VARCHAR(100) NOT NULL,
-    role VARCHAR(100) NOT NULL,
-    drive_date DATE,
-    status ENUM('open', 'closed') DEFAULT 'open',
-    min_cgpa DECIMAL(3,2),
-    created_by INT NOT NULL,
-    FOREIGN KEY (created_by) REFERENCES user(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
+CREATE TABLE `placement_drive` (
+  `id` int(11) NOT NULL,
+  `company_id` int(11) NOT NULL,
+  `role` varchar(100) NOT NULL,
+  `drive_date` date DEFAULT NULL,
+  `status` enum('open','closed') DEFAULT 'open',
+  `min_cgpa` decimal(3,2) DEFAULT NULL,
+  `created_by` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 -- ============================================================
 -- 8. Applications (students applying to drives)
 -- ============================================================
@@ -132,6 +130,20 @@ CREATE TABLE resume_feedback (
     FOREIGN KEY (student_id) REFERENCES user(id) ON DELETE CASCADE,
     UNIQUE KEY (student_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Table structure for table `company`
+--
+
+CREATE TABLE `company` (
+  `id` int(11) NOT NULL,
+  `company_name` varchar(100) NOT NULL,
+  `website` varchar(255) DEFAULT NULL,
+  `industry` varchar(100) DEFAULT NULL,
+  `headquarters` varchar(100) DEFAULT NULL,
+  `description` text DEFAULT NULL,
+  `logo` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- ============================================================
 -- Indexes for performance
