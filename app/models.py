@@ -37,3 +37,44 @@ class StudentProfile(db.Model):
     roll_number = db.Column(db.String(20))
     cgpa = db.Column(db.Numeric(3,2))
     about_me = db.Column(db.Text)
+    
+# ... (existing User and StudentProfile models remain)
+
+class Skill(db.Model):
+    __tablename__ = 'skill'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)
+
+class StudentSkill(db.Model):
+    __tablename__ = 'student_skill'
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('student_profile.id'), nullable=False)
+    skill_id = db.Column(db.Integer, db.ForeignKey('skill.id'), nullable=False)
+    proficiency = db.Column(db.Integer)  # 0-100
+
+    skill = db.relationship('Skill')
+
+class Certification(db.Model):
+    __tablename__ = 'certification'
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('student_profile.id'), nullable=False)
+    title = db.Column(db.String(200), nullable=False)
+    issuer = db.Column(db.String(100))
+    verification_status = db.Column(db.Enum('pending', 'verified'), default='verified')
+    date_earned = db.Column(db.Date)
+
+class Project(db.Model):
+    __tablename__ = 'project'
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('student_profile.id'), nullable=False)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    technologies = db.Column(db.String(255))
+    link = db.Column(db.String(255))
+    year = db.Column(db.Integer)
+
+# Add relationships to StudentProfile
+StudentProfile.skills = db.relationship('StudentSkill', backref='profile', lazy='dynamic', cascade='all, delete-orphan')
+StudentProfile.certifications = db.relationship('Certification', backref='profile', lazy='dynamic', cascade='all, delete-orphan')
+StudentProfile.projects = db.relationship('Project', backref='profile', lazy='dynamic', cascade='all, delete-orphan')
+    
