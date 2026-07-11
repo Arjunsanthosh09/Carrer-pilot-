@@ -7,7 +7,7 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 class User(UserMixin, db.Model):
-    __tablename__ = 'user'  # matches your table name
+    __tablename__ = 'user'  
 
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(255), unique=True, nullable=False)
@@ -15,7 +15,6 @@ class User(UserMixin, db.Model):
     role = db.Column(db.Enum('student', 'officer'), nullable=False, default='student')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    # Relationship to profile (one-to-one)
     profile = db.relationship('StudentProfile', backref='user', uselist=False)
 
     def set_password(self, password):
@@ -38,7 +37,6 @@ class StudentProfile(db.Model):
     cgpa = db.Column(db.Numeric(3,2))
     about_me = db.Column(db.Text)
     
-# ... (existing User and StudentProfile models remain)
 
 class Skill(db.Model):
     __tablename__ = 'skill'
@@ -73,7 +71,6 @@ class Project(db.Model):
     link = db.Column(db.String(255))
     year = db.Column(db.Integer)
 
-# Add relationships to StudentProfile
 StudentProfile.skills = db.relationship('StudentSkill', backref='profile', lazy='dynamic', cascade='all, delete-orphan')
 StudentProfile.certifications = db.relationship('Certification', backref='profile', lazy='dynamic', cascade='all, delete-orphan')
 StudentProfile.projects = db.relationship('Project', backref='profile', lazy='dynamic', cascade='all, delete-orphan')

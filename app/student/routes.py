@@ -6,10 +6,14 @@ from datetime import datetime
 
 student_bp = Blueprint('student', __name__)
 
+# for the student dashboard route
+
 @student_bp.route('/dashboard')
 @login_required
 def dashboard():
     return render_template('student/dashboard.html')
+
+# route for the student profile page 
 
 @student_bp.route('/profile', methods=['GET', 'POST'])
 @login_required
@@ -41,7 +45,8 @@ def profile():
                            projects=projects,
                            all_skills=all_skills)
 
-# --- Skills ---
+# Skills section of the student profile
+
 @student_bp.route('/add_skill', methods=['POST'])
 @login_required
 def add_skill():
@@ -55,7 +60,6 @@ def add_skill():
         flash('Profile not found.')
         return redirect(url_for('student.profile'))
 
-    # Find or create skill
     skill = Skill.query.filter_by(name=skill_name).first()
     if not skill:
         skill = Skill(name=skill_name)
@@ -63,7 +67,6 @@ def add_skill():
         db.session.commit()
         print("✅ Created new skill:", skill_name)
 
-    # Check if already exists
     existing = StudentSkill.query.filter_by(student_id=profile.id, skill_id=skill.id).first()
     if existing:
         existing.proficiency = proficiency
@@ -77,6 +80,8 @@ def add_skill():
     flash('Skill added/updated successfully!')
     return redirect(url_for('student.profile'))
 
+# route for removing a skill from the student profile 
+
 @student_bp.route('/remove_skill/<int:skill_id>', methods=['POST'])
 @login_required
 def remove_skill(skill_id):
@@ -88,7 +93,8 @@ def remove_skill(skill_id):
         flash('Skill removed.')
     return redirect(url_for('student.profile'))
 
-# --- Certifications ---
+# route for adding a certificate to the student profile 
+
 @student_bp.route('/add_cert', methods=['POST'])
 @login_required
 def add_cert():
@@ -111,6 +117,8 @@ def add_cert():
     flash('Certification added.')
     return redirect(url_for('student.profile'))
 
+# remove a certificate from the student profile 
+
 @student_bp.route('/remove_cert/<int:cert_id>', methods=['POST'])
 @login_required
 def remove_cert(cert_id):
@@ -121,7 +129,8 @@ def remove_cert(cert_id):
         flash('Certification removed.')
     return redirect(url_for('student.profile'))
 
-# --- Projects ---
+# route for addding a project to the studen profile
+
 @student_bp.route('/add_project', methods=['POST'])
 @login_required
 def add_project():
@@ -157,6 +166,7 @@ def remove_project(project_id):
         db.session.commit()
         flash('Project removed.')
     return redirect(url_for('student.profile'))
+
 
 # ========== NEW PLACEHOLDER ROUTES (to fix sidebar errors) ==========
 @student_bp.route('/resume')
