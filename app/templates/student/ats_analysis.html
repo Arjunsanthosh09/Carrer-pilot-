@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="shell">
+    {% include "student/_sidebar.html" %}
+    <div class="main">
+        <div class="page-head">
+            <div>
+                <h1>ATS Resume Analysis</h1>
+                <p class="sub">Upload your resume or paste text to get AI‑powered feedback.</p>
+            </div>
+        </div>
+
+        <!-- Input form -->
+        <div class="card" style="margin-bottom:20px;">
+            <div style="display:flex; flex-direction:column; gap:16px;">
+                <div>
+                    <label>Paste your resume text or upload a file:</label>
+                </div>
+                <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                    <div style="flex:1; min-width:200px;">
+                        <textarea id="resume-text-input" rows="6" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;" placeholder="Paste your resume text here..."></textarea>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:8px; justify-content:center;">
+                        <div style="display:flex; gap:8px;">
+                            <input type="file" id="file-input" accept=".pdf,.docx" style="padding:6px;">
+                        </div>
+                        <div>
+                            <label>Target role (optional):</label>
+                            <input type="text" id="target-role" placeholder="e.g. Software Engineer" style="padding:6px;border:1px solid var(--line);border-radius:6px;width:180px;">
+                        </div>
+                        <button id="analyze-btn" class="btn-ink">Analyze Resume</button>
+                    </div>
+                </div>
+                <div style="font-size:12px;color:var(--slate);">Supported formats: PDF, DOCX, or plain text.</div>
+            </div>
+        </div>
+
+        <!-- Results section -->
+        <div id="results" style="display:none;">
+            <div class="grid g2" style="margin-bottom:18px;">
+                <div class="card">
+                    <div class="section-title">ATS Score</div>
+                    <div style="display:flex; align-items:center; gap:20px;">
+                        <div style="position:relative; width:120px; height:120px;">
+                            <svg width="120" height="120" viewBox="0 0 120 120">
+                                <circle cx="60" cy="60" r="48" fill="none" stroke="#E4E0D4" stroke-width="12"/>
+                                <circle id="score-circle" cx="60" cy="60" r="48" fill="none" stroke="#3DA35D" stroke-width="12" stroke-dasharray="301" stroke-dashoffset="301" stroke-linecap="round" transform="rotate(-90 60 60)"/>
+                            </svg>
+                            <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column;">
+                                <span id="score-number" style="font-family:var(--font-display);font-size:28px;font-weight:700;">0</span>
+                                <span style="font-size:11px;color:var(--slate);">/ 100</span>
+                            </div>
+                        </div>
+                        <div id="score-label" style="font-size:14px; color:var(--slate);">Analysis pending...</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="section-title">Recommended Job Roles</div>
+                    <div id="recommended-roles" style="display:flex; flex-wrap:wrap; gap:8px;">
+                        <!-- will be populated -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid g2">
+                <div class="card">
+                    <div class="section-title">Missing Keywords</div>
+                    <div id="missing-keywords" style="display:flex; flex-wrap:wrap; gap:6px;">
+                        <!-- will be populated -->
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="section-title">Suggestions for Improvement</div>
+                    <ul id="suggestions-list" style="list-style-type:disc; padding-left:18px; font-size:14px;">
+                        <!-- will be populated -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading indicator -->
+        <div id="loading" style="display:none; text-align:center; padding:30px;">
+            <div style="display:inline-block; width:40px; height:40px; border:4px solid var(--line); border-top-color:var(--amber); border-radius:50%; animation:spin 0.8s linear infinite;"></div>
+            <p style="margin-top:12px; color:var(--slate);">Analyzing your resume with AI...</p>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const analyzeBtn = document.getElementById('analyze-btn');
+    const fileInput = document.getElementById('file-input');
+    const textInput = document.getElementById('resume-text-input');
+    const targetRole = document.getElementById('target-role');
+    const resultsDiv = document.getElementById('results');
+    const loadingDiv = document.getElementById('loading');
+
+    analyzeBtn.addEventListener('click', function() {
+        // Decide source: file or text
+        let formData = new FormData();
+        let hasFile = fileInput.files.length > 0;
+        let hasText = textInput.value.trim().length > 0;
+
+        if (!hasFile && !hasText) {
+            alert('Please paste resume text or upload a file.');
+            return;
+        }
+
+        loadingDiv.style.display = 'block';
+        resultsDiv.style.display = 'none';
+
+        // If file, use multipart/form-data
+        if (hasFile) {
+            formData.append('file', fileInput.files[0]);
+            formData.append('target_role', targetRole.value);
+            fetch('/student/ats_analyze', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => displayResults(data))
+            .catch(err => { alert('Error: ' + err); loadingDiv.style.display = 'none'; });
+        } else {
+            // Use JSON
+            fetch('/student/ats_analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    resume_text: textInput.value,
+                    target_role: targetRole.value
+                })
+            })
+            .then(response => response.json())
+            .then(data => displayResults(data))
+            .catch(err => { alert('Error: ' + err); loadingDiv.style.display = 'none'; });
+        }
+    });
+
+    function displayResults(data) {
+        loadingDiv.style.display = 'none';
+        if (data.error) {
+            alert('Error: ' + data.error);
+            return;
+        }
+
+        resultsDiv.style.display = 'block';
+
+        // Score
+        const score = data.score || 0;
+        document.getElementById('score-number').textContent = score;
+        const circle = document.getElementById('score-circle');
+        const circumference = 301; // 2*pi*48
+        const offset = circumference - (score / 100) * circumference;
+        circle.style.strokeDashoffset = offset;
+        // Color based on score
+        let color = '#coral';
+        if (score >= 70) color = '#3DA35D';
+        else if (score >= 40) color = '#E8A33D';
+        circle.style.stroke = color;
+        document.getElementById('score-label').textContent = score >= 70 ? 'Great! ATS-friendly.' : score >= 40 ? 'Needs improvement.' : 'Significant improvements needed.';
+
+        // Recommended roles
+        const rolesDiv = document.getElementById('recommended-roles');
+        rolesDiv.innerHTML = '';
+        if (data.recommended_roles && data.recommended_roles.length) {
+            data.recommended_roles.forEach(role => {
+                const span = document.createElement('span');
+                span.className = 'pill pill-green';
+                span.textContent = role;
+                rolesDiv.appendChild(span);
+            });
+        } else {
+            rolesDiv.innerHTML = '<span style="color:var(--slate);">No roles recommended.</span>';
+        }
+
+        // Missing keywords
+        const keywordsDiv = document.getElementById('missing-keywords');
+        keywordsDiv.innerHTML = '';
+        if (data.missing_keywords && data.missing_keywords.length) {
+            data.missing_keywords.forEach(kw => {
+                const span = document.createElement('span');
+                span.className = 'pill pill-coral';
+                span.textContent = kw;
+                keywordsDiv.appendChild(span);
+            });
+        } else {
+            keywordsDiv.innerHTML = '<span style="color:var(--slate);">No missing keywords detected.</span>';
+        }
+
+        // Suggestions
+        const suggestionsList = document.getElementById('suggestions-list');
+        suggestionsList.innerHTML = '';
+        if (data.suggestions && data.suggestions.length) {
+            data.suggestions.forEach(s => {
+                const li = document.createElement('li');
+                li.textContent = s;
+                suggestionsList.appendChild(li);
+            });
+        } else {
+            suggestionsList.innerHTML = '<li>No suggestions provided.</li>';
+        }
+
+        // Scroll to results
+        resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="shell">
+    {% include "student/_sidebar.html" %}
+
+    <div class="main">
+        <div class="page-head">
+            <div>
+                <h1>Resume Builder</h1>
+                <p class="sub">Your resume is generated from your profile data. Preview it and download as PDF.</p>
+            </div>
+            <div class="top-actions">
+                <a href="{{ url_for('student.resume_export') }}" class="btn-ink" style="text-decoration:none; display:inline-block;">
+                    <svg class="icon" viewBox="0 0 24 24" style="width:16px;height:16px;vertical-align:middle;margin-right:6px;"><path d="M12 3v12M7 11l5 5 5-5M5 21h14"/></svg>
+                    Download PDF
+                </a>
+            </div>
+        </div>
+
+        <!-- Resume preview (same HTML used for PDF) -->
+        <div style="background:#fff; border:1px solid var(--line); border-radius:12px; padding:20px; overflow:auto; max-height:800px;">
+            {{ resume_html|safe }}
+        </div>
+
+        <div style="margin-top:16px; display:flex; gap:10px;">
+            <a href="{{ url_for('student.resume_export') }}" class="btn-ink">⬇ Download PDF</a>
+            <a href="{{ url_for('student.profile') }}" class="btn-outline">Edit Profile</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

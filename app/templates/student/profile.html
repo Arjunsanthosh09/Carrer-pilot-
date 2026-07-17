@@ -32,103 +32,254 @@
 
     <!-- ===== BASIC INFO TAB ===== -->
     <!-- ===== BASIC INFO TAB ===== -->
-<div class="tab-content" id="tab-basic">
-
-    <!-- ===== BASIC INFO FORM (separate) ===== -->
-    <form method="POST" action="{{ url_for('student.profile') }}">
+    <div class="tab-content" id="tab-basic">
+      <!-- ===== BASIC INFO FORM (separate) ===== -->
+      <form method="POST" action="{{ url_for('student.profile') }}">
         <div class="grid g2">
-            <div class="card">
-                <div class="section-title">Basic information</div>
-                <div class="field">
-                    <label>Full name</label>
-                    <input type="text" name="full_name" value="{{ profile.full_name or '' }}">
-                </div>
-                <div class="grid g2" style="gap:12px">
-                    <div class="field">
-                        <label>Department</label>
-                        <input type="text" name="department" value="{{ profile.department or '' }}">
-                    </div>
-                    <div class="field">
-                        <label>Roll number</label>
-                        <input type="text" name="roll_number" value="{{ profile.roll_number or '' }}">
-                    </div>
-                </div>
-                <div class="field">
-                    <label>CGPA</label>
-                    <input type="text" name="cgpa" value="{{ profile.cgpa or '' }}">
-                </div>
-                <div class="field">
-                    <label>About me</label>
-                    <textarea name="about_me" style="width:100%;min-height:80px;padding:11px 13px;border-radius:8px;border:1.3px solid var(--line);font-size:14px;">{{ profile.about_me or '' }}</textarea>
-                </div>
-                <button class="btn-ink" type="submit">Save changes</button>
+          <div class="card">
+            <div class="section-title">Basic information</div>
+            <div class="field">
+              <label>Full name</label>
+              <input
+                type="text"
+                name="full_name"
+                value="{{ profile.full_name or '' }}"
+              />
             </div>
+            <div class="grid g2" style="gap: 12px">
+              <div class="field">
+                <label>Department</label>
+                <input
+                  type="text"
+                  name="department"
+                  value="{{ profile.department or '' }}"
+                />
+              </div>
+              <div class="field">
+                <label>Roll number</label>
+                <input
+                  type="text"
+                  name="roll_number"
+                  value="{{ profile.roll_number or '' }}"
+                />
+              </div>
+            </div>
+            <div class="field">
+              <label>CGPA</label>
+              <input type="text" name="cgpa" value="{{ profile.cgpa or '' }}" />
+            </div>
+            <!-- Add these fields after the CGPA field -->
+            <div class="field">
+              <label>Phone</label>
+              <input
+                type="text"
+                name="phone"
+                value="{{ profile.phone or '' }}"
+              />
+            </div>
+            <div class="field">
+              <label>Location</label>
+              <input
+                type="text"
+                name="location"
+                value="{{ profile.location or '' }}"
+              />
+            </div>
+            <div class="field">
+              <label>LinkedIn URL</label>
+              <input
+                type="url"
+                name="linkedin"
+                value="{{ profile.linkedin or '' }}"
+              />
+            </div>
+            <div class="field">
+              <label>GitHub URL</label>
+              <input
+                type="url"
+                name="github"
+                value="{{ profile.github or '' }}"
+              />
+            </div>
+            <div class="field">
+              <label>Portfolio URL</label>
+              <input
+                type="url"
+                name="portfolio"
+                value="{{ profile.portfolio or '' }}"
+              />
+            </div>
+            <div class="field">
+              <label>Soft Skills (comma separated)</label>
+              <input
+                type="text"
+                name="soft_skills"
+                value="{{ profile.soft_skills or '' }}"
+                placeholder="e.g. Leadership, Communication, Teamwork"
+              />
+            </div>
+            <div class="field">
+              <label>About me</label>
+              <textarea
+                name="about_me"
+                style="
+                  width: 100%;
+                  min-height: 80px;
+                  padding: 11px 13px;
+                  border-radius: 8px;
+                  border: 1.3px solid var(--line);
+                  font-size: 14px;
+                "
+              >
+{{ profile.about_me or '' }}</textarea
+              >
+            </div>
+            <button class="btn-ink" type="submit">Save changes</button>
+          </div>
         </div>
-    </form>   <!-- ===== BASIC INFO FORM ENDS HERE ===== -->
+      </form>
+      <!-- ===== BASIC INFO FORM ENDS HERE ===== -->
 
-    <!-- ===== SKILLS, CERTIFICATIONS, PROJECTS SECTION (separate) ===== -->
-    <div class="card" style="margin-top:20px;">
+      <!-- ===== SKILLS, CERTIFICATIONS, PROJECTS SECTION (separate) ===== -->
+      <div class="card" style="margin-top: 20px">
         <div class="section-title">Technical &amp; soft skills</div>
-        <div class="chip-row" style="margin-bottom:14px;">
-            {% for ss in skills %}
-                <span class="chip">
-                    {{ ss.skill.name }} ({{ ss.proficiency }}%)
-                    <span style="cursor:pointer;color:var(--slate-light);" onclick="removeSkill({{ ss.skill.id }})"> ×</span>
-                </span>
-            {% else %}
-                <span style="color:var(--slate); font-style:italic;">No skills added yet.</span>
-            {% endfor %}
+        <div class="chip-row" style="margin-bottom: 14px">
+          {% for ss in skills %}
+          <span class="chip">
+            {{ ss.skill.name }} ({{ ss.proficiency }}%)
+            <span
+              style="cursor: pointer; color: var(--slate-light)"
+              onclick="removeSkill({{ ss.skill.id }})"
+            >
+              ×</span
+            >
+          </span>
+          {% else %}
+          <span style="color: var(--slate); font-style: italic"
+            >No skills added yet.</span
+          >
+          {% endfor %}
         </div>
         <!-- Skill add form (separate) -->
-        <form method="POST" action="{{ url_for('student.add_skill') }}" style="display:flex; gap:8px;">
-            <input type="text" name="skill_name" placeholder="Add a skill (e.g. Docker)" style="flex:1;" list="skill-list" required>
-            <datalist id="skill-list">
-                {% for sk in all_skills %}
-                    <option value="{{ sk.name }}">
-                {% endfor %}
-            </datalist>
-            <input type="number" name="proficiency" placeholder="%" style="width:70px;" min="0" max="100" value="70" required>
-            <button class="btn-ink" type="submit">Add</button>
+        <form
+          method="POST"
+          action="{{ url_for('student.add_skill') }}"
+          style="display: flex; gap: 8px"
+        >
+          <input
+            type="text"
+            name="skill_name"
+            placeholder="Add a skill (e.g. Docker)"
+            style="flex: 1"
+            list="skill-list"
+            required
+          />
+          <datalist id="skill-list">
+            {% for sk in all_skills %}
+            <option value="{{ sk.name }}">{% endfor %}</option>
+          </datalist>
+          <input
+            type="number"
+            name="proficiency"
+            placeholder="%"
+            style="width: 70px"
+            min="0"
+            max="100"
+            value="70"
+            required
+          />
+          <button class="btn-ink" type="submit">Add</button>
         </form>
 
         <!-- Certifications -->
-        <div class="section-title" style="margin-top:22px;">Certifications</div>
+        <div class="section-title" style="margin-top: 22px">Certifications</div>
         {% for cert in certs %}
-            <div style="display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--line);">
-                <span style="color:var(--amber-dark);">
-                    <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="5"/><path d="M8.5 12.5L7 21l5-2.5L17 21l-1.5-8.5"/></svg>
-                </span>
-                <div style="flex:1;">
-                    <div style="font-size:13.5px;font-weight:600;">{{ cert.title }}</div>
-                    <div style="font-size:12px;color:var(--slate);">
-                        {{ cert.issuer or '' }} ·
-                        <span class="pill {% if cert.verification_status == 'verified' %}pill-green{% else %}pill-amber{% endif %}">
-                            {{ cert.verification_status|title }}
-                        </span>
-                    </div>
-                </div>
-                <form method="POST" action="{{ url_for('student.remove_cert', cert_id=cert.id) }}">
-                    <button type="submit" class="icon-btn" style="background:transparent;border:none;color:var(--slate-light);">✕</button>
-                </form>
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 0;
+            border-bottom: 1px solid var(--line);
+          "
+        >
+          <span style="color: var(--amber-dark)">
+            <svg class="icon" viewBox="0 0 24 24">
+              <circle cx="12" cy="8" r="5" />
+              <path d="M8.5 12.5L7 21l5-2.5L17 21l-1.5-8.5" />
+            </svg>
+          </span>
+          <div style="flex: 1">
+            <div style="font-size: 13.5px; font-weight: 600">
+              {{ cert.title }}
             </div>
+            <div style="font-size: 12px; color: var(--slate)">
+              {{ cert.issuer or '' }} ·
+              <span
+                class="pill {% if cert.verification_status == 'verified' %}pill-green{% else %}pill-amber{% endif %}"
+              >
+                {{ cert.verification_status|title }}
+              </span>
+            </div>
+          </div>
+          <form
+            method="POST"
+            action="{{ url_for('student.remove_cert', cert_id=cert.id) }}"
+          >
+            <button
+              type="submit"
+              class="icon-btn"
+              style="
+                background: transparent;
+                border: none;
+                color: var(--slate-light);
+              "
+            >
+              ✕
+            </button>
+          </form>
+        </div>
         {% else %}
-            <p style="color:var(--slate);">No certifications added yet.</p>
+        <p style="color: var(--slate)">No certifications added yet.</p>
         {% endfor %}
         <!-- Cert add form -->
-        <form method="POST" action="{{ url_for('student.add_cert') }}" style="margin-top:16px; border-top:1px solid var(--line); padding-top:16px;">
-            <div class="grid g2" style="gap:12px;">
-                <div class="field"><label>Title</label><input type="text" name="title" placeholder="Certification name" required></div>
-                <div class="field"><label>Issuer</label><input type="text" name="issuer" placeholder="e.g. Coursera"></div>
-                <div class="field"><label>Date earned</label><input type="date" name="date_earned"></div>
-                <div style="display:flex; align-items:flex-end;"><button class="btn-ink" type="submit">Add certification</button></div>
+        <form
+          method="POST"
+          action="{{ url_for('student.add_cert') }}"
+          style="
+            margin-top: 16px;
+            border-top: 1px solid var(--line);
+            padding-top: 16px;
+          "
+        >
+          <div class="grid g2" style="gap: 12px">
+            <div class="field">
+              <label>Title</label
+              ><input
+                type="text"
+                name="title"
+                placeholder="Certification name"
+                required
+              />
             </div>
+            <div class="field">
+              <label>Issuer</label
+              ><input type="text" name="issuer" placeholder="e.g. Coursera" />
+            </div>
+            <div class="field">
+              <label>Date earned</label><input type="date" name="date_earned" />
+            </div>
+            <div style="display: flex; align-items: flex-end">
+              <button class="btn-ink" type="submit">Add certification</button>
+            </div>
+          </div>
         </form>
 
         <!-- Projects can be placed here as well, or keep them in their own tab -->
-    </div>
+      </div>
 
-    <!-- If you want to keep projects in a separate tab, you can move the projects section to the projects tab only -->
-</div>
+      <!-- If you want to keep projects in a separate tab, you can move the projects section to the projects tab only -->
+    </div>
 
     <!-- ===== SKILLS TAB ===== -->
     <div class="tab-content" id="tab-skills" style="display: none">

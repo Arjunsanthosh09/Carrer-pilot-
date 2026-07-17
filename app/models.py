@@ -36,6 +36,12 @@ class StudentProfile(db.Model):
     roll_number = db.Column(db.String(20))
     cgpa = db.Column(db.Numeric(3,2))
     about_me = db.Column(db.Text)
+    phone = db.Column(db.String(20))
+    location = db.Column(db.String(100))
+    linkedin = db.Column(db.String(255))
+    github = db.Column(db.String(255))
+    portfolio = db.Column(db.String(255))
+    soft_skills = db.Column(db.Text)
     
 
 class Skill(db.Model):
