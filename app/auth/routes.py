@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required
 from app.extensions import db
-from app.models import User, StudentProfile
+from app.models import User, StudentProfile, PlacementOfficer   # <-- added PlacementOfficer
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -29,8 +29,6 @@ def signup():
         password = request.form.get('password')
         role = request.form.get('role')
         full_name = request.form.get('full_name')
-        department = request.form.get('department')
-        year = request.form.get('year')
 
         # Check if user already exists
         if User.query.filter_by(email=email).first():
@@ -41,10 +39,11 @@ def signup():
         user = User(email=email, role=role)
         user.set_password(password)
         db.session.add(user)
-        db.session.commit()  # need user.id for profile
+        db.session.commit()  # need user.id
 
-        # Create student profile (for students)
         if role == 'student':
+            department = request.form.get('department')
+            year = request.form.get('year')
             profile = StudentProfile(
                 user_id=user.id,
                 full_name=full_name,
@@ -52,7 +51,17 @@ def signup():
                 year=year
             )
             db.session.add(profile)
-            db.session.commit()
+        else:  
+            phone = request.form.get('phone')
+            officer = PlacementOfficer(
+                user_id=user.id,
+                full_name=full_name,
+                phone=phone,
+                designation='Placement Officer'  # default
+            )
+            db.session.add(officer)
+
+        db.session.commit()
 
         # Log them in
         login_user(user)
@@ -62,7 +71,6 @@ def signup():
             return redirect(url_for('officer.dashboard'))
 
     return render_template('auth/signup.html')
-
 @auth_bp.route('/logout')
 @login_required
 def logout():

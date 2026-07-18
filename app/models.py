@@ -81,3 +81,12 @@ StudentProfile.skills = db.relationship('StudentSkill', backref='profile', lazy=
 StudentProfile.certifications = db.relationship('Certification', backref='profile', lazy='dynamic', cascade='all, delete-orphan')
 StudentProfile.projects = db.relationship('Project', backref='profile', lazy='dynamic', cascade='all, delete-orphan')
     
+class PlacementOfficer(db.Model):
+    __tablename__ = 'placement_officer'
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    full_name = db.Column(db.String(100), nullable=False)
+    designation = db.Column(db.String(100), default='Placement Officer')
+    phone = db.Column(db.String(20))
+    profile_photo = db.Column(db.String(255))
+
+    user = db.relationship('User', backref='officer_profile', uselist=False)

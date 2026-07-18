@@ -41,24 +41,35 @@
                 <input type="email" name="email" placeholder="you@college.edu" required>
             </div>
 
-            <div class="grid g2" style="gap:12px; display:grid; grid-template-columns:1fr 1fr;">
-                <div class="field">
-                    <label>Department</label>
-                    <select name="department">
-                        <option>Computer Science</option>
-                        <option>ECE</option>
-                        <option>IT</option>
-                        <option>Mechanical</option>
-                    </select>
+            <!-- Student fields (hidden for officer) -->
+            <div id="student-fields">
+                <div class="grid g2" style="gap:12px; display:grid; grid-template-columns:1fr 1fr;">
+                    <div class="field">
+                        <label>Department</label>
+                        <select name="department">
+                            <option>Computer Science</option>
+                            <option>ECE</option>
+                            <option>IT</option>
+                            <option>Mechanical</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Year</label>
+                        <select name="year">
+                            <option>1st Year</option>
+                            <option>2nd Year</option>
+                            <option>3rd Year</option>
+                            <option selected>Final Year</option>
+                        </select>
+                    </div>
                 </div>
+            </div>
+
+            <!-- Officer fields (hidden for student) -->
+            <div id="officer-fields" style="display:none;">
                 <div class="field">
-                    <label>Year</label>
-                    <select name="year">
-                        <option>1st Year</option>
-                        <option>2nd Year</option>
-                        <option>3rd Year</option>
-                        <option selected>Final Year</option>
-                    </select>
+                    <label>Phone number</label>
+                    <input type="tel" name="phone" placeholder="e.g. +91 98765 43210">
                 </div>
             </div>
 
@@ -73,15 +84,27 @@
         </form>
     </div>
 </div>
-{% endblock %}
 
-{% block scripts %}
 <script>
 function setRole(role) {
     document.getElementById('role-input').value = role;
     const btns = document.querySelectorAll('.role-toggle button');
     btns.forEach(b => b.classList.remove('active'));
     document.querySelector(`.role-toggle button[onclick="setRole('${role}')"]`).classList.add('active');
+
+    // Show/hide fields
+    if (role === 'student') {
+        document.getElementById('student-fields').style.display = 'block';
+        document.getElementById('officer-fields').style.display = 'none';
+        // Make student fields required
+        document.querySelectorAll('#student-fields input, #student-fields select').forEach(el => el.required = true);
+        document.querySelectorAll('#officer-fields input').forEach(el => el.required = false);
+    } else {
+        document.getElementById('student-fields').style.display = 'none';
+        document.getElementById('officer-fields').style.display = 'block';
+        document.querySelectorAll('#student-fields input, #student-fields select').forEach(el => el.required = false);
+        document.querySelectorAll('#officer-fields input').forEach(el => el.required = true);
+    }
 }
 </script>
 {% endblock %}
