@@ -7,8 +7,7 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 class User(UserMixin, db.Model):
-    __tablename__ = 'user'  
-
+    __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(255), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
@@ -27,7 +26,6 @@ class User(UserMixin, db.Model):
 
 class StudentProfile(db.Model):
     __tablename__ = 'student_profile'
-
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), unique=True, nullable=False)
     full_name = db.Column(db.String(100))
@@ -42,7 +40,6 @@ class StudentProfile(db.Model):
     github = db.Column(db.String(255))
     portfolio = db.Column(db.String(255))
     soft_skills = db.Column(db.Text)
-    
 
 class Skill(db.Model):
     __tablename__ = 'skill'
@@ -77,10 +74,24 @@ class Project(db.Model):
     link = db.Column(db.String(255))
     year = db.Column(db.Integer)
 
+# Relationships for StudentProfile
 StudentProfile.skills = db.relationship('StudentSkill', backref='profile', lazy='dynamic', cascade='all, delete-orphan')
 StudentProfile.certifications = db.relationship('Certification', backref='profile', lazy='dynamic', cascade='all, delete-orphan')
 StudentProfile.projects = db.relationship('Project', backref='profile', lazy='dynamic', cascade='all, delete-orphan')
-    
+
+# ====== NEW: InterviewSession ======
+class InterviewSession(db.Model):
+    __tablename__ = 'interview_session'
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    type = db.Column(db.Enum('technical', 'hr'), nullable=False)
+    date = db.Column(db.DateTime, default=datetime.utcnow)
+    overall_score = db.Column(db.Numeric(3,1))
+    feedback_json = db.Column(db.JSON)
+
+    # For many-to-one (InterviewSession -> User), use lazy='joined' or remove lazy
+    student = db.relationship('User', backref='interviews')
+
 class PlacementOfficer(db.Model):
     __tablename__ = 'placement_officer'
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
@@ -90,3 +101,36 @@ class PlacementOfficer(db.Model):
     profile_photo = db.Column(db.String(255))
 
     user = db.relationship('User', backref='officer_profile', uselist=False)
+
+class Company(db.Model):
+    __tablename__ = 'company'
+    id = db.Column(db.Integer, primary_key=True)
+    company_name = db.Column(db.String(100), unique=True, nullable=False)
+    website = db.Column(db.String(255))
+    industry = db.Column(db.String(100))
+    headquarters = db.Column(db.String(100))
+    description = db.Column(db.Text)
+    logo = db.Column(db.String(255))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class PlacementDrive(db.Model):
+    __tablename__ = 'placement_drive'
+    id = db.Column(db.Integer, primary_key=True)
+    company_id = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
+    role = db.Column(db.String(100), nullable=False)
+    drive_date = db.Column(db.Date)
+    status = db.Column(db.Enum('open', 'closed'), default='open')
+    min_cgpa = db.Column(db.Numeric(3,2))
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    company = db.relationship('Company', backref='drives')
+
+class RoleRequirement(db.Model):
+    __tablename__ = 'role_requirement'
+    id = db.Column(db.Integer, primary_key=True)
+    role_name = db.Column(db.String(100), nullable=False)
+    skill_name = db.Column(db.String(50), nullable=False)
+    required_proficiency = db.Column(db.Integer, default=70)  # 0-100
+    category = db.Column(db.String(50), default='Technical')  # Technical, Soft, etc.
+    
+    __table_args__ = (db.UniqueConstraint('role_name', 'skill_name', name='unique_role_skill'),)

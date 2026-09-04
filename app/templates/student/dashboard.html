@@ -1,7 +1,145 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Student Dashboard</h1>
-<p>Welcome, {{ current_user.email }}!</p>
-<p>This page will be replaced with the full dashboard later.</p>
+<div class="shell">
+    {% include "student/_sidebar.html" %}
+
+    <div class="main">
+        <!-- Page Header -->
+        <div class="page-head">
+            <div>
+                <h1>Welcome back, {{ profile.full_name or 'Student' }}</h1>
+                <p class="sub">Here's where your placement readiness stands today.</p>
+            </div>
+            <div class="top-actions">
+                <button class="icon-btn">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Readiness Score & Quick Actions -->
+        <div class="grid g2" style="margin-bottom:18px;align-items:stretch;">
+            <div class="card">
+                <div class="section-title" style="margin-bottom:18px;">Placement readiness score</div>
+                <div class="gauge-wrap">
+                    <!-- Gauge SVG -->
+                    <div style="position:relative; width:160px; height:160px; flex-shrink:0;">
+                        <svg width="160" height="160" viewBox="0 0 160 160">
+                            <circle cx="80" cy="80" r="64" fill="none" stroke="var(--paper-2)" stroke-width="14"/>
+                            <circle cx="80" cy="80" r="64" fill="none" stroke="var(--green)" stroke-width="14" stroke-linecap="round"
+                                stroke-dasharray="402" stroke-dashoffset="{{ (1 - readiness/100) * 402 }}" transform="rotate(-90 80 80)"/>
+                        </svg>
+                        <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                            <div style="font-family:var(--font-display); font-size:32px; font-weight:700;">{{ readiness|round|int }}</div>
+                            <div style="font-size:11px; color:var(--slate); font-weight:600;">READY SCORE</div>
+                            <div class="pill {% if readiness >= 75 %}pill-green{% elif readiness >= 45 %}pill-amber{% else %}pill-coral{% endif %}" style="margin-top:6px;">
+                                {% if readiness >= 75 %}Cleared{% elif readiness >= 45 %}In progress{% else %}Gap detected{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="gauge-breakdown">
+                        <div class="gb-row"><div class="gb-label">Technical skills</div><div class="gb-track"><div class="progress-track"><div class="progress-fill" style="width:{{ scores.technical }}%; background:{% if scores.technical >= 75 %}var(--green){% elif scores.technical >= 45 %}var(--amber){% else %}var(--coral){% endif %}"></div></div></div><div class="gb-val">{{ scores.technical|round|int }}%</div></div>
+                        <div class="gb-row"><div class="gb-label">Certifications</div><div class="gb-track"><div class="progress-track"><div class="progress-fill" style="width:{{ scores.certifications }}%; background:{% if scores.certifications >= 75 %}var(--green){% elif scores.certifications >= 45 %}var(--amber){% else %}var(--coral){% endif %}"></div></div></div><div class="gb-val">{{ scores.certifications|round|int }}%</div></div>
+                        <div class="gb-row"><div class="gb-label">Project experience</div><div class="gb-track"><div class="progress-track"><div class="progress-fill" style="width:{{ scores.projects }}%; background:{% if scores.projects >= 75 %}var(--green){% elif scores.projects >= 45 %}var(--amber){% else %}var(--coral){% endif %}"></div></div></div><div class="gb-val">{{ scores.projects|round|int }}%</div></div>
+                        <div class="gb-row"><div class="gb-label">Aptitude performance</div><div class="gb-track"><div class="progress-track"><div class="progress-fill" style="width:{{ scores.aptitude }}%; background:var(--coral)"></div></div></div><div class="gb-val">{{ scores.aptitude|round|int }}%</div></div>
+                        <div class="gb-row"><div class="gb-label">Communication</div><div class="gb-track"><div class="progress-track"><div class="progress-fill" style="width:{{ scores.communication }}%; background:var(--coral)"></div></div></div><div class="gb-val">{{ scores.communication|round|int }}%</div></div>
+                        <div class="gb-row"><div class="gb-label">Academics (CGPA)</div><div class="gb-track"><div class="progress-track"><div class="progress-fill" style="width:{{ scores.academics }}%; background:{% if scores.academics >= 75 %}var(--green){% elif scores.academics >= 45 %}var(--amber){% else %}var(--coral){% endif %}"></div></div></div><div class="gb-val">{{ scores.academics|round|int }}%</div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="section-title">Quick actions</div>
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <div class="navitem" style="background:var(--paper-2); color:var(--ink); padding:12px; border-radius:10px;" onclick="location.href='{{ url_for('student.resume') }}'">
+                        <span class="ic" style="opacity:1;color:var(--amber-dark)">
+                            <svg class="icon" viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6"/></svg>
+                        </span>
+                        <div style="flex:1"><div style="font-weight:600;font-size:13.5px;">Update resume</div><div style="font-size:12px;color:var(--slate)">Generate from your profile</div></div>
+                        <span class="ic"><svg class="icon" viewBox="0 0 24 24" style="width:15px;height:15px"><path d="M9 6l6 6-6 6"/></svg></span>
+                    </div>
+                    <div class="navitem" style="background:var(--paper-2); color:var(--ink); padding:12px; border-radius:10px;" onclick="location.href='{{ url_for('student.skillgap') }}'">
+                        <span class="ic" style="opacity:1;color:var(--amber-dark)">
+                            <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>
+                        </span>
+                        <div style="flex:1"><div style="font-weight:600;font-size:13.5px;">Close a skill gap</div><div style="font-size:12px;color:var(--slate)">See what's missing</div></div>
+                        <span class="ic"><svg class="icon" viewBox="0 0 24 24" style="width:15px;height:15px"><path d="M9 6l6 6-6 6"/></svg></span>
+                    </div>
+                    <div class="navitem" style="background:var(--paper-2); color:var(--ink); padding:12px; border-radius:10px;" onclick="location.href='{{ url_for('student.interview') }}'">
+                        <span class="ic" style="opacity:1;color:var(--amber-dark)">
+                            <svg class="icon" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0"/><path d="M12 18v4"/></svg>
+                        </span>
+                        <div style="flex:1"><div style="font-weight:600;font-size:13.5px;">Practice an interview</div><div style="font-size:12px;color:var(--slate)">{{ interview_count }} sessions completed</div></div>
+                        <span class="ic"><svg class="icon" viewBox="0 0 24 24" style="width:15px;height:15px"><path d="M9 6l6 6-6 6"/></svg></span>
+                    </div>
+                    <div class="navitem" style="background:var(--paper-2); color:var(--ink); padding:12px; border-radius:10px;" onclick="location.href='{{ url_for('student.career') }}'">
+                        <span class="ic" style="opacity:1;color:var(--amber-dark)">
+                            <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15 9l-2 6-6 2 2-6z"/></svg>
+                        </span>
+                        <div style="flex:1"><div style="font-weight:600;font-size:13.5px;">See career matches</div><div style="font-size:12px;color:var(--slate)">AI-powered recommendations</div></div>
+                        <span class="ic"><svg class="icon" viewBox="0 0 24 24" style="width:15px;height:15px"><path d="M9 6l6 6-6 6"/></svg></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid g4" style="margin-bottom:18px;">
+            <div class="stat-card"><div class="label">Profile completeness</div><div class="num">{{ completeness }}%</div><div class="delta up">+0% this week</div></div>
+            <div class="stat-card"><div class="label">Certifications</div><div class="num">{{ cert_count }}</div><div class="delta up">Add more to improve</div></div>
+            <div class="stat-card"><div class="label">Projects added</div><div class="num">{{ project_count }}</div><div class="delta warn">{{ 5 - project_count }} more recommended</div></div>
+            <div class="stat-card"><div class="label">Mock interviews</div><div class="num">{{ interview_count }}</div><div class="delta up">Keep practicing</div></div>
+        </div>
+
+        <!-- Upcoming Drives & AI Suggestions -->
+        <div class="grid g2">
+            <div class="card">
+                <div class="section-title">Upcoming placement drives <span class="view-all" onclick="location.href='{{ url_for('student.drives') }}'">View all</span></div>
+                {% if upcoming_drives %}
+                <table>
+                    <tr><th>Company</th><th>Role</th><th>Date</th><th>Eligibility</th></tr>
+                    {% for drive in upcoming_drives %}
+                    <tr>
+                        <td>{{ drive.company_name }}</td>
+                        <td>{{ drive.role }}</td>
+                        <td>{{ drive.drive_date.strftime('%b %d, %Y') }}</td>
+                        <td>
+                            <span class="pill pill-green"><span class="dot"></span>Open</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+                {% else %}
+                <p style="color:var(--slate);">No upcoming drives. Check back later!</p>
+                {% endif %}
+            </div>
+            <!-- AI Suggestions Section -->
+<div class="card">
+    <div class="section-title">🤖 AI Suggestions for You</div>
+    <div style="display:flex; flex-direction:column; gap:12px;">
+        {% for suggestion in ai_suggestions %}
+        <div style="display:flex; gap:10px; align-items:flex-start; padding:8px 0; border-bottom:1px solid var(--paper-2);">
+            <span style="color:var(--amber-dark); margin-top:2px; font-size:18px;">
+                {% if '📚' in suggestion.title %}📚
+                {% elif '🎓' in suggestion.title %}🎓
+                {% elif '🛠️' in suggestion.title %}🛠️
+                {% elif '💡' in suggestion.title %}💡
+                {% elif '🎯' in suggestion.title %}🎯
+                {% else %}✨{% endif %}
+            </span>
+            <div style="flex:1;">
+                <div style="font-weight:600; font-size:13.5px;">{{ suggestion.title }}</div>
+                {% if suggestion.description %}
+                <div style="font-size:12.5px; color:var(--slate); margin-top:2px;">{{ suggestion.description }}</div>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <p style="color:var(--slate);">No suggestions yet. Keep building your profile!</p>
+        {% endfor %}
+    </div>
+</div>
+        </div>
+    </div>
+</div>
 {% endblock %}
