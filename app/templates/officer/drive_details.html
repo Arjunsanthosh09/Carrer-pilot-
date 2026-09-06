@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/drives.css') }}">
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/drive_details.css') }}">
+
+<div class="drive-page">
+
+<div class="drive-sidebar">
+<div class="logo">
+<div class="logo-box">CP</div>
+<h2>CareerPilot AI</h2>
+</div>
+
+<div class="menu-title">MENU</div>
+
+<a href="{{ url_for('officer.dashboard') }}">
+<i class="fa-solid fa-house"></i> Dashboard
+</a>
+<a href="#">
+<i class="fa-solid fa-users"></i> Student records
+</a>
+<a href="{{ url_for('officer.companies') }}">
+<i class="fa-regular fa-building"></i> Companies
+</a>
+<a href="{{ url_for('officer.drives') }}" class="active">
+<i class="fa-solid fa-briefcase"></i> Placement drives
+</a>
+<a href="#">
+<i class="fa-solid fa-chart-column"></i> Reports &amp; analytics
+</a>
+
+<div class="officer-box">
+<div class="officer-avatar">
+    {% if current_user.officer_profile %}
+        {% set officer = current_user.officer_profile[0] %}
+        {% set names = officer.full_name.split() %}
+        {{ names[0][0]|upper }}{% if names|length > 1 %}{{ names[-1][0]|upper }}{% endif %}
+    {% else %}
+        {{ current_user.email[0]|upper }}
+    {% endif %}
+</div>
+<strong>
+    {% if current_user.officer_profile %}
+        {{ current_user.officer_profile[0].full_name }}
+    {% else %}
+        {{ current_user.email }}
+    {% endif %}
+</strong>
+<p>Placement officer</p>
+</div>
+
+<a href="{{ url_for('auth.logout') }}" class="logout-btn">
+<i class="fa-solid fa-right-from-bracket"></i> Log out
+</a>
+</div>
+
+<div class="drive-main">
+
+<div class="header">
+<div>
+<h1 class="detail-title">{{ drive.company.company_name }} — {{ drive.role }}</h1>
+<p>Drive date: {{ drive.drive_date.strftime('%b %d, %Y') if drive.drive_date }}</p>
+</div>
+<span class="detail-pill {{ drive.status }}">
+{{ drive.status|capitalize }}
+</span>
+</div>
+
+<div class="detail-grid">
+
+<div class="detail-stat">
+<div class="stat-label">Company</div>
+<div class="stat-value">{{ drive.company.company_name }}</div>
+</div>
+
+<div class="detail-stat">
+<div class="stat-label">Job Role</div>
+<div class="stat-value">{{ drive.role }}</div>
+</div>
+
+<div class="detail-stat">
+<div class="stat-label">Minimum CGPA</div>
+<div class="stat-value">{{ drive.min_cgpa }}</div>
+</div>
+
+</div>
+
+<div class="detail-actions">
+<a href="{{ url_for('officer.edit_drive', id=drive.id) }}" class="btn-ink-lg">
+<i class="fa-solid fa-pen"></i> Edit drive
+</a>
+<a href="{{ url_for('officer.delete_drive', id=drive.id) }}"
+onclick="return confirm('Are you sure you want to delete this drive?');"
+class="btn-coral-lg">
+<i class="fa-solid fa-trash"></i> Delete drive
+</a>
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

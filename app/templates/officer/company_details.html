@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<link rel="stylesheet" href="/static/css/company_details.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+<div class="details-page">
+
+    <!-- Sidebar -->
+    <div class="company-sidebar">
+
+        <div class="company-logo">
+            <div class="company-logo-box">CP</div>
+            <h2>CareerPilot AI</h2>
+        </div>
+
+        <div class="menu-title">MENU</div>
+
+        <a href="{{ url_for('officer.dashboard') }}">
+            <i class="fa-solid fa-house"></i>
+            Dashboard
+        </a>
+
+        <a href="#">
+            <i class="fa-solid fa-user-graduate"></i>
+            Student Records
+        </a>
+
+        <a href="{{ url_for('officer.companies') }}" class="active">
+            <i class="fa-solid fa-building"></i>
+            Companies
+        </a>
+
+        <a href="{{ url_for('officer.drives') }}">
+            <i class="fa-solid fa-briefcase"></i>
+            Placement Drives
+        </a>
+
+        <a href="#">
+            <i class="fa-solid fa-chart-line"></i>
+            Reports
+        </a>
+
+        <!-- ===== FIXED OFFICER BOX ===== -->
+        <div class="officer-box">
+
+            <div class="officer-avatar">
+                {% if current_user.officer_profile %}
+                    {% set officer = current_user.officer_profile %}
+                    {% set names = officer.full_name.split() if officer.full_name else ['O'] %}
+                    {{ names[0][0]|upper if names[0] else 'O' }}{% if names|length > 1 %}{{ names[-1][0]|upper if names[-1] else '' }}{% endif %}
+                {% else %}
+                    {{ current_user.email[0]|upper }}
+                {% endif %}
+            </div>
+
+            <strong>
+                {% if current_user.officer_profile %}
+                    {{ current_user.officer_profile.full_name or 'Placement Officer' }}
+                {% else %}
+                    {{ current_user.email }}
+                {% endif %}
+            </strong>
+
+            <p>Placement Officer</p>
+
+        </div>
+
+        <a href="{{ url_for('auth.logout') }}" class="logout-btn">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            Logout
+        </a>
+
+    </div>
+
+    <!-- Main -->
+    <div class="details-main">
+
+        <div class="details-header">
+
+            <div>
+                <h1>{{ company.company_name }}</h1>
+                <p>{{ company.industry }}</p>
+            </div>
+
+            <div class="header-buttons">
+
+                <a href="{{ url_for('officer.edit_company', id=company.id) }}"
+                   class="edit-btn">
+                    <i class="fa-solid fa-pen"></i>
+                    Edit
+                </a>
+
+                <a href="{{ url_for('officer.delete_company', id=company.id) }}"
+                   class="delete-btn"
+                   onclick="return confirm('Delete this company?')">
+                    <i class="fa-solid fa-trash"></i>
+                    Delete
+                </a>
+
+            </div>
+
+        </div>
+
+        <!-- Company Information -->
+        <div class="info-grid">
+
+            <div class="info-card">
+                <h3>Industry</h3>
+                <p>{{ company.industry }}</p>
+            </div>
+
+            <div class="info-card">
+                <h3>Website</h3>
+                <a href="{{ company.website }}" target="_blank">
+                    {{ company.website }}
+                </a>
+            </div>
+
+            <div class="info-card">
+                <h3>Headquarters</h3>
+                <p>{{ company.headquarters }}</p>
+            </div>
+
+        </div>
+
+        <!-- Description -->
+        <div class="description-card">
+            <h2>Company Description</h2>
+            <p>{{ company.description }}</p>
+        </div>
+
+        <!-- Placement Drives -->
+        <div class="section-title">
+            <h2>Placement Drives</h2>
+        </div>
+
+        {% if drives %}
+
+        <div class="drive-grid">
+
+            {% for drive in drives %}
+
+            <div class="drive-card">
+
+                <div class="status {{ drive.status }}">
+                    {{ drive.status }}
+                </div>
+
+                <h3>{{ drive.role }}</h3>
+
+                <p>
+                    <strong>Date</strong><br>
+                    {{ drive.drive_date }}
+                </p>
+
+                <p>
+                    <strong>Minimum CGPA</strong><br>
+                    {{ drive.min_cgpa }}
+                </p>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        {% else %}
+
+        <div class="empty-card">
+
+            <i class="fa-solid fa-circle-info"></i>
+
+            <h3>No Placement Drives</h3>
+
+            <p>This company has no placement drives yet.</p>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

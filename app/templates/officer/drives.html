@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/drives.css') }}">
+
+<div class="drive-page">
+
+<!-- ===== FIXED SIDEBAR ===== -->
+<div class="drive-sidebar">
+
+<div class="logo">
+<div class="logo-box">CP</div>
+<h2>CareerPilot AI</h2>
+</div>
+
+<div class="menu-title">MENU</div>
+
+<a href="{{ url_for('officer.dashboard') }}">
+<i class="fa-solid fa-house"></i>
+Dashboard
+</a>
+
+<a href="#">
+<i class="fa-solid fa-users"></i>
+Student records
+</a>
+
+<a href="{{ url_for('officer.companies') }}">
+<i class="fa-regular fa-building"></i>
+Companies
+</a>
+
+<a href="{{ url_for('officer.drives') }}" class="active">
+<i class="fa-solid fa-briefcase"></i>
+Placement drives
+</a>
+
+<a href="#">
+<i class="fa-solid fa-chart-column"></i>
+Reports &amp; analytics
+</a>
+
+<!-- ===== FIXED OFFICER BOX ===== -->
+<div class="officer-box">
+    <div class="officer-avatar">
+        {% if current_user.officer_profile %}
+            {% set officer = current_user.officer_profile %}
+            {% set names = officer.full_name.split() if officer.full_name else ['O'] %}
+            {{ names[0][0]|upper if names[0] else 'O' }}{% if names|length > 1 %}{{ names[-1][0]|upper if names[-1] else '' }}{% endif %}
+        {% else %}
+            {{ current_user.email[0]|upper }}
+        {% endif %}
+    </div>
+    <strong>
+        {% if current_user.officer_profile %}
+            {{ current_user.officer_profile.full_name or 'Placement Officer' }}
+        {% else %}
+            {{ current_user.email }}
+        {% endif %}
+    </strong>
+    <p>Placement officer</p>
+</div>
+
+<a href="{{ url_for('auth.logout') }}" class="logout-btn">
+<i class="fa-solid fa-right-from-bracket"></i>
+Log out
+</a>
+
+</div>
+
+<div class="drive-main">
+
+<div class="header">
+<div>
+<h1>Placement drives</h1>
+<p>Create and manage placement drives, eligibility, and applications.</p>
+</div>
+
+<div style="display:flex; align-items:center; gap:16px;">
+<div class="notify-btn">
+<i class="fa-regular fa-bell"></i>
+</div>
+<a href="{{ url_for('officer.add_drive') }}" class="add-btn">
+<i class="fa-solid fa-plus"></i>
+Create new drive
+</a>
+</div>
+</div>
+
+<div class="drive-grid">
+
+{% for drive in drives %}
+
+<div class="drive-card">
+
+<div class="card-top">
+<div>
+<a href="{{ url_for('officer.drive_details', id=drive.id) }}" class="card-title-link">
+<h2>{{ drive.company.company_name }} — {{ drive.role }}</h2>
+</a>
+<p class="drive-date">Drive date: {{ drive.drive_date.strftime('%b %d, %Y') }}</p>
+</div>
+<span class="status {{ drive.status }}">
+{{ drive.status|capitalize }}
+</span>
+</div>
+
+<div class="applicants">
+<i class="fa-solid fa-user-group"></i>
+Applicants: —
+</div>
+
+<a href="{{ url_for('officer.edit_drive', id=drive.id) }}"
+class="manage-btn">
+Manage applicants
+</a>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

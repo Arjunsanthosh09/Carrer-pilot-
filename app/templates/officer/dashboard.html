@@ -1,7 +1,178 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Placement Officer Dashboard</h1>
-<p>Welcome, {{ current_user.email }}!</p>
-<p>This page will be replaced with the full officer panel later.</p>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+
+<div class="dashboard-page">
+
+    <aside class="sidebar">
+
+        <div class="sidebar-logo">
+            <div class="logo-box">CP</div>
+            <h2>CareerPilot AI</h2>
+        </div>
+
+        <p class="menu-title">MENU</p>
+
+        <nav class="menu">
+            <a href="{{ url_for('officer.dashboard') }}" class="active">
+                <i class="fa-solid fa-house"></i>
+                Dashboard
+            </a>
+            <a href="#">
+                <i class="fa-solid fa-users"></i>
+                Student Records
+            </a>
+            <a href="{{ url_for('officer.companies') }}">
+                <i class="fa-solid fa-building"></i>
+                Companies
+            </a>
+            <a href="{{ url_for('officer.drives') }}">
+                <i class="fa-solid fa-briefcase"></i>
+                Placement Drives
+            </a>
+            <a href="#">
+                <i class="fa-solid fa-chart-line"></i>
+                Reports & Analytics
+            </a>
+        </nav>
+
+        <div class="sidebar-bottom">
+
+    <div class="officer-card">
+        <div class="avatar">
+            {% if current_user.officer_profile %}
+                {% set officer = current_user.officer_profile %}
+                {% set names = officer.full_name.split() if officer.full_name else ['O'] %}
+                {{ names[0][0]|upper if names[0] else 'O' }}{% if names|length > 1 %}{{ names[-1][0]|upper if names[-1] else '' }}{% endif %}
+            {% else %}
+                {{ current_user.email[0]|upper }}
+            {% endif %}
+        </div>
+        <div>
+            <strong>
+                {% if current_user.officer_profile %}
+                    {{ current_user.officer_profile.full_name or 'Placement Officer' }}
+                {% else %}
+                    {{ current_user.email }}
+                {% endif %}
+            </strong>
+            <p>Placement Officer</p>
+        </div>
+    </div>
+
+    <a href="{{ url_for('auth.logout') }}" class="logout-btn">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        Log out
+    </a>
+
+</div>
+
+    </aside>
+
+    <main class="dashboard-main">
+
+        <div class="dashboard-header">
+            <div>
+                <h1>Placement cell overview</h1>
+                <p>Institution-wide readiness and drive activity.</p>
+            </div>
+            <div class="notify-btn">
+                <i class="fa-regular fa-bell"></i>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+
+            <div class="stat-card">
+                <small>Avg. readiness score</small>
+                <h2>{{ total_companies }}</h2>
+                <span class="green">+6% this month</span>
+            </div>
+
+            <div class="stat-card">
+                <small>Students on track</small>
+                <h2>{{ active_drives }}</h2>
+                <span class="green">65% of cohort</span>
+            </div>
+
+            <div class="stat-card">
+                <small>Active drives</small>
+                <h2>{{ total_drives }}</h2>
+                <span class="red">{{ closing_this_week }} closing this week</span>
+            </div>
+
+            <div class="stat-card">
+                <small>Placements confirmed</small>
+                <h2>{{ placements_confirmed }}</h2>
+                <span class="green">vs. 76 last year</span>
+            </div>
+
+        </div>
+
+        <div class="bottom-grid">
+
+            <div class="distribution-card">
+                <h2>Readiness distribution</h2>
+
+                <div class="progress-row">
+                    <span>On track (75%+)</span>
+                    <div class="progress"><div class="fill fill1"></div></div>
+                    <strong>65%</strong>
+                </div>
+
+                <div class="progress-row">
+                    <span>In progress (45&ndash;74%)</span>
+                    <div class="progress"><div class="fill fill2"></div></div>
+                    <strong>24%</strong>
+                </div>
+
+                <div class="progress-row">
+                    <span>Needs attention (&lt;45%)</span>
+                    <div class="progress"><div class="fill fill3"></div></div>
+                    <strong>11%</strong>
+                </div>
+
+                <p class="note">
+                    11% of final-year students (53 students) are below readiness threshold and may need targeted training sessions.
+                </p>
+            </div>
+
+            <div class="skills-card">
+                <h2>Common skill gaps across cohort</h2>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>SKILL</th>
+                            <th>STUDENTS LACKING</th>
+                            <th>SUGGESTED ACTION</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>System design</td>
+                            <td>62%</td>
+                            <td>Add workshop</td>
+                        </tr>
+                        <tr>
+                            <td>SQL (advanced)</td>
+                            <td>54%</td>
+                            <td>Add workshop</td>
+                        </tr>
+                        <tr>
+                            <td>Communication</td>
+                            <td>38%</td>
+                            <td>Soft-skills training</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
 {% endblock %}

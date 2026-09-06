@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareerPilot AI</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/officer.css') }}">
+
+</head>
+
+<body>
+
+<div class="layout">
+
+    <!-- Sidebar -->
+
+    <aside class="sidebar">
+
+        <div class="logo">
+
+            <div class="logo-box">
+                CP
+            </div>
+
+            <h2>CareerPilot AI</h2>
+
+        </div>
+
+        <p class="menu-title">MENU</p>
+
+        <a href="#">
+            🏠 Dashboard
+        </a>
+
+        <a href="#">
+            👨‍🎓 Student records
+        </a>
+
+        <a href="{{ url_for('officer.companies') }}"
+           class="active">
+
+            🏢 Companies
+
+        </a>
+
+        <a href="#">
+            💼 Placement drives
+        </a>
+
+        <a href="#">
+            📊 Reports & Analytics
+        </a>
+
+        <div class="officer-card">
+
+            <div class="avatar">
+                AC
+            </div>
+
+            <div>
+
+                <strong>
+                    Ms. Aswathy Chandran
+                </strong>
+
+                <small>
+                    Placement officer
+                </small>
+
+            </div>
+
+        </div>
+
+        <a href="{{ url_for('auth.logout') }}"
+           class="logout">
+
+            Logout
+
+        </a>
+
+    </aside>
+
+    <!-- Main -->
+
+    <main class="main-content">
+
+        {% block content %}
+        {% endblock %}
+
+    </main>
+
+</div>
+
+</body>
+
+</html>

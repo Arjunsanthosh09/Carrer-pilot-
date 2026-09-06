@@ -1,0 +1,295 @@
+body{
+    margin:0;
+    padding:0;
+    background:#F7F4EC;
+    font-family:Arial,Helvetica,sans-serif;
+}
+
+/* PAGE */
+
+.details-page{
+    display:flex;
+    min-height:100vh;
+    background:#F7F4EC;
+}
+
+/* SIDEBAR */
+
+.company-sidebar{
+    width:270px;
+    height:100vh;
+    position:fixed;
+    left:0;
+    top:0;
+    background:#111827;
+    display:flex;
+    flex-direction:column;
+    padding:22px;
+    box-sizing:border-box;
+}
+
+.company-logo{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:35px;
+}
+
+.company-logo-box{
+    width:38px;
+    height:38px;
+    border-radius:10px;
+    background:#F6A623;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-weight:bold;
+}
+
+.company-logo h2{
+    color:white;
+    font-size:18px;
+    margin:0;
+}
+
+.menu-title{
+    color:#6B7280;
+    font-size:11px;
+    letter-spacing:2px;
+    margin-bottom:12px;
+}
+
+.company-sidebar a{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    color:#D1D5DB;
+    text-decoration:none;
+    padding:12px 15px;
+    border-radius:10px;
+    margin-bottom:4px;
+    transition:.2s;
+}
+
+.company-sidebar a:hover{
+    background:#2E3A59;
+}
+
+.company-sidebar a.active{
+    background:#2E3A59;
+    color:white;
+}
+
+.company-sidebar i{
+    width:18px;
+}
+
+.officer-box{
+    margin-top:auto;
+    background:#2E3A59;
+    padding:16px;
+    border-radius:14px;
+}
+
+.officer-avatar{
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    background:#F6A623;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-weight:bold;
+    margin-bottom:10px;
+}
+
+.officer-box strong{
+    color:white;
+}
+
+.officer-box p{
+    color:#CBD5E1;
+    font-size:13px;
+    margin-top:4px;
+}
+
+.logout-btn{
+    margin-top:12px;
+    border:1px solid #3B465F;
+}
+
+/* MAIN */
+
+.details-main{
+    margin-left:270px;
+    width:100%;
+    padding:35px;
+}
+
+/* HEADER */
+
+.details-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:30px;
+}
+
+.details-header h1{
+    margin:0;
+    font-size:36px;
+    color:#111827;
+}
+
+.details-header p{
+    color:#6B7280;
+    margin-top:6px;
+}
+
+.header-buttons{
+    display:flex;
+    gap:12px;
+}
+
+.edit-btn,
+.delete-btn{
+
+    padding:12px 18px;
+    border-radius:10px;
+    text-decoration:none;
+    color:white;
+    font-weight:600;
+}
+
+.edit-btn{
+    background:#2563EB;
+}
+
+.delete-btn{
+    background:#DC2626;
+}
+
+/* INFO */
+
+.info-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:20px;
+    margin-bottom:30px;
+}
+
+.info-card{
+    background:white;
+    border-radius:18px;
+    padding:24px;
+    box-shadow:0 4px 10px rgba(0,0,0,.05);
+}
+
+.info-card h3{
+    margin-top:0;
+    color:#6B7280;
+    font-size:15px;
+}
+
+.info-card p,
+.info-card a{
+    color:#111827;
+    text-decoration:none;
+    font-size:17px;
+    font-weight:600;
+}
+
+/* DESCRIPTION */
+
+.description-card{
+    background:white;
+    border-radius:18px;
+    padding:25px;
+    margin-bottom:30px;
+    box-shadow:0 4px 10px rgba(0,0,0,.05);
+}
+
+.description-card h2{
+    margin-top:0;
+}
+
+.description-card p{
+    line-height:1.8;
+    color:#4B5563;
+}
+
+/* SECTION */
+
+.section-title{
+    margin-bottom:20px;
+}
+
+/* DRIVES */
+
+.drive-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:20px;
+}
+
+.drive-card{
+    background:white;
+    border-radius:18px;
+    padding:22px;
+    box-shadow:0 4px 10px rgba(0,0,0,.05);
+}
+
+.drive-card h3{
+    margin-top:15px;
+}
+
+.drive-card p{
+    color:#6B7280;
+}
+
+.status{
+    display:inline-block;
+    padding:6px 14px;
+    border-radius:30px;
+    font-size:13px;
+    font-weight:600;
+}
+
+.status.open{
+    background:#DCFCE7;
+    color:#15803D;
+}
+
+.status.closed{
+    background:#FEE2E2;
+    color:#B91C1C;
+}
+
+.status.upcoming{
+    background:#DBEAFE;
+    color:#1D4ED8;
+}
+
+/* EMPTY */
+
+.empty-card{
+    background:white;
+    border-radius:18px;
+    padding:60px;
+    text-align:center;
+    box-shadow:0 4px 10px rgba(0,0,0,.05);
+}
+
+.empty-card i{
+    font-size:45px;
+    color:#9CA3AF;
+    margin-bottom:15px;
+}
+
+.empty-card h3{
+    margin-bottom:8px;
+}
+
+.empty-card p{
+    color:#6B7280;
+}

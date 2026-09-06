@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/companie.css') }}">
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/add_company.css') }}">
+
+<div class="company-page">
+
+<div class="company-sidebar">
+
+<div class="company-logo">
+<div class="company-logo-box">CP</div>
+<h2>CareerPilot AI</h2>
+</div>
+
+<div class="menu-title">MENU</div>
+
+<a href="{{ url_for('officer.dashboard') }}">
+<i class="fa-solid fa-house"></i>
+Dashboard
+</a>
+
+<a href="#">
+<i class="fa-solid fa-users"></i>
+Student Records
+</a>
+
+<a href="{{ url_for('officer.companies') }}" class="active">
+<i class="fa-regular fa-building"></i>
+Companies
+</a>
+
+<a href="{{ url_for('officer.drives') }}">
+<i class="fa-solid fa-briefcase"></i>
+Placement Drives
+</a>
+
+<a href="#">
+<i class="fa-solid fa-chart-column"></i>
+Reports
+</a>
+
+<!-- ===== FIXED OFFICER BOX ===== -->
+<div class="officer-box">
+
+    <div class="officer-avatar">
+        {% if current_user.officer_profile %}
+            {% set officer = current_user.officer_profile %}
+            {% set names = officer.full_name.split() if officer.full_name else ['O'] %}
+            {{ names[0][0]|upper if names[0] else 'O' }}{% if names|length > 1 %}{{ names[-1][0]|upper if names[-1] else '' }}{% endif %}
+        {% else %}
+            {{ current_user.email[0]|upper }}
+        {% endif %}
+    </div>
+
+    <strong>
+        {% if current_user.officer_profile %}
+            {{ current_user.officer_profile.full_name or 'Placement Officer' }}
+        {% else %}
+            {{ current_user.email }}
+        {% endif %}
+    </strong>
+
+    <p>Placement Officer</p>
+
+</div>
+
+<a href="{{ url_for('auth.logout') }}" class="logout-btn">
+<i class="fa-solid fa-right-from-bracket"></i>
+Logout
+</a>
+
+</div>
+
+<div class="company-main">
+
+    <div class="add-container">
+
+        <div class="page-header">
+            <h1>Add Company</h1>
+            <p>Register a new company for placement drives.</p>
+        </div>
+
+        <div class="add-card">
+            <form method="POST" enctype="multipart/form-data">
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Company Name</label>
+                        <input type="text" name="company_name" placeholder="e.g. Google" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Industry</label>
+                        <input type="text" name="industry" placeholder="e.g. Information Technology">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Website</label>
+                        <input type="url" name="website" placeholder="https://www.example.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Headquarters</label>
+                        <input type="text" name="headquarters" placeholder="e.g. Bengaluru, India">
+                    </div>
+
+                    <div class="form-group full">
+                        <label>Description</label>
+                        <textarea rows="4" name="description" placeholder="Brief description about the company..."></textarea>
+                    </div>
+
+                    <div class="form-group full">
+                        <label>Company Logo</label>
+                        <div class="logo-upload">
+                            <input type="file" name="logo" accept=".png,.jpg,.jpeg">
+                            <span class="file-hint">Upload a logo (PNG, JPG, JPEG)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button type="submit" class="save-btn">Add Company</button>
+                    <a href="{{ url_for('officer.companies') }}" class="cancel-btn">Cancel</a>
+                </div>
+
+            </form>
+        </div>
+
+    </div>
+
+</div>
+
+</div>
+
+{% endblock %}

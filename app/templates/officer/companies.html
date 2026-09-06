@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/companie.css') }}">
+
+<div class="company-page">
+
+<div class="company-sidebar">
+
+<div class="company-logo">
+<div class="company-logo-box">CP</div>
+<h2>CareerPilot AI</h2>
+</div>
+
+<div class="menu-title">MENU</div>
+
+<a href="{{ url_for('officer.dashboard') }}">
+<i class="fa-solid fa-house"></i>
+Dashboard
+</a>
+
+<a href="#">
+<i class="fa-solid fa-users"></i>
+Student Records
+</a>
+
+<a href="{{ url_for('officer.companies') }}" class="active">
+<i class="fa-regular fa-building"></i>
+Companies
+</a>
+
+<a href="{{ url_for('officer.drives') }}">
+<i class="fa-solid fa-briefcase"></i>
+Placement Drives
+</a>
+
+<a href="#">
+<i class="fa-solid fa-chart-column"></i>
+Reports
+</a>
+
+<div class="officer-box">
+
+    <div class="officer-avatar">
+        {% if current_user.officer_profile %}
+            {% set officer = current_user.officer_profile %}
+            {% set names = officer.full_name.split() if officer.full_name else ['O'] %}
+            {{ names[0][0]|upper if names[0] else 'O' }}{% if names|length > 1 %}{{ names[-1][0]|upper if names[-1] else '' }}{% endif %}
+        {% else %}
+            {{ current_user.email[0]|upper }}
+        {% endif %}
+    </div>
+
+    <strong>
+        {% if current_user.officer_profile %}
+            {{ current_user.officer_profile.full_name or 'Placement Officer' }}
+        {% else %}
+            {{ current_user.email }}
+        {% endif %}
+    </strong>
+
+    <p>Placement Officer</p>
+
+</div>
+
+<a href="{{ url_for('auth.logout') }}" class="logout-btn">
+<i class="fa-solid fa-right-from-bracket"></i>
+Logout
+</a>
+
+</div>
+
+<div class="company-main">
+
+<div class="company-header">
+
+<div>
+<h1>Companies</h1>
+<p>Manage company information and hiring relationships.</p>
+</div>
+
+</div>
+
+<div class="company-grid">
+
+{% for company in companies %}
+
+<a href="{{ url_for('officer.company_details', id=company.id) }}"
+class="company-card">
+
+<div style="font-size:28px;">
+<i class="fa-regular fa-building"></i>
+</div>
+
+<h3>{{ company.company_name }}</h3>
+
+<p>{{ company.industry }}</p>
+
+{% if company.active_drive %}
+
+<span class="badge-open">
+Open Drive
+</span>
+
+{% else %}
+
+<span class="badge-close">
+No Active Drive
+</span>
+
+{% endif %}
+
+</a>
+
+{% endfor %}
+
+</div>
+
+<br>
+
+<a href="{{ url_for('officer.add_company') }}"
+class="add-company-btn">
+
++ Add Company
+
+</a>
+
+</div>
+
+</div>
+
+{% endblock %}

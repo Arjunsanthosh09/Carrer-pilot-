@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/edit_company.css') }}">
+
+<div class="edit-page">
+
+    <!-- ===== FIXED SIDEBAR ===== -->
+    <div class="company-sidebar">
+
+        <div class="company-logo">
+            <div class="company-logo-box">CP</div>
+            <h2>CareerPilot AI</h2>
+        </div>
+
+        <div class="menu-title">MENU</div>
+
+        <a href="{{ url_for('officer.dashboard') }}">
+            <i class="fa-solid fa-house"></i>
+            Dashboard
+        </a>
+
+        <a href="#">
+            <i class="fa-solid fa-users"></i>
+            Student Records
+        </a>
+
+        <a href="{{ url_for('officer.companies') }}" class="active">
+            <i class="fa-regular fa-building"></i>
+            Companies
+        </a>
+
+        <a href="{{ url_for('officer.drives') }}">
+            <i class="fa-solid fa-briefcase"></i>
+            Placement Drives
+        </a>
+
+        <a href="#">
+            <i class="fa-solid fa-chart-column"></i>
+            Reports
+        </a>
+
+        <!-- ===== FIXED OFFICER BOX ===== -->
+        <div class="officer-box">
+
+            <div class="officer-avatar">
+                {% if current_user.officer_profile %}
+                    {% set officer = current_user.officer_profile %}
+                    {% set names = officer.full_name.split() if officer.full_name else ['O'] %}
+                    {{ names[0][0]|upper if names[0] else 'O' }}{% if names|length > 1 %}{{ names[-1][0]|upper if names[-1] else '' }}{% endif %}
+                {% else %}
+                    {{ current_user.email[0]|upper }}
+                {% endif %}
+            </div>
+
+            <strong>
+                {% if current_user.officer_profile %}
+                    {{ current_user.officer_profile.full_name or 'Placement Officer' }}
+                {% else %}
+                    {{ current_user.email }}
+                {% endif %}
+            </strong>
+
+            <p>Placement Officer</p>
+
+        </div>
+
+        <a href="{{ url_for('auth.logout') }}" class="logout-btn">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            Logout
+        </a>
+
+    </div>
+
+    <div class="edit-main">
+
+        <div class="page-header">
+            <h1>Edit Company</h1>
+            <p>Update company information.</p>
+        </div>
+
+        <div class="form-card">
+
+            <form method="POST" enctype="multipart/form-data">
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label>Company Name</label>
+                        <input type="text"
+                               name="company_name"
+                               value="{{ company.company_name }}"
+                               required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Industry</label>
+                        <input type="text"
+                               name="industry"
+                               value="{{ company.industry }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Website</label>
+                        <input type="url"
+                               name="website"
+                               value="{{ company.website }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Headquarters</label>
+                        <input type="text"
+                               name="headquarters"
+                               value="{{ company.headquarters }}">
+                    </div>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Description</label>
+
+                    <textarea rows="5"
+                              name="description">{{ company.description }}</textarea>
+
+                </div>
+
+                <div class="logo-section">
+
+                    <div>
+
+                        <label>Current Logo</label>
+
+                        <div class="logo-preview">
+
+                            {% if company.logo %}
+
+                                <img src="{{ url_for('static', filename='uploads/' + company.logo) }}">
+
+                            {% else %}
+
+                                No Logo
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                    <div>
+
+                        <label>Upload New Logo</label>
+
+                        <input type="file"
+                               name="logo"
+                               accept=".png,.jpg,.jpeg">
+
+                    </div>
+
+                </div>
+
+                <div class="button-group">
+
+                    <button type="submit" class="save-btn">
+                        Update Company
+                    </button>
+
+                    <a href="{{ url_for('officer.companies') }}"
+                       class="cancel-btn">
+
+                        Cancel
+
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
