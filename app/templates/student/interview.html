@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="shell">
+    {% include "student/_sidebar.html" %}
+    <div class="main">
+        <div class="page-head">
+            <div>
+                <h1>🎤 Mock Interview</h1>
+                <p class="sub">Practice with AI-powered, proctored mock interviews.</p>
+            </div>
+        </div>
+
+        <!-- Role-based Interview Cards -->
+        <div class="grid g3" style="margin-bottom:24px;">
+            <!-- Technical -->
+            <div class="card" style="text-align:center; padding:24px;">
+                <div style="font-size:48px;">💻</div>
+                <div style="font-weight:600; font-size:16px; margin-top:8px;">Technical Interview</div>
+                <div style="font-size:13px; color:var(--slate);">Coding, algorithms, tech concepts</div>
+                <div style="margin-top:12px;">
+                    <span class="pill pill-green">5 questions</span>
+                    <span class="pill pill-amber">~10 min</span>
+                </div>
+                <a href="{{ url_for('student.interview_start', category='technical') }}" class="btn-ink" style="margin-top:12px; display:inline-block; text-decoration:none;">Start Now</a>
+            </div>
+
+            <!-- HR -->
+            <div class="card" style="text-align:center; padding:24px;">
+                <div style="font-size:48px;">🤝</div>
+                <div style="font-weight:600; font-size:16px; margin-top:8px;">HR Interview</div>
+                <div style="font-size:13px; color:var(--slate);">Behavioral, communication, leadership</div>
+                <div style="margin-top:12px;">
+                    <span class="pill pill-green">5 questions</span>
+                    <span class="pill pill-amber">~10 min</span>
+                </div>
+                <a href="{{ url_for('student.interview_start', category='hr') }}" class="btn-ink" style="margin-top:12px; display:inline-block; text-decoration:none;">Start Now</a>
+            </div>
+
+            <!-- Aptitude -->
+            <div class="card" style="text-align:center; padding:24px;">
+                <div style="font-size:48px;">🧠</div>
+                <div style="font-weight:600; font-size:16px; margin-top:8px;">Aptitude Interview</div>
+                <div style="font-size:13px; color:var(--slate);">Logical, numerical, verbal reasoning</div>
+                <div style="margin-top:12px;">
+                    <span class="pill pill-green">5 questions</span>
+                    <span class="pill pill-amber">~10 min</span>
+                </div>
+                <a href="{{ url_for('student.interview_start', category='aptitude') }}" class="btn-ink" style="margin-top:12px; display:inline-block; text-decoration:none;">Start Now</a>
+            </div>
+        </div>
+
+        <!-- Warning -->
+        <div class="card" style="background:var(--amber-light); border:1px solid var(--amber); margin-bottom:22px;">
+            <div style="display:flex; gap:10px; align-items:flex-start;">
+                <span style="font-size:20px;">⚠️</span>
+                <div>
+                    <strong style="font-size:14px;">Proctoring Enabled</strong>
+                    <p style="font-size:13px; margin-top:4px; color:var(--ink-3);">
+                        Camera must be ON. Full-screen mode is required.
+                        Tab switching or exiting full-screen will cancel the interview.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Past Sessions -->
+        <div class="card">
+            <div class="section-title">📋 Past Interview Sessions</div>
+            {% if sessions %}
+            <table>
+                <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Questions</th>
+                    <th>Score</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+                {% for session in sessions %}
+                <tr>
+                    <td>{{ session.date.strftime('%b %d, %Y') }}</td>
+                    <td><span class="pill pill-amber">{{ session.type|title }}</span></td>
+                    <td>{{ session.total_questions or 0 }}</td>
+                    <td>
+                        {% if session.overall_score %}
+                        <span class="pill {% if session.overall_score >= 7 %}pill-green{% elif session.overall_score >= 5 %}pill-amber{% else %}pill-coral{% endif %}">
+                            {{ session.overall_score }}/10
+                        </span>
+                        {% else %}
+                        <span class="pill pill-slate">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="pill {% if session.status == 'completed' %}pill-green{% elif session.status == 'cancelled' %}pill-coral{% else %}pill-amber{% endif %}">
+                            {{ session.status|title }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if session.status == 'completed' %}
+                        <a href="{{ url_for('student.interview_result', session_id=session.id) }}" class="btn-outline" style="padding:4px 12px; font-size:12px; text-decoration:none;">
+                            View Details
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+            {% else %}
+            <p style="color:var(--slate); text-align:center; padding:20px;">
+                No past sessions. Start your first interview above!
+            </p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

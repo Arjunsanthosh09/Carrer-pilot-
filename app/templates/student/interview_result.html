@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="shell">
+    {% include "student/_sidebar.html" %}
+    <div class="main">
+        <div class="page-head">
+            <div>
+                <h1>Interview Result</h1>
+                <p class="sub">{{ session.type|title }} Interview · {{ session.date.strftime('%b %d, %Y') }}</p>
+            </div>
+            <div class="top-actions">
+                <a href="{{ url_for('student.interview') }}" class="btn-outline" style="text-decoration:none;">Back to Interviews</a>
+            </div>
+        </div>
+
+        <!-- Overall Score -->
+        <div class="card" style="margin-bottom:18px; text-align:center;">
+            <div class="section-title">Overall Score</div>
+            <div style="font-size:56px; font-weight:700; color:{% if session.overall_score >= 7 %}var(--green){% elif session.overall_score >= 5 %}var(--amber){% else %}var(--coral){% endif %};">
+                {{ session.overall_score }}/10
+            </div>
+            <div class="pill {% if session.overall_score >= 7 %}pill-green{% elif session.overall_score >= 5 %}pill-amber{% else %}pill-coral{% endif %}" style="margin-top:8px;">
+                {% if session.overall_score >= 7 %}Excellent{% elif session.overall_score >= 5 %}Good{% else %}Needs Improvement{% endif %}
+            </div>
+        </div>
+
+        <!-- Question Breakdown -->
+        <div class="card">
+            <div class="section-title">Question-by-Question Feedback</div>
+            {% for q in session.questions %}
+            <div class="feedback-card" style="margin-bottom:14px; border-left:4px solid {% if q.score >= 7 %}var(--green){% elif q.score >= 5 %}var(--amber){% else %}var(--coral){% endif %}; padding:14px 16px; background:var(--paper-2); border-radius:0 10px 10px 0;">
+                <div style="font-weight:600; font-size:14px;">Q{{ loop.index }}. {{ q.question }}</div>
+                <div style="font-size:13px; color:var(--slate); margin-top:8px;">
+                    <strong>Your Answer:</strong> {{ q.answer or 'Not answered' }}
+                </div>
+                <div style="margin-top:8px;">
+                    <span class="pill {% if q.score >= 7 %}pill-green{% elif q.score >= 5 %}pill-amber{% else %}pill-coral{% endif %}">
+                        Score: {{ q.score }}/10
+                    </span>
+                </div>
+                {% if q.feedback %}
+                <div style="font-size:13px; margin-top:8px; color:var(--ink-3);">
+                    <strong>Feedback:</strong> {{ q.feedback }}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="margin-top:18px; display:flex; gap:10px;">
+            <a href="{{ url_for('student.interview') }}" class="btn-ink" style="text-decoration:none;">Start Another Interview</a>
+            <a href="{{ url_for('student.skillgap') }}" class="btn-outline" style="text-decoration:none;">Review Skill Gaps</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

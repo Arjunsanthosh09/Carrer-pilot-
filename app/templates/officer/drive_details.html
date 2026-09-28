@@ -16,6 +16,7 @@ href="{{ url_for('static', filename='css/drive_details.css') }}">
 
 <div class="drive-page">
 
+<!-- ===== FIXED SIDEBAR ===== -->
 <div class="drive-sidebar">
 <div class="logo">
 <div class="logo-box">CP</div>
@@ -40,24 +41,25 @@ href="{{ url_for('static', filename='css/drive_details.css') }}">
 <i class="fa-solid fa-chart-column"></i> Reports &amp; analytics
 </a>
 
+<!-- ===== FIXED OFFICER BOX ===== -->
 <div class="officer-box">
-<div class="officer-avatar">
-    {% if current_user.officer_profile %}
-        {% set officer = current_user.officer_profile[0] %}
-        {% set names = officer.full_name.split() %}
-        {{ names[0][0]|upper }}{% if names|length > 1 %}{{ names[-1][0]|upper }}{% endif %}
-    {% else %}
-        {{ current_user.email[0]|upper }}
-    {% endif %}
-</div>
-<strong>
-    {% if current_user.officer_profile %}
-        {{ current_user.officer_profile[0].full_name }}
-    {% else %}
-        {{ current_user.email }}
-    {% endif %}
-</strong>
-<p>Placement officer</p>
+    <div class="officer-avatar">
+        {% if current_user.officer_profile %}
+            {% set officer = current_user.officer_profile %}
+            {% set names = officer.full_name.split() if officer.full_name else ['O'] %}
+            {{ names[0][0]|upper if names[0] else 'O' }}{% if names|length > 1 %}{{ names[-1][0]|upper if names[-1] else '' }}{% endif %}
+        {% else %}
+            {{ current_user.email[0]|upper }}
+        {% endif %}
+    </div>
+    <strong>
+        {% if current_user.officer_profile %}
+            {{ current_user.officer_profile.full_name or 'Placement Officer' }}
+        {% else %}
+            {{ current_user.email }}
+        {% endif %}
+    </strong>
+    <p>Placement officer</p>
 </div>
 
 <a href="{{ url_for('auth.logout') }}" class="logout-btn">

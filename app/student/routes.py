@@ -331,11 +331,107 @@ def analyze_skill_gap_route():
     return jsonify(analysis)
 
 
+from app.services.interview import (
+    start_interview, get_current_question, submit_answer,
+    complete_session, cancel_session, get_session_history
+)
+
+# ========== INTERVIEW DASHBOARD ==========
 @student_bp.route('/interview')
 @login_required
 def interview():
-    return render_template('student/interview.html')
+    sessions = get_session_history(current_user.id)
+    return render_template('student/interview.html', sessions=sessions)
 
+
+# ========== START INTERVIEW ==========
+@student_bp.route('/interview/start/<category>')
+@login_required
+def interview_start(category):
+    if category not in ['technical', 'hr', 'aptitude']:
+        flash('Invalid interview category.')
+        return redirect(url_for('student.interview'))
+
+    session = start_interview(current_user.id, category)
+    if not session:
+        flash('No questions available for this category.')
+        return redirect(url_for('student.interview'))
+
+    return redirect(url_for('student.interview_room', session_id=session.id))
+
+
+# ========== INTERVIEW ROOM ==========
+@student_bp.route('/interview/room/<int:session_id>')
+@login_required
+def interview_room(session_id):
+    session = InterviewSession.query.get_or_404(session_id)
+    if session.student_id != current_user.id:
+        flash('Access denied.')
+        return redirect(url_for('student.interview'))
+    return render_template('student/interview_room.html', session=session)
+
+
+# ========== GET QUESTION (AJAX) ==========
+@student_bp.route('/interview/question/<int:session_id>/<int:index>')
+@login_required
+def interview_question(session_id, index):
+    session = InterviewSession.query.get_or_404(session_id)
+    if session.student_id != current_user.id:
+        return jsonify({'error': 'Access denied'}), 403
+
+    question_data = get_current_question(session_id, index)
+    if not question_data:
+        return jsonify({'error': 'Question not found'}), 404
+
+    return jsonify({
+        'question': question_data['question'],
+        'index': index,
+        'total': len(session.questions)
+    })
+
+
+# ========== SUBMIT ANSWER (AJAX) ==========
+@student_bp.route('/interview/submit', methods=['POST'])
+@login_required
+def interview_submit():
+    data = request.get_json()
+    session_id = data.get('session_id')
+    question_index = data.get('question_index')
+    answer = data.get('answer')
+
+    session = InterviewSession.query.get_or_404(session_id)
+    if session.student_id != current_user.id:
+        return jsonify({'error': 'Access denied'}), 403
+
+    score_data = submit_answer(session_id, question_index, answer)
+    return jsonify(score_data)
+
+
+# ========== COMPLETE INTERVIEW ==========
+@student_bp.route('/interview/complete/<int:session_id>')
+@login_required
+def interview_complete(session_id):
+    complete_session(session_id)
+    return redirect(url_for('student.interview_result', session_id=session_id))
+
+
+# ========== CANCEL INTERVIEW (AJAX) ==========
+@student_bp.route('/interview/cancel/<int:session_id>')
+@login_required
+def interview_cancel(session_id):
+    cancel_session(session_id)
+    return jsonify({'status': 'cancelled'})
+
+
+# ========== INTERVIEW RESULT ==========
+@student_bp.route('/interview/result/<int:session_id>')
+@login_required
+def interview_result(session_id):
+    session = InterviewSession.query.get_or_404(session_id)
+    if session.student_id != current_user.id:
+        flash('Access denied.')
+        return redirect(url_for('student.interview'))
+    return render_template('student/interview_result.html', session=session)
 
 @student_bp.route('/career')
 @login_required
