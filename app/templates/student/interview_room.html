@@ -3,14 +3,55 @@
 {% block content %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/interview.css') }}">
 
+<!-- Move these to the TOP so they load before the inline script -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.2/dist/coco-ssd.min.js"></script>
+
 <div class="interview-room" id="interview-room">
-    <!-- Camera Feed (top-right) -->
-    <div id="camera-container">
+
+    <!-- ============ PRE-START SCREEN ============ -->
+    <div id="pre-start-screen" style="
+        position: fixed; inset: 0; z-index: 9999;
+        background: linear-gradient(135deg, #11161F 0%, #1B2230 100%);
+        color: #fff; display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        padding: 40px; text-align: center;
+    ">
+        <div style="max-width: 560px;">
+            <div style="font-size: 64px; margin-bottom: 16px;">🎤</div>
+            <h1 style="font-family: 'Space Grotesk', sans-serif; font-size: 28px; font-weight: 600; margin-bottom: 12px;">
+                Ready to begin your interview?
+            </h1>
+            <p style="color: #B9C0CE; font-size: 15px; line-height: 1.6; margin-bottom: 24px;">
+                When you click the button below, your browser will ask for:
+            </p>
+            <ul style="text-align: left; display: inline-block; color: #B9C0CE; font-size: 14px; line-height: 1.9; margin-bottom: 28px;">
+                <li>✅ <strong>Full-screen access</strong> (required for proctoring)</li>
+                <li>✅ <strong>Camera access</strong> (required for proctoring)</li>
+            </ul>
+            <p style="color: #8A93A2; font-size: 13px; margin-bottom: 28px;">
+                You must click <strong>Allow</strong> on both prompts. Otherwise the interview cannot proceed.
+            </p>
+            <button id="start-interview-btn" style="
+                background: #E8A33D; color: #11161F;
+                padding: 14px 40px; border: none; border-radius: 10px;
+                font-family: 'Space Grotesk', sans-serif;
+                font-weight: 700; font-size: 16px; cursor: pointer;
+                transition: all 0.2s;
+            ">
+                ▶ Start Interview
+            </button>
+            <div id="start-error" style="color: #D8634A; font-size: 13px; margin-top: 16px; display: none;"></div>
+        </div>
+    </div>
+
+    <!-- ============ CAMERA FEED ============ -->
+    <div id="camera-container" style="display: none;">
         <video id="camera-feed" autoplay playsinline muted></video>
         <div id="camera-status">🔴 REC</div>
     </div>
 
-    <!-- Main Content -->
+    <!-- ============ MAIN CONTENT ============ -->
     <div class="interview-content">
         <div class="interview-header">
             <div class="interview-title">{{ session.type|title }} Interview</div>
@@ -19,7 +60,6 @@
             </div>
         </div>
 
-        <!-- Question -->
         <div class="question-container">
             <div class="question-badge" id="question-badge">Question 1</div>
             <div class="question-text" id="question-text">Loading question...</div>
@@ -28,7 +68,6 @@
             </div>
         </div>
 
-        <!-- Answer -->
         <div class="answer-container">
             <textarea id="answer-input" placeholder="Type your answer here..." maxlength="2000"></textarea>
             <div class="answer-actions">
@@ -37,13 +76,11 @@
             </div>
         </div>
 
-        <!-- Feedback -->
         <div class="feedback-container" id="feedback-container" style="display:none;">
             <div class="feedback-header">📊 AI Feedback</div>
             <div id="feedback-content"></div>
         </div>
 
-        <!-- Exit -->
         <div class="interview-footer">
             <button onclick="exitInterview()" class="btn-coral">🚫 Exit Interview</button>
         </div>
@@ -51,24 +88,11 @@
 </div>
 
 <style>
-.interview-room {
-    display: flex;
-    min-height: 100vh;
-    background: var(--paper-2);
-    position: relative;
-}
+.interview-room { display: flex; min-height: 100vh; background: var(--paper-2); position: relative; }
 #camera-container {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 200px;
-    height: 150px;
-    border-radius: 12px;
-    overflow: hidden;
-    border: 3px solid var(--green);
-    z-index: 1000;
-    background: #000;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    position: fixed; bottom: 20px; right: 20px; width: 200px; height: 150px;
+    border-radius: 12px; overflow: hidden; border: 3px solid var(--green);
+    z-index: 1000; background: #000; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
 }
 #camera-feed { width: 100%; height: 100%; object-fit: cover; }
 #camera-status {
@@ -77,9 +101,7 @@
     background: rgba(0,0,0,0.7); padding: 2px 8px; border-radius: 4px;
 }
 .interview-content { flex: 1; padding: 40px 60px; display: flex; flex-direction: column; }
-.interview-header {
-    display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;
-}
+.interview-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
 .interview-title { font-family: var(--font-display); font-size: 24px; font-weight: 600; }
 .interview-progress { font-size: 15px; font-weight: 600; color: var(--amber-dark); }
 .question-container {
@@ -123,113 +145,301 @@ const state = {
     totalQuestions: {{ session.total_questions }},
     currentIndex: 0,
     isAnswered: false,
-    isProctoringActive: true
+    isProctoringActive: false,
+    isReady: false,
+    violations: 0,
+    maxViolations: 3,
+    noFaceStartTime: null,
+    detectionInterval: null,
+    proctorInterval: null,   // NEW: polling interval
+    model: null
 };
 
 let cameraStream = null;
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
 
 // ============================================================
-// PROCTORING
+// START BUTTON
 // ============================================================
-function initProctoring() {
-    // Full-screen
-    if (document.documentElement.requestFullscreen) {
-        document.documentElement.requestFullscreen().catch(() => {});
+document.getElementById('start-interview-btn').addEventListener('click', async () => {
+    const btn = document.getElementById('start-interview-btn');
+    const errBox = document.getElementById('start-error');
+    errBox.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = '⏳ Requesting permissions...';
+
+    // 1. Fullscreen
+    try {
+        if (document.documentElement.requestFullscreen) {
+            await document.documentElement.requestFullscreen();
+        }
+    } catch (err) {
+        errBox.textContent = '❌ Fullscreen was denied.';
+        errBox.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = '▶ Start Interview';
+        return;
     }
 
-    // Camera
-    navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-        .then(stream => {
-            cameraStream = stream;
-            document.getElementById('camera-feed').srcObject = stream;
-        })
-        .catch(err => {
-            alert('Camera access required. Please allow camera and try again.');
-            window.location.href = '/student/interview';
-        });
+    await sleep(500);
 
-    // Exit full-screen detection
+    // 2. Camera
+    try {
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+            video: { width: 640, height: 480, facingMode: 'user' },
+            audio: false
+        });
+        const video = document.getElementById('camera-feed');
+        video.srcObject = cameraStream;
+        await video.play();
+    } catch (err) {
+        errBox.textContent = '❌ Camera was denied.';
+        errBox.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = '▶ Start Interview';
+        if (document.fullscreenElement) document.exitFullscreen();
+        return;
+    }
+
+    // 3. Hide pre-start, show camera
+    document.getElementById('pre-start-screen').style.display = 'none';
+    document.getElementById('camera-container').style.display = 'block';
+
+    // 4. Load AI model async
+    if (window.cocoSsd) {
+        cocoSsd.load().then(m => {
+            state.model = m;
+            console.log('✅ AI model loaded');
+        }).catch(e => console.warn('Model failed:', e));
+    } else {
+        console.warn('⚠️ cocoSsd not available');
+    }
+
+    // 5. Wait 3 seconds for browser to settle
+    await sleep(3000);
+
+    // 6. Re-request fullscreen if the browser exited it during camera prompt
+    if (!document.fullscreenElement) {
+        try {
+            await document.documentElement.requestFullscreen();
+            await sleep(500);
+        } catch (err) {
+            alert('Fullscreen is required. Interview cannot proceed.');
+            window.location.href = '/student/interview';
+            return;
+        }
+    }
+
+    // 7. Arm proctoring
+    state.isProctoringActive = true;
+    state.isReady = true;
+
+    registerProctoringEvents();
+    startProctoringPoll();
+    startDetectionLoop();
+    loadQuestion(0);
+});
+
+
+// ============================================================
+// EVENT LISTENERS (backup)
+// ============================================================
+function registerProctoringEvents() {
     document.addEventListener('fullscreenchange', () => {
         if (!document.fullscreenElement && state.isProctoringActive) {
-            cancelProctoring('Full-screen exited. Interview cancelled.');
+            registerViolation('Full-screen mode exited. Interview cancelled.', true);
         }
     });
 
-    // Tab switch detection
     document.addEventListener('visibilitychange', () => {
         if (document.hidden && state.isProctoringActive) {
-            cancelProctoring('Tab switched. Interview cancelled.');
+            registerViolation('Tab switched. Interview cancelled.', true);
         }
     });
 
-    // Window blur (background apps)
     window.addEventListener('blur', () => {
         if (state.isProctoringActive) {
-            cancelProctoring('Application switched. Interview cancelled.');
+            registerViolation('Application switched. Interview cancelled.', true);
         }
     });
 
-    // Disable copy/paste
+    document.addEventListener('copy',  e => { e.preventDefault(); warn('Copying is disabled.'); });
+    document.addEventListener('paste', e => { e.preventDefault(); warn('Pasting is disabled.'); });
+    document.addEventListener('cut',   e => { e.preventDefault(); warn('Cutting is disabled.'); });
+    document.addEventListener('contextmenu', e => { e.preventDefault(); warn('Right-click is disabled.'); });
+
     document.addEventListener('keydown', (e) => {
-        if ((e.ctrlKey || e.metaKey) && ['c', 'v', 'x'].includes(e.key.toLowerCase())) {
+        if (e.key === 'F12' ||
+            (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) ||
+            (e.ctrlKey && e.key.toUpperCase() === 'U')) {
             e.preventDefault();
-            alert('Copy/paste is disabled during the interview.');
+            warn('Developer tools are disabled.');
+        }
+        if (e.ctrlKey && ['C','V','X','A'].includes(e.key.toUpperCase())) {
+            e.preventDefault();
+            warn('Keyboard shortcuts are disabled.');
         }
     });
-}
 
-function cancelProctoring(reason) {
-    state.isProctoringActive = false;
-    alert('⚠️ ' + reason);
-    fetch(`/student/interview/cancel/${state.sessionId}`)
-        .finally(() => window.location.href = '/student/interview');
-}
-
-function exitInterview() {
-    if (confirm('Exit interview? Progress will not be saved.')) {
-        state.isProctoringActive = false;
-        if (cameraStream) cameraStream.getTracks().forEach(t => t.stop());
-        if (document.fullscreenElement) document.exitFullscreen();
-        window.location.href = '/student/interview';
+    if (cameraStream) {
+        cameraStream.getVideoTracks()[0].addEventListener('ended', () => {
+            if (state.isProctoringActive) {
+                registerViolation('Camera turned off. Interview cancelled.', true);
+            }
+        });
     }
 }
 
+
 // ============================================================
-// VOICE
+// POLLING CHECK — the reliable fallback
+// ============================================================
+function startProctoringPoll() {
+    state.proctorInterval = setInterval(() => {
+        if (!state.isProctoringActive) return;
+
+        // 1. Fullscreen check
+        if (!document.fullscreenElement) {
+            registerViolation('Full-screen mode exited. Interview cancelled.', true);
+            return;
+        }
+
+        // 2. Tab visibility check
+        if (document.hidden) {
+            registerViolation('Tab switched. Interview cancelled.', true);
+            return;
+        }
+
+        // 3. Camera check
+        if (cameraStream) {
+            const track = cameraStream.getVideoTracks()[0];
+            if (!track || track.readyState === 'ended' || !track.enabled) {
+                registerViolation('Camera is no longer active. Interview cancelled.', true);
+                return;
+            }
+        }
+    }, 1000); // every 1 second
+}
+
+
+// ============================================================
+// AI DETECTION LOOP (unchanged)
+// ============================================================
+function startDetectionLoop() {
+    state.detectionInterval = setInterval(async () => {
+        if (!state.isProctoringActive || !state.model) return;
+        const video = document.getElementById('camera-feed');
+        if (!video.videoWidth) return;
+
+        try {
+            const preds = await state.model.detect(video);
+            const persons = preds.filter(p => p.class === 'person');
+            const phones  = preds.filter(p => p.class === 'cell phone');
+            const books   = preds.filter(p => p.class === 'book');
+            const laptops = preds.filter(p => p.class === 'laptop');
+
+            if (persons.length > 1) return registerViolation('Multiple persons detected.', true);
+            if (phones.length > 0)  return registerViolation('Mobile phone detected.', true);
+            if (books.length > 0)   return registerViolation('Book / notes detected.', true);
+            if (laptops.length > 0) return registerViolation('Unauthorized device detected.', true);
+
+            if (persons.length === 0) {
+                if (!state.noFaceStartTime) state.noFaceStartTime = Date.now();
+                else if ((Date.now() - state.noFaceStartTime) / 1000 > 5) {
+                    return registerViolation('No person detected for 5+ seconds.', true);
+                }
+            } else {
+                state.noFaceStartTime = null;
+            }
+        } catch (err) { /* ignore */ }
+    }, 1500);
+}
+
+
+// ============================================================
+// VIOLATIONS
+// ============================================================
+function warn(msg) {
+    if (!state.isProctoringActive) return;
+    state.violations++;
+    showWarningBanner(`⚠️ Warning ${state.violations}/${state.maxViolations}: ${msg}`);
+    setTimeout(hideWarningBanner, 3500);
+    if (state.violations >= state.maxViolations) {
+        registerViolation('Too many violations. Interview cancelled.', true);
+    }
+}
+
+function registerViolation(reason, cancelImmediately) {
+    if (!state.isProctoringActive) return;
+    state.violations++;
+    console.warn(`🚫 ${reason}`);
+
+    if (cancelImmediately || state.violations >= state.maxViolations) {
+        state.isProctoringActive = false;
+        stopProctoring();
+        alert('🚫 ' + reason);
+        fetch(`/student/interview/cancel/${state.sessionId}`)
+            .finally(() => {
+                if (document.fullscreenElement) document.exitFullscreen();
+                window.location.href = '/student/interview';
+            });
+    } else {
+        showWarningBanner(`⚠️ ${state.violations}/${state.maxViolations}: ${reason}`);
+        setTimeout(hideWarningBanner, 4000);
+    }
+}
+
+function stopProctoring() {
+    if (state.detectionInterval) clearInterval(state.detectionInterval);
+    if (state.proctorInterval)   clearInterval(state.proctorInterval);
+    if (cameraStream) cameraStream.getTracks().forEach(t => t.stop());
+}
+
+function showWarningBanner(msg) {
+    let b = document.getElementById('proctoring-banner');
+    if (!b) {
+        b = document.createElement('div');
+        b.id = 'proctoring-banner';
+        b.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#D8634A;color:#fff;padding:12px;text-align:center;font-weight:600;z-index:99999;font-size:14px;';
+        document.body.appendChild(b);
+    }
+    b.textContent = msg;
+    b.style.display = 'block';
+}
+function hideWarningBanner() {
+    const b = document.getElementById('proctoring-banner');
+    if (b) b.style.display = 'none';
+}
+
+// 6. VOICE
 // ============================================================
 function speakQuestion() {
     const text = document.getElementById('question-text').textContent;
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 0.9;
-    utterance.lang = 'en-US';
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 0.9; u.lang = 'en-US';
     speechSynthesis.cancel();
-    speechSynthesis.speak(utterance);
+    speechSynthesis.speak(u);
 }
 
 function startVoiceInput() {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) { alert('Speech recognition not supported.'); return; }
-
-    const recognition = new SR();
-    recognition.lang = 'en-US';
-    recognition.continuous = false;
-    recognition.interimResults = false;
-
-    recognition.onstart = () => {
+    const r = new SR();
+    r.lang = 'en-US'; r.continuous = false; r.interimResults = false;
+    r.onstart = () => {
         const btn = document.getElementById('voice-btn');
         btn.textContent = '🎤 Listening...';
         btn.style.background = 'var(--coral)';
         btn.style.color = '#fff';
     };
-
-    recognition.onresult = (event) => {
-        document.getElementById('answer-input').value = event.results[0][0].transcript;
+    r.onresult = (e) => {
+        document.getElementById('answer-input').value = e.results[0][0].transcript;
         resetVoiceBtn();
     };
-
-    recognition.onerror = resetVoiceBtn;
-    recognition.onend = resetVoiceBtn;
-    recognition.start();
+    r.onerror = resetVoiceBtn;
+    r.onend = resetVoiceBtn;
+    r.start();
 }
 
 function resetVoiceBtn() {
@@ -240,7 +450,7 @@ function resetVoiceBtn() {
 }
 
 // ============================================================
-// INTERVIEW FLOW
+// 7. INTERVIEW FLOW
 // ============================================================
 function loadQuestion(index) {
     fetch(`/student/interview/question/${state.sessionId}/${index}`)
@@ -283,14 +493,12 @@ function submitAnswer() {
     .then(data => {
         state.isAnswered = true;
         btn.disabled = false;
-
         const scoreColor = data.score >= 7 ? 'var(--green)' : data.score >= 5 ? 'var(--amber)' : 'var(--coral)';
-
         const fb = document.getElementById('feedback-container');
         fb.style.display = 'block';
         fb.innerHTML = `
             <div class="feedback-header">📊 AI Feedback</div>
-            <div style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom:10px;">
+            <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:10px;">
                 <div><strong>Score:</strong> <span style="font-size:22px;font-weight:700;color:${scoreColor}">${data.score}/10</span></div>
                 <div><strong>Clarity:</strong> ${data.clarity}/10</div>
                 <div><strong>Correctness:</strong> ${data.correctness}/10</div>
@@ -299,9 +507,7 @@ function submitAnswer() {
             </div>
             <div style="padding:12px;background:var(--paper-2);border-radius:8px;">
                 <strong>Feedback:</strong> ${data.feedback}
-            </div>
-        `;
-
+            </div>`;
         if (state.currentIndex + 1 >= state.totalQuestions) {
             btn.textContent = '🎉 Complete Interview';
             btn.onclick = completeInterview;
@@ -310,7 +516,7 @@ function submitAnswer() {
             btn.onclick = nextQuestion;
         }
     })
-    .catch(err => {
+    .catch(() => {
         alert('Error submitting answer.');
         btn.textContent = '📤 Submit Answer';
         btn.disabled = false;
@@ -318,23 +524,16 @@ function submitAnswer() {
 }
 
 function nextQuestion() {
-    if (state.currentIndex + 1 < state.totalQuestions) {
-        loadQuestion(state.currentIndex + 1);
-    }
+    if (state.currentIndex + 1 < state.totalQuestions) loadQuestion(state.currentIndex + 1);
 }
 
 function completeInterview() {
     if (confirm('Submit your interview?')) {
+        state.isProctoringActive = false;
+        stopProctoring();
+        if (document.fullscreenElement) document.exitFullscreen();
         window.location.href = `/student/interview/complete/${state.sessionId}`;
     }
 }
-
-// ============================================================
-// INIT
-// ============================================================
-document.addEventListener('DOMContentLoaded', () => {
-    initProctoring();
-    loadQuestion(0);
-});
 </script>
 {% endblock %}
