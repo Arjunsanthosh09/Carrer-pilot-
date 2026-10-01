@@ -15,6 +15,7 @@ from app.models import PlacementDrive
 from datetime import datetime
 from app.services.gemini_ai import generate_profile_suggestions
 from app.services.skill_gap import get_all_roles, get_role_requirements, analyze_skill_gap
+from app.models import Education
 
 # --- NEW: pdfkit (replaces weasyprint) ---
 import pdfkit
@@ -109,6 +110,8 @@ def dashboard():
                            ai_suggestions=ai_suggestions)
     
 # ========== PROFILE ==========
+
+
 @student_bp.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
@@ -121,7 +124,7 @@ def profile():
         profile.full_name = request.form.get('full_name')
         profile.department = request.form.get('department')
         profile.roll_number = request.form.get('roll_number')
-        profile.cgpa = request.form.get('cgpa')
+        # profile.cgpa = request.form.get('cgpa')   # 👈 REMOVED - CGPA now lives in Education
         profile.phone = request.form.get('phone')
         profile.location = request.form.get('location')
         profile.linkedin = request.form.get('linkedin')
@@ -138,14 +141,19 @@ def profile():
     projects = Project.query.filter_by(student_id=profile.id).all()
     all_skills = Skill.query.order_by(Skill.name).all()
 
+    # 👇 NEW: fetch education entries (most recent first)
+    educations = Education.query.filter_by(student_id=profile.id) \
+                                .order_by(Education.end_year.desc()) \
+                                .all()
+
     return render_template('student/profile.html',
                            profile=profile,
                            skills=skills,
                            certs=certs,
                            projects=projects,
-                           all_skills=all_skills)
-
-
+                           all_skills=all_skills,
+                           educations=educations)   # 👈 pass to template
+    
 # ========== SKILLS ==========
 @student_bp.route('/add_skill', methods=['POST'])
 @login_required
@@ -438,6 +446,43 @@ def interview_result(session_id):
 def career():
     return render_template('student/career.html')
 
+
+# ========== EDUCATION ==========
+@student_bp.route('/add_education', methods=['POST'])
+@login_required
+def add_education():
+    profile = current_user.profile
+    if not profile:
+        flash('Profile not found.')
+        return redirect(url_for('student.profile'))
+
+    edu = Education(
+        student_id=profile.id,
+        level=request.form.get('level'),
+        degree_name=request.form.get('degree_name'),
+        institution=request.form.get('institution'),
+        field_of_study=request.form.get('field_of_study'),
+        start_year=int(request.form.get('start_year')) if request.form.get('start_year') else None,
+        end_year=int(request.form.get('end_year')) if request.form.get('end_year') else None,
+        grade_type=request.form.get('grade_type', 'CGPA'),
+        grade_value=float(request.form.get('grade_value')) if request.form.get('grade_value') else None,
+        location=request.form.get('location')
+    )
+    db.session.add(edu)
+    db.session.commit()
+    flash('Education entry added successfully!')
+    return redirect(url_for('student.profile'))
+
+
+@student_bp.route('/remove_education/<int:edu_id>', methods=['POST'])
+@login_required
+def remove_education(edu_id):
+    edu = Education.query.get_or_404(edu_id)
+    if edu.student_id == current_user.profile.id:
+        db.session.delete(edu)
+        db.session.commit()
+        flash('Education entry removed.')
+    return redirect(url_for('student.profile'))
 
 @student_bp.route('/drives')
 @login_required

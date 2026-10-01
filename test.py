@@ -1,2 +1,224 @@
-from app.services.gemini_ai import call_llm
-print(call_llm("Say hello in one sentence."))
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Resume - {{ profile.full_name }}</title>
+    <style>
+        @page { size: A4; margin: 16mm 15mm; }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'EB Garamond', 'Cormorant Garamond', Garamond, 'Times New Roman', Georgia, serif;
+            font-size: 11pt;
+            line-height: 1.32;
+            color: #000;
+            background: #fff;
+        }
+        a { color: #1F3F8F; text-decoration: none; }
+
+        /* ---------- Header ---------- */
+        .header { text-align: center; margin-bottom: 10px; }
+        .header h1 {
+            font-size: 24pt;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: #000;
+            line-height: 1.15;
+        }
+        .contact { margin-top: 5px; font-size: 10.5pt; color: #1F3F8F; }
+        .contact .sep { padding: 0 5px; }
+
+        /* ---------- Sections ---------- */
+        .section { margin-top: 12px; }
+        .section-title {
+            font-size: 12.5pt;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            color: #1F3F8F;
+            border-bottom: 0.8pt solid #000;
+            padding-bottom: 2px;
+            margin-bottom: 6px;
+        }
+        p.summary { text-align: justify; }
+
+        /* Left text / right text rows (dates, links) */
+        table.row { width: 100%; border-collapse: collapse; }
+        table.row td { padding: 0; vertical-align: top; }
+        table.row td.right { text-align: right; white-space: nowrap; padding-left: 12px; }
+
+        .item { margin-bottom: 7px; page-break-inside: avoid; }
+        .bold { font-weight: 700; }
+        .italic { font-style: italic; }
+        .tech { margin-top: 1px; }
+        .tech em { font-style: italic; }
+
+        ul { margin: 2px 0 0 22px; }
+        ul li { margin-bottom: 1px; padding-left: 2px; }
+
+        /* Skills: label + comma list, no pills */
+        .skill-line { margin-bottom: 2px; }
+        .skill-line .label { font-weight: 700; }
+
+        /* Soft skills inline */
+        .inline-list .dot { padding: 0 3px; }
+    </style>
+</head>
+<body>
+
+    <!-- ===== HEADER ===== -->
+    <div class="header">
+        <h1>{{ profile.full_name.upper() if profile.full_name else 'YOUR NAME' }}</h1>
+        <div class="contact">
+            {%- set parts = [] -%}
+            {%- if contact.linkedin %}{% set _ = parts.append('<a href="' ~ contact.linkedin ~ '">LinkedIn</a>') %}{% endif -%}
+            {%- if contact.github %}{% set _ = parts.append('<a href="' ~ contact.github ~ '">GitHub</a>') %}{% endif -%}
+            {%- if contact.portfolio %}{% set _ = parts.append('<a href="' ~ contact.portfolio ~ '">Portfolio</a>') %}{% endif -%}
+            {%- if contact.email %}{% set _ = parts.append('<a href="mailto:' ~ contact.email ~ '">' ~ contact.email ~ '</a>') %}{% endif -%}
+            {%- if contact.phone %}{% set _ = parts.append(contact.phone) %}{% endif -%}
+            {%- if contact.location %}{% set _ = parts.append(contact.location) %}{% endif -%}
+            {{ parts | join('<span class="sep">·</span>') | safe }}
+        </div>
+    </div>
+
+    <!-- ===== PROFESSIONAL SUMMARY ===== -->
+    {% if summary %}
+    <div class="section">
+        <div class="section-title">Professional Summary</div>
+        <p class="summary">{{ summary }}</p>
+    </div>
+    {% endif %}
+
+    <!-- ===== EDUCATION =====
+         Pass an optional `education` list (institution, degree, period, cgpa).
+         Falls back to the single profile entry if it is not provided. -->
+    <div class="section">
+        <div class="section-title">Education</div>
+        {% if education %}
+            {% for edu in education %}
+            <div class="item">
+                <table class="row"><tr>
+                    <td>
+                        <div class="bold">{{ edu.degree }}</div>
+                        {% if edu.institution %}<div>{{ edu.institution }}</div>{% endif %}
+                        {% if edu.cgpa %}<div class="italic">CGPA: {{ edu.cgpa }}</div>{% endif %}
+                    </td>
+                    <td class="right">{{ edu.period or '' }}</td>
+                </tr></table>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="item">
+                <table class="row"><tr>
+                    <td>
+                        <div class="bold">{{ profile.department or 'Department' }}</div>
+                        {% if profile.college %}<div>{{ profile.college }}</div>{% endif %}
+                        <div class="italic">CGPA: {{ profile.cgpa or 'N/A' }}{% if profile.roll_number %} &nbsp;·&nbsp; Roll No: {{ profile.roll_number }}{% endif %}</div>
+                    </td>
+                    <td class="right">{{ profile.year or '' }}</td>
+                </tr></table>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- ===== TECHNICAL SKILLS ===== -->
+    {% if frontend_skills or backend_skills or other_skills %}
+    <div class="section">
+        <div class="section-title">Technical Skills</div>
+        {% if frontend_skills %}
+        <div class="skill-line"><span class="label">Frontend Technologies:</span> {{ frontend_skills | map(attribute='skill.name') | join(', ') }}</div>
+        {% endif %}
+        {% if backend_skills %}
+        <div class="skill-line"><span class="label">Backend &amp; Databases:</span> {{ backend_skills | map(attribute='skill.name') | join(', ') }}</div>
+        {% endif %}
+        {% if other_skills %}
+        <div class="skill-line"><span class="label">Tools &amp; Technologies:</span> {{ other_skills | map(attribute='skill.name') | join(', ') }}</div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- ===== INTERNSHIP / EXPERIENCE (optional) =====
+         `experience` list: title, company, duration, bullets -->
+    {% if experience %}
+    <div class="section">
+        <div class="section-title">Internship Experience</div>
+        {% for exp in experience %}
+        <div class="item">
+            <div class="bold">{{ exp.title }}</div>
+            <div class="bold">{{ exp.company }}{% if exp.duration %} | {{ exp.duration }}{% endif %}</div>
+            {% if exp.bullets %}
+            <ul>{% for b in exp.bullets %}<li>{{ b }}</li>{% endfor %}</ul>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- ===== PROJECTS ===== -->
+    {% if projects %}
+    <div class="section">
+        <div class="section-title">Featured Projects</div>
+        {% for project in projects %}
+        <div class="item">
+            <table class="row"><tr>
+                <td class="bold">{{ project.title }}{% if project.year %} <span style="font-weight:400;">({{ project.year }})</span>{% endif %}</td>
+                <td class="right">{% if project.link %}<a href="{{ project.link }}">GitHub Repository</a>{% endif %}</td>
+            </tr></table>
+            {% if project.technologies %}
+            <div class="tech">Tech Stack: <em>{{ project.technologies }}</em></div>
+            {% endif %}
+            {% if project.bullets %}
+            <ul>{% for bullet in project.bullets %}<li>{{ bullet }}</li>{% endfor %}</ul>
+            {% elif project.description %}
+            <div>{{ project.description }}</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- ===== ACHIEVEMENTS (optional) =====
+         `achievements` list of strings -->
+    {% if achievements %}
+    <div class="section">
+        <div class="section-title">Academic Achievements</div>
+        <ul>{% for a in achievements %}<li>{{ a }}</li>{% endfor %}</ul>
+    </div>
+    {% endif %}
+
+    <!-- ===== CERTIFICATIONS ===== -->
+    {% if certs %}
+    <div class="section">
+        <div class="section-title">Certifications &amp; Training</div>
+        <ul>
+            {% for cert in certs %}
+            <li>{{ cert.title }}{% if cert.issuer %} – {{ cert.issuer }}{% endif %}{% if cert.date_earned %} ({{ cert.date_earned.strftime('%Y') }}){% endif %}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <!-- ===== SOFT SKILLS ===== -->
+    {% if soft_skills %}
+    <div class="section">
+        <div class="section-title">Soft Skills</div>
+        <div class="inline-list">
+            {% for skill in soft_skills %}{{ skill.strip() }}{% if not loop.last %}<span class="dot">·</span> {% endif %}{% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ===== ADDITIONAL INFO (optional) =====
+         `languages` (string) and `open_source` (string) -->
+    {% if languages or open_source %}
+    <div class="section">
+        <div class="section-title">Additional Information</div>
+        {% if languages %}<div><span class="bold">Languages:</span> {{ languages }}</div>{% endif %}
+        {% if open_source %}<div><span class="bold">Open Source:</span> {{ open_source }}</div>{% endif %}
+    </div>
+    {% endif %}
+
+</body>
+</html>

@@ -1,7 +1,8 @@
 from flask import render_template
 from app import db
-from app.models import StudentProfile, StudentSkill, Certification, Project
+from app.models import StudentProfile, StudentSkill, Certification, Project, Education
 from app.services.gemini_ai import generate_summary, generate_project_bullets
+
 
 def generate_resume_html(student_id):
     profile = StudentProfile.query.filter_by(user_id=student_id).first()
@@ -12,6 +13,11 @@ def generate_resume_html(student_id):
     certs = Certification.query.filter_by(student_id=profile.id).all()
     projects = Project.query.filter_by(student_id=profile.id).all()
 
+    # 👇 NEW: Fetch education entries (newest first)
+    educations = Education.query.filter_by(student_id=profile.id) \
+                                .order_by(Education.end_year.desc()) \
+                                .all()
+
     # Generate AI summary
     summary = generate_summary(profile, skills, projects)
 
@@ -21,7 +27,8 @@ def generate_resume_html(student_id):
 
     # Categorise skills (example: split into frontend/backend based on keywords)
     frontend_keywords = ['HTML', 'CSS', 'JavaScript', 'React', 'Angular', 'Vue', 'Flutter', 'Dart']
-    backend_keywords = ['Python', 'Java', 'PHP', 'Node', 'SQL', 'MySQL', 'PostgreSQL', 'MongoDB', 'Firebase', 'Docker']
+    backend_keywords = ['Python', 'Java', 'PHP', 'Node', 'SQL', 'MySQL',
+                        'PostgreSQL', 'MongoDB', 'Firebase', 'Docker']
     frontend = []
     backend = []
     other = []
@@ -42,10 +49,11 @@ def generate_resume_html(student_id):
         'other_skills': other,
         'certs': certs,
         'projects': projects,
+        'educations': educations,          # 👈 NEW: passed to template
         'summary': summary,
         'soft_skills': profile.soft_skills.split(',') if profile.soft_skills else [],
         'contact': {
-            'email': profile.user.email,  # assuming user has email
+            'email': profile.user.email,
             'phone': profile.phone or '',
             'location': profile.location or '',
             'linkedin': profile.linkedin or '',

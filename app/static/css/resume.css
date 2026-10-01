@@ -1,0 +1,147 @@
+/* ==========================================================================
+   CareerPilot AI — Resume builder page
+   Load AFTER style.css (see {% block head %} in resume.html).
+   The resume itself stays strictly black and white; the color lives only in
+   the app around it.
+   ========================================================================== */
+
+/* ---------- Header banner (same as the profile page) ---------- */
+.main > .page-head,
+.resume-layout {
+    max-width: 1180px;
+    margin-inline: auto;
+}
+.page-head {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    align-items: center;
+    padding: clamp(22px, 3vw, 34px) clamp(20px, 3vw, 36px);
+    margin-bottom: 26px;
+    border-radius: 24px;
+    background: var(--forest);
+    color: #fff;
+}
+.page-head::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    top: -170px;
+    right: -100px;
+    width: 460px;
+    height: 460px;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 34% 40%, #fff 0 3px, rgba(255, 255, 255, .35) 4px 9px, transparent 10px),
+        repeating-radial-gradient(circle at center, transparent 0 59px, rgba(255, 255, 255, .17) 59px 60px),
+        radial-gradient(circle, rgba(52, 210, 123, .5), transparent 66%);
+}
+.page-head h1 { color: #fff; }
+.page-head .sub { max-width: 48ch; color: rgba(255, 255, 255, .92); }
+
+/* ---------- Buttons ---------- */
+.btn-ink,
+.btn-outline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 13px 22px;
+    border-radius: var(--radius-sm);
+    font: 700 .95rem/1 var(--font-display);
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform .2s ease, box-shadow .2s ease, background-color .2s ease, border-color .2s ease;
+}
+.btn-ink {
+    border: 0;
+    background: var(--leaf);
+    color: var(--ink);
+    box-shadow: 0 10px 20px -10px rgba(52, 210, 123, .9);
+}
+.btn-ink:hover {
+    background: var(--leaf-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 14px 24px -10px rgba(52, 210, 123, .95);
+}
+.btn-ink:active { transform: translateY(0) scale(.99); }
+.btn-ink .icon { width: 17px; height: 17px; }
+.btn-outline {
+    border: 1.5px solid var(--line);
+    background: #fff;
+    color: var(--forest);
+}
+.btn-outline:hover { background: var(--mint); border-color: #BFDCCB; transform: translateY(-1px); }
+
+/* ---------- Layout: paper on the left, notes on the right ---------- */
+.resume-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 24px;
+    align-items: start;
+}
+
+/* the stage the paper sits on */
+.resume-stage {
+    padding: clamp(16px, 3vw, 40px);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    background: var(--paper-2);
+}
+
+/* the sheet: white, A4-ish, slides in once like a page leaving a printer */
+.resume-sheet {
+    max-width: 794px;
+    margin: 0 auto;
+    background: #fff;
+    box-shadow:
+        0 1px 2px rgba(15, 42, 29, .10),
+        0 28px 50px -26px rgba(15, 42, 29, .45);
+    animation: paperIn .8s .1s var(--ease-out) both;
+}
+.resume-sheet iframe {
+    display: block;
+    width: 100%;
+    height: 1123px;      /* replaced by the real height once the resume loads */
+    border: 0;
+    background: #fff;
+}
+@keyframes paperIn {
+    from { opacity: 0; transform: translateY(28px); }
+    to   { opacity: 1; transform: none; }
+}
+
+/* ---------- Side notes ---------- */
+.resume-side { position: sticky; top: 24px; }
+.resume-tips {
+    display: grid;
+    gap: 14px;
+    margin: 0 0 20px;
+    padding: 0;
+    list-style: none;
+    font-size: .93rem;
+    color: var(--slate);
+}
+.resume-tips li { position: relative; padding-left: 22px; }
+.resume-tips li::before {
+    content: "";
+    position: absolute;
+    left: 2px;
+    top: .5em;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--leaf);
+}
+.resume-side .btn-outline { width: 100%; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1100px) {
+    .resume-layout { grid-template-columns: 1fr; }
+    .resume-side { position: static; }
+}
+@media (max-width: 640px) {
+    .page-head { align-items: flex-start; border-radius: 20px; }
+    .resume-stage { padding: 12px; border-radius: 18px; }
+    .btn-ink { width: 100%; }
+}

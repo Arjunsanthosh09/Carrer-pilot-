@@ -808,3 +808,79 @@ td:first-child { font-weight: 600; }
     }
     .auth-headline span { background-size: 100% .09em; }
 }
+/* ---------- Sidebar footer: user card + log out ---------- */
+.sidebar { display: flex; flex-direction: column; }   /* lets the footer sit at the bottom */
+
+.sidebar-foot {
+    margin-top: auto;
+    padding: 16px 0 6px;
+    border-top: 1px solid rgba(255, 255, 255, .16);
+    display: grid;
+    gap: 12px;
+}
+
+.user-chip {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, .10);
+    border: 1px solid rgba(255, 255, 255, .14);
+}
+
+.user-chip .avatar {
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--leaf, #34D27B);
+    color: var(--ink, #0F2A1D);
+    font: 800 .95rem/1 var(--font-display, inherit);
+    letter-spacing: .02em;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, .18);
+}
+
+.user-meta { min-width: 0; }                 /* allows long names to truncate */
+.user-chip .name {
+    color: #fff;
+    font-weight: 700;
+    font-size: .95rem;
+    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.user-chip .role {
+    margin-top: 2px;
+    color: rgba(255, 255, 255, .72);
+    font-size: .8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.switch-role {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 11px 14px;
+    border-radius: 12px;
+    border: 1.5px solid rgba(255, 255, 255, .28);
+    background: transparent;
+    color: #fff;
+    font: 700 .92rem/1 var(--font-display, inherit);
+    cursor: pointer;
+    transition: background-color .2s ease, border-color .2s ease, transform .2s ease;
+}
+.switch-role .icon { width: 17px; height: 17px; }
+.switch-role:hover {
+    background: rgba(255, 255, 255, .14);
+    border-color: rgba(255, 255, 255, .5);
+}
+.switch-role:active { transform: scale(.99); }
+.switch-role:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }

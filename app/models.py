@@ -256,3 +256,30 @@ User.applications = db.relationship('Application', backref='applicant', lazy='dy
 
 # PlacementDrive -> applications (already defined above)
 # Company -> placement_drives (already defined above)
+
+# ============================================================
+# EDUCATION MODEL
+# ============================================================
+
+class Education(db.Model):
+    __tablename__ = 'education'
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('student_profile.id'), nullable=False)
+    level = db.Column(db.Enum('10th','12th','UG','PG','PhD','Diploma','Other'), nullable=False)
+    degree_name = db.Column(db.String(150))
+    institution = db.Column(db.String(200))
+    field_of_study = db.Column(db.String(100))
+    start_year = db.Column(db.Integer)
+    end_year = db.Column(db.Integer)
+    grade_type = db.Column(db.Enum('CGPA','Percentage'), default='CGPA')
+    grade_value = db.Column(db.Numeric(5,2))
+    location = db.Column(db.String(100))
+
+
+StudentProfile.education_entries = db.relationship(
+    'Education',
+    backref='profile',
+    lazy='dynamic',
+    cascade='all, delete-orphan',
+    order_by='Education.end_year.desc()'
+)

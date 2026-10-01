@@ -1,0 +1,290 @@
+/* ==========================================================================
+   CareerPilot AI — My profile page
+   Load AFTER style.css. Works with the current profile.html markup
+   (it overrides the template's inline styles where needed).
+   ========================================================================== */
+
+:root {
+    --slate-light: #6F8B7C;   /* used by the × / ✕ remove buttons */
+}
+
+/* keep content a readable width on very wide screens */
+.main > .page-head,
+.main > .tab-row,
+.main > .tab-content {
+    max-width: 1180px;
+    margin-inline: auto;
+}
+
+/* ==========================================================================
+   Header banner: the page's one bold moment (echoes the login radar)
+   ========================================================================== */
+.page-head {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    align-items: center;
+    padding: clamp(22px, 3vw, 34px) clamp(20px, 3vw, 36px);
+    margin-bottom: 26px;
+    border-radius: 24px;
+    background: var(--forest);
+    color: #fff;
+}
+.page-head::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    top: -170px;
+    right: -100px;
+    width: 460px;
+    height: 460px;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 34% 40%, #fff 0 3px, rgba(255, 255, 255, .35) 4px 9px, transparent 10px),
+        repeating-radial-gradient(circle at center, transparent 0 59px, rgba(255, 255, 255, .17) 59px 60px),
+        radial-gradient(circle, rgba(52, 210, 123, .5), transparent 66%);
+}
+.page-head h1 { color: #fff; }
+.page-head .sub { max-width: 48ch; color: rgba(255, 255, 255, .92); }
+.page-head .icon-btn {
+    background: rgba(255, 255, 255, .14);
+    border-color: rgba(255, 255, 255, .32);
+    color: #fff;
+}
+.page-head .icon-btn:hover { background: rgba(255, 255, 255, .26); border-color: rgba(255, 255, 255, .5); }
+
+/* ==========================================================================
+   Tabs
+   ========================================================================== */
+.tab-row {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--line);
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.tab-row::-webkit-scrollbar { display: none; }
+
+.tab {
+    position: relative;
+    padding: 13px 18px;
+    white-space: nowrap;
+    font: 600 .95rem/1 var(--font-body);
+    color: var(--slate);
+    cursor: pointer;
+    user-select: none;
+    transition: color .2s ease;
+}
+.tab:hover { color: var(--ink); }
+.tab.active { color: var(--forest); }
+.tab::after {
+    content: "";
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: -1px;
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+    background: var(--leaf);
+    transform: scaleX(0);
+    transition: transform .3s var(--ease-out);
+}
+.tab.active::after { transform: scaleX(1); }
+
+/* fires each time a tab's content is switched on */
+.tab-content { animation: tabIn .35s var(--ease-out); }
+@keyframes tabIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* ==========================================================================
+   Cards + form controls
+   ========================================================================== */
+.tab-content .card { padding: clamp(20px, 3vw, 32px); }
+
+/* inputs that sit outside .field (skill add row) get the same treatment */
+.tab-content input,
+.tab-content select,
+.tab-content textarea {
+    padding: 13px 14px;
+    font: 500 1rem/1.3 var(--font-body);
+    color: var(--ink);
+    background: var(--paper);
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-sm);
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+.tab-content input:not([type="checkbox"]):not([type="radio"]),
+.tab-content select { width: 100%; }
+.tab-content input:hover,
+.tab-content textarea:hover { border-color: #BFDCCB; }
+.tab-content input:focus,
+.tab-content textarea:focus,
+.tab-content select:focus {
+    outline: none;
+    border-color: var(--leaf);
+    box-shadow: 0 0 0 4px rgba(52, 210, 123, .28);
+}
+.tab-content input::placeholder,
+.tab-content textarea::placeholder { color: #7A9587; font-weight: 400; }
+
+/* the template hard-codes textarea styles inline */
+.tab-content textarea {
+    width: 100% !important;
+    min-height: 110px;
+    padding: 13px 14px !important;
+    border: 1.5px solid var(--line) !important;
+    border-radius: var(--radius-sm) !important;
+    font-size: 1rem !important;
+    line-height: 1.5;
+    resize: vertical;
+}
+.tab-content textarea:focus { border-color: var(--leaf) !important; }
+
+/* skill add row: input + % + button line up */
+.tab-content form[style*="display: flex"] { align-items: stretch; flex-wrap: wrap; }
+.tab-content form[style*="display: flex"] input { min-width: 0; }
+
+/* primary button */
+.btn-ink {
+    position: relative;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 13px 22px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: var(--leaf);
+    color: var(--ink);
+    font: 700 .95rem/1 var(--font-display);
+    cursor: pointer;
+    box-shadow: 0 10px 20px -10px rgba(52, 210, 123, .9);
+    transition: transform .2s ease, box-shadow .2s ease, background-color .2s ease;
+}
+.btn-ink:hover {
+    background: var(--leaf-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 14px 24px -10px rgba(52, 210, 123, .95);
+}
+.btn-ink:active { transform: translateY(0) scale(.99); }
+.btn-ink:focus-visible { outline-color: var(--ink); }
+
+/* ==========================================================================
+   Basic info: fill the width with a two-column form
+   (the template wraps one card in a two-column grid, which left the right
+   side empty)
+   ========================================================================== */
+#tab-basic > form > .grid.g2 { grid-template-columns: 1fr; }
+
+#tab-basic > form .card {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 22px;
+    align-content: start;
+}
+/* Department + Roll number sit in an inner grid: flatten it into the parent */
+#tab-basic > form .card > .grid.g2 { display: contents; }
+
+#tab-basic > form .card > .section-title,
+#tab-basic > form .card > .field:has([name="full_name"]),
+#tab-basic > form .card > .field:has([name="soft_skills"]),
+#tab-basic > form .card > .field:has([name="about_me"]),
+#tab-basic > form .card > .btn-ink {
+    grid-column: 1 / -1;
+}
+#tab-basic > form .card > .btn-ink { justify-self: start; margin-top: 4px; }
+
+/* second block in the same card (skills / certifications) */
+.tab-content .section-title[style*="margin-top"] {
+    margin-top: 32px !important;
+    padding-top: 26px;
+    border-top: 1px solid var(--line);
+}
+
+/* ==========================================================================
+   Skill chips
+   ========================================================================== */
+.chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 6px 6px 14px;
+    border: 1px solid #BFE5CE;
+    border-radius: 999px;
+    background: var(--sage);
+    color: #0B5A31;
+    font-size: .88rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+.chip > span {
+    display: inline-grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    color: var(--forest) !important;
+    font-size: 1rem;
+    line-height: 1;
+    transition: background-color .2s ease, color .2s ease;
+}
+.chip > span:hover { background: #FFE1D9; color: #A02D12 !important; }
+
+/* ==========================================================================
+   Certification rows + project boxes (styled inline in the template)
+   ========================================================================== */
+/* icons / links the template colors amber */
+.tab-content [style*="amber-dark"] { color: var(--forest) !important; }
+.tab-content a[style*="amber-dark"] { font-weight: 600; text-decoration: none; }
+.tab-content a[style*="amber-dark"]:hover { text-decoration: underline; }
+
+/* remove (✕) buttons */
+.tab-content .icon-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    transition: background-color .2s ease, color .2s ease;
+}
+.tab-content .icon-btn:hover { background: #FFE1D9 !important; color: #A02D12 !important; transform: none; }
+
+/* certification icon gets a tile */
+.tab-content .card > div[style*="align-items: center"] > span:first-child {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: var(--paper-2);
+}
+
+/* project boxes */
+.tab-content .card > div[style*="border-radius: 10px"] {
+    border-radius: 16px !important;
+    padding: 18px 20px !important;
+    background: #fff;
+    box-shadow: inset 4px 0 0 var(--leaf);
+    transition: border-color .2s ease, box-shadow .25s ease;
+}
+.tab-content .card > div[style*="border-radius: 10px"]:hover {
+    border-color: #BFDCCB !important;
+    box-shadow: inset 4px 0 0 var(--leaf), 0 14px 28px -20px rgba(11, 107, 58, .5);
+}
+
+/* empty states */
+.tab-content .card > p { padding: 14px 16px; border-radius: var(--radius-sm); background: var(--mint); }
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+@media (max-width: 720px) {
+    #tab-basic > form .card { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+    /* inline "span 2" would create a phantom column in a one-column grid */
+    .tab-content .grid.g2 > [style*="span 2"] { grid-column: 1 / -1 !important; }
+    .page-head { align-items: flex-start; border-radius: 20px; }
+    .tab { padding: 12px 14px; font-size: .9rem; }
+    .btn-ink { width: 100%; }
+    #tab-basic > form .card > .btn-ink { justify-self: stretch; }
+}

@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/resume.css') }}">
+{% endblock %}
+
 {% block content %}
 <div class="shell">
     {% include "student/_sidebar.html" %}
@@ -7,26 +11,74 @@
     <div class="main">
         <div class="page-head">
             <div>
-                <h1>Resume Builder</h1>
-                <p class="sub">Your resume is generated from your profile data. Preview it and download as PDF.</p>
+                <h1>Resume builder</h1>
+                <p class="sub">Your resume is generated from your profile. Preview it here, then download the PDF.</p>
             </div>
             <div class="top-actions">
-                <a href="{{ url_for('student.resume_export') }}" class="btn-ink" style="text-decoration:none; display:inline-block;">
-                    <svg class="icon" viewBox="0 0 24 24" style="width:16px;height:16px;vertical-align:middle;margin-right:6px;"><path d="M12 3v12M7 11l5 5 5-5M5 21h14"/></svg>
+                <a href="{{ url_for('student.resume_export') }}" class="btn-ink">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M12 3v12M7 11l5 5 5-5M5 21h14"/></svg>
                     Download PDF
                 </a>
             </div>
         </div>
 
-        <!-- Resume preview (same HTML used for PDF) -->
-        <div style="background:#fff; border:1px solid var(--line); border-radius:12px; padding:20px; overflow:auto; max-height:800px;">
-            {{ resume_html|safe }}
-        </div>
+        <div class="resume-layout">
+            <div class="resume-stage">
+                <div class="resume-sheet">
+                    <!-- The resume renders in its own frame so its styles can't leak into the app -->
+                    <iframe id="resume-frame" title="Resume preview" sandbox="allow-same-origin"
+                            srcdoc="{{ resume_html|forceescape }}"></iframe>
+                </div>
+            </div>
 
-        <div style="margin-top:16px; display:flex; gap:10px;">
-            <a href="{{ url_for('student.resume_export') }}" class="btn-ink">⬇ Download PDF</a>
-            <a href="{{ url_for('student.profile') }}" class="btn-outline">Edit Profile</a>
+            <aside class="resume-side">
+                <div class="card">
+                    <div class="section-title">Before you download</div>
+                    <ul class="resume-tips">
+                        <li>Black text on white, one column. It prints cleanly and reads well in applicant tracking systems.</li>
+                        <li>Something missing? Add it to your profile and this page updates.</li>
+                    </ul>
+                    <a href="{{ url_for('student.profile') }}" class="btn-outline">Edit profile</a>
+                </div>
+            </aside>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    var frame = document.getElementById("resume-frame");
+    if (!frame) return;
+
+    // Black and white only: strip every color the resume brings with it.
+    var BW = "*{color:#000!important;border-color:#000!important;background:transparent!important;" +
+             "box-shadow:none!important;text-shadow:none!important}" +
+             "html,body{background:#fff!important}" +
+             "a{text-decoration:underline!important}" +
+             "body{-webkit-filter:grayscale(1);filter:grayscale(1)}";   /* turns emoji icons gray */
+
+    function prepare() {
+    var doc = frame.contentDocument;    
+    if (!doc || !doc.head) return;
+    fit();
+}
+
+    // Make the frame as tall as the resume (never shorter than one A4 page)
+    function fit() {
+        var doc = frame.contentDocument;
+        if (!doc || !doc.documentElement) return;
+        frame.style.height = "0px";
+        var h = doc.documentElement.scrollHeight;
+        frame.style.height = Math.max(h, 1123) + "px";
+    }
+
+    frame.addEventListener("load", prepare);
+    if (frame.contentDocument && frame.contentDocument.readyState === "complete") prepare();
+
+    var t;
+    window.addEventListener("resize", function () { clearTimeout(t); t = setTimeout(fit, 150); });
+})();
+</script>
 {% endblock %}
