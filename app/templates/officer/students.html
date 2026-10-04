@@ -1,0 +1,168 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/students.css') }}">
+
+<div class="students-page">
+
+<div class="students-sidebar">
+
+<div class="students-logo">
+<div class="students-logo-box">CP</div>
+<h2>CareerPilot AI</h2>
+</div>
+
+<div class="menu-title">MENU</div>
+
+<a href="{{ url_for('officer.dashboard') }}">
+<i class="fa-solid fa-house"></i>
+Dashboard
+</a>
+
+<a href="{{ url_for('officer.students') }}" class="active">
+<i class="fa-solid fa-users"></i>
+Student records
+</a>
+
+<a href="{{ url_for('officer.companies') }}">
+<i class="fa-regular fa-building"></i>
+Companies
+</a>
+
+<a href="{{ url_for('officer.drives') }}">
+<i class="fa-solid fa-briefcase"></i>
+Placement drives
+</a>
+
+<a href="{{ url_for('officer.reports') }}">
+<i class="fa-solid fa-chart-column"></i>
+Reports & analytics
+</a>
+
+<div class="officer-box">
+    <div class="officer-avatar">
+        {% if current_user.officer_profile %}
+            {% set officer = current_user.officer_profile %}
+            {% set names = officer.full_name.split() if officer.full_name else ['O'] %}
+            {{ names[0][0]|upper if names[0] else 'O' }}{% if names|length > 1 %}{{ names[-1][0]|upper if names[-1] else '' }}{% endif %}
+        {% else %}
+            {{ current_user.email[0]|upper }}
+        {% endif %}
+    </div>
+    <strong>
+        {% if current_user.officer_profile %}
+            {{ current_user.officer_profile.full_name or 'Placement Officer' }}
+        {% else %}
+            {{ current_user.email }}
+        {% endif %}
+    </strong>
+    <p>Placement officer</p>
+</div>
+
+<a href="{{ url_for('auth.logout') }}" class="logout-btn">
+<i class="fa-solid fa-right-from-bracket"></i>
+Log out
+</a>
+
+</div>
+
+<div class="students-main">
+
+<div class="students-header">
+<div>
+<h1>Student records</h1>
+<p>Monitor readiness and progress across your institution.</p>
+</div>
+</div>
+
+<div class="students-panel">
+
+<div class="filters-row">
+<input type="text" id="searchInput" placeholder="Search students by name or department...">
+<select id="deptFilter">
+<option value="">All departments</option>
+{% for dept in departments %}
+<option value="{{ dept }}">{{ dept }}</option>
+{% endfor %}
+</select>
+</div>
+
+<table class="students-table">
+<thead>
+<tr>
+<th>NAME</th>
+<th>DEPARTMENT</th>
+<th>READINESS SCORE</th>
+<th>STATUS</th>
+<th></th>
+</tr>
+</thead>
+<tbody id="studentsBody">
+{% for s in students %}
+<tr class="student-row" data-name="{{ s.name|lower }}" data-dept="{{ s.department }}">
+<td class="name-cell">{{ s.name }}</td>
+<td class="dept-cell">{{ s.department }}</td>
+<td>
+<div class="readiness-cell">
+<div class="progress-track">
+<div class="progress-fill {% if s.readiness < 45 %}fill-red{% elif s.readiness < 75 %}fill-orange{% else %}fill-green{% endif %}" style="width: {{ s.readiness }}%;"></div>
+</div>
+<span>{{ s.readiness }}%</span>
+</div>
+</td>
+<td>
+{% if s.readiness < 45 %}
+<span class="status-badge status-attention">Needs Attention</span>
+{% elif s.readiness < 75 %}
+<span class="status-badge status-progress">In Progress</span>
+{% else %}
+<span class="status-badge status-ontrack">On Track</span>
+{% endif %}
+</td>
+<td>
+<a href="{{ url_for('officer.student_details', id=s.id) }}" class="view-profile-btn">View profile</a>
+</td>
+</tr>
+{% else %}
+<tr>
+<td colspan="5" style="text-align:center; padding:30px; color:#888;">No students found.</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+const searchInput = document.getElementById('searchInput');
+const deptFilter = document.getElementById('deptFilter');
+const rows = document.querySelectorAll('.student-row');
+
+function filterRows() {
+    const search = searchInput.value.toLowerCase();
+    const dept = deptFilter.value;
+
+    rows.forEach(row => {
+        const name = row.dataset.name;
+        const rowDept = row.dataset.dept;
+        const matchesSearch = name.includes(search) || rowDept.toLowerCase().includes(search);
+        const matchesDept = !dept || rowDept === dept;
+        row.style.display = (matchesSearch && matchesDept) ? '' : 'none';
+    });
+}
+
+searchInput.addEventListener('input', filterRows);
+deptFilter.addEventListener('change', filterRows);
+</script>
+
+{% endblock %}
+```
+
+ഇവിടെ `notify-btn` ഉള്ള **notification `<div>` മാത്രം remove ചെയ്തിട്ടുണ്ട്**. 🔔❌

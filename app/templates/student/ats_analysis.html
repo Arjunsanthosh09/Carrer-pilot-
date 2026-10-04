@@ -1,211 +1,267 @@
 {% extends "base.html" %}
 
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/ats.css') }}">
+{% endblock %}
+
 {% block content %}
 <div class="shell">
     {% include "student/_sidebar.html" %}
-    <div class="main">
+
+    <div class="main ats">
         <div class="page-head">
             <div>
-                <h1>ATS Resume Analysis</h1>
-                <p class="sub">Upload your resume or paste text to get AI‑powered feedback.</p>
+                <h1>ATS resume analysis</h1>
+                <p class="sub">Upload your resume or paste text to get AI-powered feedback.</p>
             </div>
         </div>
 
-        <!-- Input form -->
-        <div class="card" style="margin-bottom:20px;">
-            <div style="display:flex; flex-direction:column; gap:16px;">
-                <div>
-                    <label>Paste your resume text or upload a file:</label>
-                </div>
-                <div style="display:flex; gap:12px; flex-wrap:wrap;">
-                    <div style="flex:1; min-width:200px;">
-                        <textarea id="resume-text-input" rows="6" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;" placeholder="Paste your resume text here..."></textarea>
-                    </div>
-                    <div style="display:flex; flex-direction:column; gap:8px; justify-content:center;">
-                        <div style="display:flex; gap:8px;">
-                            <input type="file" id="file-input" accept=".pdf,.docx" style="padding:6px;">
+        <div class="stack">
+
+            <!-- Input -->
+            <div class="card">
+                <div class="ats-grid">
+                    <div class="ats-col">
+                        <div style="display:flex; flex-direction:column; flex:1;">
+                            <label class="ats-label" for="resume-text-input">Paste your resume text</label>
+                            <textarea id="resume-text-input" class="ats-textarea" placeholder="Paste your resume text here..."></textarea>
                         </div>
+                    </div>
+
+                    <div class="ats-col">
                         <div>
-                            <label>Target role (optional):</label>
-                            <input type="text" id="target-role" placeholder="e.g. Software Engineer" style="padding:6px;border:1px solid var(--line);border-radius:6px;width:180px;">
+                            <span class="ats-label">Or upload a file</span>
+                            <label class="dropzone" id="dropzone">
+                                <input type="file" id="file-input" accept=".pdf,.docx">
+                                <svg class="icon" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M5 20h14"/></svg>
+                                <span class="dz-title" id="dz-title">Click to upload or drag a file here</span>
+                                <span class="dz-sub" id="dz-sub">PDF or DOCX</span>
+                                <span class="dz-file" id="dz-file" style="display:none;"></span>
+                            </label>
                         </div>
-                        <button id="analyze-btn" class="btn-ink">Analyze Resume</button>
+
+                        <div>
+                            <label class="ats-label" for="target-role">Target role <small>(optional)</small></label>
+                            <input type="text" id="target-role" class="ats-input" placeholder="e.g. Software Engineer">
+                        </div>
+
+                        <button id="analyze-btn" class="btn btn-primary">Analyze resume</button>
+                        <p class="ats-hint">If you add both, the uploaded file is used.</p>
                     </div>
                 </div>
-                <div style="font-size:12px;color:var(--slate);">Supported formats: PDF, DOCX, or plain text.</div>
             </div>
-        </div>
 
-        <!-- Results section -->
-        <div id="results" style="display:none;">
-            <div class="grid g2" style="margin-bottom:18px;">
-                <div class="card">
-                    <div class="section-title">ATS Score</div>
-                    <div style="display:flex; align-items:center; gap:20px;">
-                        <div style="position:relative; width:120px; height:120px;">
-                            <svg width="120" height="120" viewBox="0 0 120 120">
-                                <circle cx="60" cy="60" r="48" fill="none" stroke="#E4E0D4" stroke-width="12"/>
-                                <circle id="score-circle" cx="60" cy="60" r="48" fill="none" stroke="#3DA35D" stroke-width="12" stroke-dasharray="301" stroke-dashoffset="301" stroke-linecap="round" transform="rotate(-90 60 60)"/>
-                            </svg>
-                            <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column;">
-                                <span id="score-number" style="font-family:var(--font-display);font-size:28px;font-weight:700;">0</span>
-                                <span style="font-size:11px;color:var(--slate);">/ 100</span>
+            <!-- Loading -->
+            <div id="loading" class="ats-loading" role="status">
+                <div class="ats-spinner"></div>
+                <p>Analyzing your resume with AI...</p>
+            </div>
+
+            <div id="error-box" class="ats-error" role="alert"></div>
+
+            <!-- Results -->
+            <div id="results" class="stack">
+                <div class="grid g2">
+                    <div class="card">
+                        <div class="section-title">ATS score</div>
+                        <div class="ats-score">
+                            <div class="ats-ring">
+                                <svg width="130" height="130" viewBox="0 0 120 120">
+                                    <circle cx="60" cy="60" r="48" fill="none" stroke="var(--paper-2)" stroke-width="12"/>
+                                    <circle id="score-circle" cx="60" cy="60" r="48" fill="none"
+                                            stroke="var(--green)" stroke-width="12"
+                                            stroke-dasharray="301" stroke-dashoffset="301"
+                                            stroke-linecap="round" transform="rotate(-90 60 60)"/>
+                                </svg>
+                                <div class="center">
+                                    <span id="score-number">0</span>
+                                    <span class="cap">/ 100</span>
+                                </div>
                             </div>
+                            <div id="score-label">Analysis pending...</div>
                         </div>
-                        <div id="score-label" style="font-size:14px; color:var(--slate);">Analysis pending...</div>
+                    </div>
+
+                    <div class="card">
+                        <div class="section-title">Recommended job roles</div>
+                        <div id="recommended-roles" class="chip-row"></div>
                     </div>
                 </div>
-                <div class="card">
-                    <div class="section-title">Recommended Job Roles</div>
-                    <div id="recommended-roles" style="display:flex; flex-wrap:wrap; gap:8px;">
-                        <!-- will be populated -->
+
+                <div class="grid g2">
+                    <div class="card">
+                        <div class="section-title">Missing keywords</div>
+                        <div id="missing-keywords" class="chip-row"></div>
+                    </div>
+                    <div class="card">
+                        <div class="section-title">Suggestions for improvement</div>
+                        <ul id="suggestions-list" class="ats-list"></ul>
                     </div>
                 </div>
             </div>
 
-            <div class="grid g2">
-                <div class="card">
-                    <div class="section-title">Missing Keywords</div>
-                    <div id="missing-keywords" style="display:flex; flex-wrap:wrap; gap:6px;">
-                        <!-- will be populated -->
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="section-title">Suggestions for Improvement</div>
-                    <ul id="suggestions-list" style="list-style-type:disc; padding-left:18px; font-size:14px;">
-                        <!-- will be populated -->
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <!-- Loading indicator -->
-        <div id="loading" style="display:none; text-align:center; padding:30px;">
-            <div style="display:inline-block; width:40px; height:40px; border:4px solid var(--line); border-top-color:var(--amber); border-radius:50%; animation:spin 0.8s linear infinite;"></div>
-            <p style="margin-top:12px; color:var(--slate);">Analyzing your resume with AI...</p>
         </div>
     </div>
 </div>
+{% endblock %}
 
-<style>
-@keyframes spin { to { transform: rotate(360deg); } }
-</style>
-
+{% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const analyzeBtn = document.getElementById('analyze-btn');
-    const fileInput = document.getElementById('file-input');
-    const textInput = document.getElementById('resume-text-input');
-    const targetRole = document.getElementById('target-role');
-    const resultsDiv = document.getElementById('results');
-    const loadingDiv = document.getElementById('loading');
+document.addEventListener('DOMContentLoaded', function () {
+    var analyzeBtn  = document.getElementById('analyze-btn');
+    var fileInput   = document.getElementById('file-input');
+    var textInput   = document.getElementById('resume-text-input');
+    var targetRole  = document.getElementById('target-role');
+    var resultsDiv  = document.getElementById('results');
+    var loadingDiv  = document.getElementById('loading');
+    var errorBox    = document.getElementById('error-box');
+    var dropzone    = document.getElementById('dropzone');
+    var ANALYZE_URL = '/student/ats_analyze';
 
-    analyzeBtn.addEventListener('click', function() {
-        // Decide source: file or text
-        let formData = new FormData();
-        let hasFile = fileInput.files.length > 0;
-        let hasText = textInput.value.trim().length > 0;
-
-        if (!hasFile && !hasText) {
-            alert('Please paste resume text or upload a file.');
-            return;
-        }
-
-        loadingDiv.style.display = 'block';
-        resultsDiv.style.display = 'none';
-
-        // If file, use multipart/form-data
-        if (hasFile) {
-            formData.append('file', fileInput.files[0]);
-            formData.append('target_role', targetRole.value);
-            fetch('/student/ats_analyze', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => displayResults(data))
-            .catch(err => { alert('Error: ' + err); loadingDiv.style.display = 'none'; });
+    // ----- file picker / drag and drop -----
+    function showFile() {
+        var f = fileInput.files[0];
+        var nameEl = document.getElementById('dz-file');
+        if (f) {
+            nameEl.textContent = f.name;
+            nameEl.style.display = 'block';
+            document.getElementById('dz-title').textContent = 'File selected';
+            document.getElementById('dz-sub').textContent = 'Click to choose a different file';
+            dropzone.classList.add('has-file');
         } else {
-            // Use JSON
-            fetch('/student/ats_analyze', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    resume_text: textInput.value,
-                    target_role: targetRole.value
-                })
-            })
-            .then(response => response.json())
-            .then(data => displayResults(data))
-            .catch(err => { alert('Error: ' + err); loadingDiv.style.display = 'none'; });
+            nameEl.style.display = 'none';
+            document.getElementById('dz-title').textContent = 'Click to upload or drag a file here';
+            document.getElementById('dz-sub').textContent = 'PDF or DOCX';
+            dropzone.classList.remove('has-file');
+        }
+    }
+    fileInput.addEventListener('change', showFile);
+    ['dragenter', 'dragover'].forEach(function (ev) {
+        dropzone.addEventListener(ev, function (e) { e.preventDefault(); dropzone.classList.add('drag'); });
+    });
+    ['dragleave', 'drop'].forEach(function (ev) {
+        dropzone.addEventListener(ev, function (e) { e.preventDefault(); dropzone.classList.remove('drag'); });
+    });
+    dropzone.addEventListener('drop', function (e) {
+        if (e.dataTransfer && e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            showFile();
         }
     });
 
-    function displayResults(data) {
-        loadingDiv.style.display = 'none';
-        if (data.error) {
-            alert('Error: ' + data.error);
+    // ----- helpers -----
+    function showError(msg) {
+        errorBox.textContent = msg;
+        errorBox.classList.add('is-on');
+    }
+    function setBusy(busy) {
+        analyzeBtn.disabled = busy;
+        analyzeBtn.textContent = busy ? 'Analyzing...' : 'Analyze resume';
+        loadingDiv.classList.toggle('is-on', busy);
+    }
+    function handle(response) {
+        return response.json().then(function (data) {
+            if (!response.ok && !data.error) data.error = 'Request failed (' + response.status + ').';
+            return data;
+        });
+    }
+
+    // ----- analyze -----
+    analyzeBtn.addEventListener('click', function () {
+        var hasFile = fileInput.files.length > 0;
+        var hasText = textInput.value.trim().length > 0;
+
+        errorBox.classList.remove('is-on');
+        if (!hasFile && !hasText) {
+            showError('Please paste resume text or upload a file.');
             return;
         }
 
-        resultsDiv.style.display = 'block';
+        setBusy(true);
+        resultsDiv.classList.remove('is-on');
+
+        var request;
+        if (hasFile) {
+            var formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('target_role', targetRole.value);
+            request = fetch(ANALYZE_URL, { method: 'POST', body: formData });
+        } else {
+            request = fetch(ANALYZE_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ resume_text: textInput.value, target_role: targetRole.value })
+            });
+        }
+
+        request.then(handle)
+            .then(displayResults)
+            .catch(function (err) { showError('Something went wrong: ' + err.message); })
+            .finally(function () { setBusy(false); });
+    });
+
+    function fillChips(el, items, pillClass, emptyText) {
+        el.innerHTML = '';
+        if (items && items.length) {
+            items.forEach(function (text) {
+                var span = document.createElement('span');
+                span.className = 'pill ' + pillClass;
+                span.textContent = text;
+                el.appendChild(span);
+            });
+        } else {
+            var note = document.createElement('span');
+            note.className = 'empty-note';
+            note.textContent = emptyText;
+            el.appendChild(note);
+        }
+    }
+
+    function displayResults(data) {
+        if (data.error) { showError(data.error); return; }
+
+        resultsDiv.classList.add('is-on');
 
         // Score
-        const score = data.score || 0;
-        document.getElementById('score-number').textContent = score;
-        const circle = document.getElementById('score-circle');
-        const circumference = 301; // 2*pi*48
-        const offset = circumference - (score / 100) * circumference;
-        circle.style.strokeDashoffset = offset;
-        // Color based on score
-        let color = '#coral';
-        if (score >= 70) color = '#3DA35D';
-        else if (score >= 40) color = '#E8A33D';
-        circle.style.stroke = color;
-        document.getElementById('score-label').textContent = score >= 70 ? 'Great! ATS-friendly.' : score >= 40 ? 'Needs improvement.' : 'Significant improvements needed.';
+        var score = Math.max(0, Math.min(100, Number(data.score) || 0));
+        document.getElementById('score-number').textContent = Math.round(score);
 
-        // Recommended roles
-        const rolesDiv = document.getElementById('recommended-roles');
-        rolesDiv.innerHTML = '';
-        if (data.recommended_roles && data.recommended_roles.length) {
-            data.recommended_roles.forEach(role => {
-                const span = document.createElement('span');
-                span.className = 'pill pill-green';
-                span.textContent = role;
-                rolesDiv.appendChild(span);
+        var tone  = score >= 70 ? 'green' : (score >= 40 ? 'amber' : 'coral');
+        var title = score >= 70 ? 'Great! ATS-friendly.' : (score >= 40 ? 'Needs improvement.' : 'Significant improvements needed.');
+        var circle = document.getElementById('score-circle');
+        circle.style.stroke = 'var(--' + tone + ')';
+        // restart from empty so the ring animates every time
+        circle.style.strokeDashoffset = 301;
+        requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+                circle.style.strokeDashoffset = 301 - (score / 100) * 301;
             });
-        } else {
-            rolesDiv.innerHTML = '<span style="color:var(--slate);">No roles recommended.</span>';
-        }
+        });
 
-        // Missing keywords
-        const keywordsDiv = document.getElementById('missing-keywords');
-        keywordsDiv.innerHTML = '';
-        if (data.missing_keywords && data.missing_keywords.length) {
-            data.missing_keywords.forEach(kw => {
-                const span = document.createElement('span');
-                span.className = 'pill pill-coral';
-                span.textContent = kw;
-                keywordsDiv.appendChild(span);
-            });
-        } else {
-            keywordsDiv.innerHTML = '<span style="color:var(--slate);">No missing keywords detected.</span>';
-        }
+        var label = document.getElementById('score-label');
+        label.innerHTML = '';
+        var strong = document.createElement('strong');
+        strong.textContent = title;
+        label.appendChild(strong);
+        var pill = document.createElement('span');
+        pill.className = 'pill pill-' + tone;
+        pill.textContent = Math.round(score) + ' / 100';
+        label.appendChild(pill);
+
+        // Roles + keywords
+        fillChips(document.getElementById('recommended-roles'), data.recommended_roles, 'pill-green', 'No roles recommended.');
+        fillChips(document.getElementById('missing-keywords'), data.missing_keywords, 'pill-coral', 'No missing keywords detected.');
 
         // Suggestions
-        const suggestionsList = document.getElementById('suggestions-list');
-        suggestionsList.innerHTML = '';
-        if (data.suggestions && data.suggestions.length) {
-            data.suggestions.forEach(s => {
-                const li = document.createElement('li');
-                li.textContent = s;
-                suggestionsList.appendChild(li);
-            });
-        } else {
-            suggestionsList.innerHTML = '<li>No suggestions provided.</li>';
-        }
+        var list = document.getElementById('suggestions-list');
+        list.innerHTML = '';
+        var suggestions = (data.suggestions && data.suggestions.length) ? data.suggestions : ['No suggestions provided.'];
+        suggestions.forEach(function (s) {
+            var li = document.createElement('li');
+            li.textContent = s;
+            list.appendChild(li);
+        });
 
-        // Scroll to results
         resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 });

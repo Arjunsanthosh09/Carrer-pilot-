@@ -1,0 +1,444 @@
+```html
+{% extends "base.html" %}
+
+{% block content %}
+
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/manage_applicants.css') }}">
+
+
+<div class="applicants-page">
+
+
+    <!-- ================= SIDEBAR ================= -->
+
+    <aside class="applicants-sidebar">
+
+        <div class="sidebar-logo">
+
+            <div class="logo-box">
+                CP
+            </div>
+
+            <h2>
+                CareerPilot AI
+            </h2>
+
+        </div>
+
+
+        <div class="menu-title">
+            MENU
+        </div>
+
+
+        <nav class="sidebar-menu">
+
+            <a href="{{ url_for('officer.dashboard') }}">
+
+                <i class="fa-solid fa-house"></i>
+
+                Dashboard
+
+            </a>
+
+
+            <a href="{{ url_for('officer.students') }}">
+
+                <i class="fa-solid fa-users"></i>
+
+                Student records
+
+            </a>
+
+
+            <a href="{{ url_for('officer.companies') }}">
+
+                <i class="fa-regular fa-building"></i>
+
+                Companies
+
+            </a>
+
+
+            <a href="{{ url_for('officer.drives') }}"
+               class="active">
+
+                <i class="fa-solid fa-briefcase"></i>
+
+                Placement drives
+
+            </a>
+
+
+            <a href="{{ url_for('officer.reports') }}">
+
+                <i class="fa-solid fa-chart-column"></i>
+
+                Reports & analytics
+
+            </a>
+
+        </nav>
+
+
+        <!-- ================= OFFICER ================= -->
+
+        <div class="sidebar-bottom">
+
+            <div class="officer-box">
+
+                <div class="officer-avatar">
+
+                    {% if current_user.officer_profile %}
+
+                        {% set officer = current_user.officer_profile %}
+
+                        {% set names = officer.full_name.split()
+                           if officer.full_name else ['O'] %}
+
+                        {{ names[0][0]|upper if names[0] else 'O' }}
+
+                        {% if names|length > 1 %}
+
+                            {{ names[-1][0]|upper
+                               if names[-1] else '' }}
+
+                        {% endif %}
+
+                    {% else %}
+
+                        {{ current_user.email[0]|upper }}
+
+                    {% endif %}
+
+                </div>
+
+
+                <div>
+
+                    <strong>
+
+                        {% if current_user.officer_profile %}
+
+                            {{ current_user.officer_profile.full_name
+                               or 'Placement Officer' }}
+
+                        {% else %}
+
+                            {{ current_user.email }}
+
+                        {% endif %}
+
+                    </strong>
+
+                    <p>
+                        Placement officer
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <a href="{{ url_for('auth.logout') }}"
+               class="logout-btn">
+
+                <i class="fa-solid fa-right-from-bracket"></i>
+
+                Log out
+
+            </a>
+
+        </div>
+
+    </aside>
+
+
+
+    <!-- ================= MAIN CONTENT ================= -->
+
+    <main class="applicants-main">
+
+
+        <!-- HEADER -->
+
+        <div class="applicants-header">
+
+            <div>
+
+                <h1>
+                    Manage applicants
+                </h1>
+
+                <p>
+                    Review and manage students who applied for this placement drive.
+                </p>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- ================= DRIVE INFO ================= -->
+
+        <div class="drive-info-card">
+
+            <div>
+
+                <h2>
+                    {{ drive.company.company_name }} — {{ drive.role }}
+                </h2>
+
+                <p>
+                    Drive date:
+                    {{ drive.drive_date.strftime('%b %d, %Y') }}
+                </p>
+
+            </div>
+
+
+            <a href="{{ url_for('officer.drives') }}"
+               class="back-btn">
+
+                <i class="fa-solid fa-arrow-left"></i>
+
+                Back to drives
+
+            </a>
+
+        </div>
+
+
+
+        <!-- ================= APPLICANTS ================= -->
+
+        <div class="applicants-card">
+
+            <div class="card-heading">
+
+                <div>
+
+                    <h2>
+                        Applicants
+                    </h2>
+
+                    <p>
+                        {{ applicants|length }} student(s) applied for this drive.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            {% if applicants %}
+
+            <div class="table-wrapper">
+
+                <table class="applicants-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                NAME
+                            </th>
+
+                            <th>
+                                DEPARTMENT
+                            </th>
+
+                            <th>
+                                CGPA
+                            </th>
+
+                            <th>
+                                STATUS
+                            </th>
+
+                            <th>
+                                UPDATE STATUS
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for applicant in applicants %}
+
+                        <tr>
+
+                            <!-- NAME -->
+
+                            <td>
+
+                                <div class="student-name">
+
+                                    <div class="student-avatar">
+
+                                        {{ applicant.name[0]|upper }}
+
+                                    </div>
+
+                                    <span>
+                                        {{ applicant.name }}
+                                    </span>
+
+                                </div>
+
+                            </td>
+
+
+                            <!-- DEPARTMENT -->
+
+                            <td>
+                                {{ applicant.department }}
+                            </td>
+
+
+                            <!-- CGPA -->
+
+                            <td>
+                                {{ "%.2f"|format(applicant.cgpa) }}
+                            </td>
+
+
+                            <!-- STATUS -->
+
+                            <td>
+
+                                {% if applicant.status == 'applied' %}
+
+                                    <span class="status-badge status-applied">
+                                        Applied
+                                    </span>
+
+                                {% elif applicant.status == 'shortlisted' %}
+
+                                    <span class="status-badge status-shortlisted">
+                                        Shortlisted
+                                    </span>
+
+                                {% elif applicant.status == 'rejected' %}
+
+                                    <span class="status-badge status-rejected">
+                                        Rejected
+                                    </span>
+
+                                {% elif applicant.status == 'selected' %}
+
+                                    <span class="status-badge status-selected">
+                                        Selected
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- UPDATE STATUS -->
+
+                            <td>
+
+                                <form method="POST"
+                                      action="{{ url_for('officer.update_applicant_status', app_id=applicant.app_id) }}"
+                                      class="status-form">
+
+                                    <select name="status"
+                                            class="status-select">
+
+                                        <option value="applied"
+                                            {% if applicant.status == 'applied' %}
+                                                selected
+                                            {% endif %}>
+                                            Applied
+                                        </option>
+
+                                        <option value="shortlisted"
+                                            {% if applicant.status == 'shortlisted' %}
+                                                selected
+                                            {% endif %}>
+                                            Shortlist
+                                        </option>
+
+                                        <option value="rejected"
+                                            {% if applicant.status == 'rejected' %}
+                                                selected
+                                            {% endif %}>
+                                            Reject
+                                        </option>
+
+                                        <option value="selected"
+                                            {% if applicant.status == 'selected' %}
+                                                selected
+                                            {% endif %}>
+                                            Select
+                                        </option>
+
+                                    </select>
+
+
+                                    <button type="submit"
+                                            class="update-btn">
+
+                                        Update
+
+                                    </button>
+
+                                </form>
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            {% else %}
+
+            <!-- NO APPLICANTS -->
+
+            <div class="empty-state">
+
+                <div class="empty-icon">
+
+                    <i class="fa-solid fa-user-group"></i>
+
+                </div>
+
+                <h3>
+                    No applicants yet
+                </h3>
+
+                <p>
+                    Students who apply for this placement drive
+                    will appear here.
+                </p>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </main>
+
+</div>
+
+{% endblock %}
+```
+

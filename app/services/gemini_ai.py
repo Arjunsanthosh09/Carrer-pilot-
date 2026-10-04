@@ -421,3 +421,186 @@ def get_fallback_recommendations(role_name, gaps):
     recommendations['learning_paths'].append(f"Build a portfolio project for {role_name}")
     
     return recommendations
+
+def generate_career_recommendations(profile, skills, projects, certs, educations):
+    """
+    Generate personalized career recommendations using AI.
+    Returns a dict with:
+        - roles: list of recommended roles with match%, why, missing skills, certs, roadmap
+        - top_skill: strongest skill
+        - career_advice: overall guidance
+    """
+    # Prepare data
+    skills_str = ', '.join([f"{s.skill.name} ({s.proficiency}%)" for s in skills]) if skills else 'No skills added'
+    projects_str = '\n'.join([f"- {p.title}: {p.technologies or 'N/A'}" for p in projects]) if projects else 'No projects added'
+    certs_str = ', '.join([f"{c.title} ({c.issuer or 'N/A'})" for c in certs]) if certs else 'No certifications'
+    education_str = '\n'.join([f"- {e.level}: {e.degree_name or 'N/A'} at {e.institution or 'N/A'}"
+                                for e in educations]) if educations else 'No education details'
+
+    department = profile.department or 'Not specified'
+    cgpa = profile.cgpa or 'Not specified'
+    year = profile.year or 'Not specified'
+    about = profile.about_me or 'Not provided'
+
+    prompt = f"""
+You are an expert career counselor with deep knowledge of the tech industry and campus placements.
+
+Analyze the following student's profile and recommend the BEST-FIT career roles.
+
+=== STUDENT PROFILE ===
+Name: {profile.full_name or 'Student'}
+Department: {department}
+Year: {year}
+CGPA: {cgpa}
+About: {about}
+
+=== EDUCATION ===
+{education_str}
+
+=== TECHNICAL SKILLS (with proficiency %) ===
+{skills_str}
+
+=== PROJECTS ===
+{projects_str}
+
+=== CERTIFICATIONS ===
+{certs_str}
+
+=== YOUR TASK ===
+Recommend the TOP 5 most suitable job roles for this student.
+
+Return ONLY valid JSON with this exact structure:
+{{
+    "roles": [
+        {{
+            "role": "Role Name",
+            "match": 85,
+            "why": "2-3 sentence explanation based on their actual skills",
+            "missing_skills": ["Skill1", "Skill2"],
+            "recommended_certs": ["Cert1", "Cert2"],
+            "roadmap": [
+                "Month 1-2: Learn X",
+                "Month 3-4: Build Y project",
+                "Month 5-6: Apply to companies like Z"
+            ]
+        }}
+    ],
+    "top_skill": "Their strongest skill",
+    "career_advice": "3-4 sentence overall career guidance for this student"
+}}
+
+RULES:
+- Match % must be based on ACTUAL skills (not fixed numbers)
+- Each role must have realistic match based on their profile
+- "why" must reference their SPECIFIC skills/projects
+- "missing_skills" should be what they need to learn for that role
+- "recommended_certs" should be actual certifications (AWS, Google, Meta, etc.)
+- "roadmap" should be practical and actionable
+- Order roles by match % (highest first)
+- Return 5 roles only
+- Return ONLY JSON, no extra text
+
+Now analyze and return the JSON.
+"""
+
+    result = call_llm(prompt)
+    if result:
+        try:
+            cleaned = result.strip()
+            if cleaned.startswith('```json'):
+                cleaned = cleaned[7:]
+            if cleaned.startswith('```'):
+                cleaned = cleaned[3:]
+            if cleaned.endswith('```'):
+                cleaned = cleaned[:-3]
+            cleaned = cleaned.strip()
+            data = json.loads(cleaned)
+            if 'roles' in data and len(data['roles']) > 0:
+                return data
+        except Exception as e:
+            print(f"⚠️ Career recommendation parse error: {e}")
+
+    # Fallback — rule-based matching
+    return get_fallback_career_recommendations(profile, skills, projects, certs)
+
+
+def get_fallback_career_recommendations(profile, skills, projects, certs):
+    """Fallback rule-based career recommendations when AI fails."""
+    skill_names = [s.skill.name.lower() for s in skills]
+    skill_dict = {s.skill.name.lower(): s.proficiency for s in skills}
+    project_techs = ' '.join([(p.technologies or '').lower() for p in projects])
+
+    # Role matching logic
+    frontend_score = 0
+    backend_score = 0
+    data_score = 0
+    ml_score = 0
+    fullstack_score = 0
+
+    if any(s in skill_names for s in ['html/css', 'html', 'css']):
+        frontend_score += skill_dict.get('html/css', 70)
+    if 'javascript' in skill_names:
+        frontend_score += skill_dict.get('javascript', 70) * 0.5
+        backend_score += skill_dict.get('javascript', 70) * 0.3
+        fullstack_score += skill_dict.get('javascript', 70) * 0.4
+    if 'react' in skill_names:
+        frontend_score += skill_dict.get('react', 60) * 0.7
+        fullstack_score += skill_dict.get('react', 60) * 0.5
+    if any(s in skill_names for s in ['python', 'flask', 'django', 'fastapi']):
+        backend_score += 70
+        ml_score += 50
+        data_score += 40
+    if any(s in skill_names for s in ['sql', 'mysql', 'postgresql']):
+        backend_score += 50
+        data_score += 60
+    if any(s in skill_names for s in ['tensorflow', 'pytorch', 'scikit-learn', 'machine learning']):
+        ml_score += 80
+        data_score += 50
+    if any(s in skill_names for s in ['pandas', 'numpy', 'matplotlib', 'tableau', 'power bi']):
+        data_score += 70
+    if any(s in skill_names for s in ['docker', 'kubernetes', 'aws', 'gcp']):
+        backend_score += 40
+        fullstack_score += 40
+    if 'git' in skill_names:
+        frontend_score += 20
+        backend_score += 20
+        fullstack_score += 20
+
+    scores = [
+        ('Frontend Developer', min(frontend_score, 95)),
+        ('Backend Developer', min(backend_score, 95)),
+        ('Full Stack Developer', min(fullstack_score, 95)),
+        ('Data Analyst', min(data_score, 95)),
+        ('Machine Learning Engineer', min(ml_score, 95))
+    ]
+    scores.sort(key=lambda x: x[1], reverse=True)
+
+    roles = []
+    for role_name, score in scores[:5]:
+        if score < 20:
+            continue
+        roles.append({
+            "role": role_name,
+            "match": int(score),
+            "why": f"Your profile shows relevant skills for {role_name}. Based on your current skill set and projects.",
+            "missing_skills": ["Advanced concepts", "Industry tools"],
+            "recommended_certs": ["Industry certification"],
+            "roadmap": [
+                "Month 1-2: Strengthen core skills",
+                "Month 3-4: Build 2 portfolio projects",
+                "Month 5-6: Apply to companies"
+            ]
+        })
+
+    return {
+        "roles": roles if roles else [{
+            "role": "Software Developer",
+            "match": 50,
+            "why": "Start building your skills and projects to unlock better matches.",
+            "missing_skills": ["Programming basics", "Projects"],
+            "recommended_certs": ["Start with freeCodeCamp"],
+            "roadmap": ["Month 1-2: Learn programming", "Month 3-4: Build projects", "Month 5-6: Apply"]
+        }],
+        "top_skill": skill_names[0].title() if skill_names else "None yet",
+        "career_advice": "Focus on building strong fundamentals, complete 2-3 projects, and earn relevant certifications to boost your profile."
+    }

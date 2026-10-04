@@ -1,3 +1,4 @@
+```html
 {% extends "base.html" %}
 
 {% block content %}
@@ -25,9 +26,9 @@ href="{{ url_for('static', filename='css/drives.css') }}">
 Dashboard
 </a>
 
-<a href="#">
-<i class="fa-solid fa-users"></i>
-Student records
+<a href="{{ url_for('officer.students') }}">
+    <i class="fa-solid fa-users"></i>
+    Student records
 </a>
 
 <a href="{{ url_for('officer.companies') }}">
@@ -40,9 +41,9 @@ Companies
 Placement drives
 </a>
 
-<a href="#">
+<a href="{{ url_for('officer.reports') }}">
 <i class="fa-solid fa-chart-column"></i>
-Reports &amp; analytics
+Reports & analytics
 </a>
 
 <!-- ===== FIXED OFFICER BOX ===== -->
@@ -82,9 +83,6 @@ Log out
 </div>
 
 <div style="display:flex; align-items:center; gap:16px;">
-<div class="notify-btn">
-<i class="fa-regular fa-bell"></i>
-</div>
 <a href="{{ url_for('officer.add_drive') }}" class="add-btn">
 <i class="fa-solid fa-plus"></i>
 Create new drive
@@ -112,10 +110,10 @@ Create new drive
 
 <div class="applicants">
 <i class="fa-solid fa-user-group"></i>
-Applicants: —
+Applicants: {{ drive.applicant_count }}
 </div>
 
-<a href="{{ url_for('officer.edit_drive', id=drive.id) }}"
+<a href="{{ url_for('officer.manage_applicants', id=drive.id) }}"
 class="manage-btn">
 Manage applicants
 </a>
@@ -131,3 +129,4 @@ Manage applicants
 </div>
 
 {% endblock %}
+```

@@ -1,76 +1,83 @@
 {% extends "base.html" %}
 
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/interview.css') }}">
+{% endblock %}
+
 {% block content %}
 <div class="shell">
     {% include "student/_sidebar.html" %}
     <div class="main">
         <div class="page-head">
             <div>
-                <h1>🎤 Mock Interview</h1>
+                <h1>Mock interview</h1>
                 <p class="sub">Practice with AI-powered, proctored mock interviews.</p>
             </div>
         </div>
 
-        <!-- Role-based Interview Cards -->
-        <div class="grid g3" style="margin-bottom:24px;">
-            <!-- Technical -->
-            <div class="card" style="text-align:center; padding:24px;">
-                <div style="font-size:48px;">💻</div>
-                <div style="font-weight:600; font-size:16px; margin-top:8px;">Technical Interview</div>
-                <div style="font-size:13px; color:var(--slate);">Coding, algorithms, tech concepts</div>
-                <div style="margin-top:12px;">
+        <!-- Interview types -->
+        <div class="grid g3 iv-grid">
+            <div class="card is-interactive iv-card">
+                <div class="iv-icon">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M8 8l-4 4 4 4M16 8l4 4-4 4M14 4l-4 16"/></svg>
+                </div>
+                <h3>Technical interview</h3>
+                <p>Coding, algorithms, tech concepts</p>
+                <div class="iv-meta">
                     <span class="pill pill-green">5 questions</span>
                     <span class="pill pill-amber">~10 min</span>
                 </div>
-                <a href="{{ url_for('student.interview_start', category='technical') }}" class="btn-ink" style="margin-top:12px; display:inline-block; text-decoration:none;">Start Now</a>
+                <a href="{{ url_for('student.interview_start', category='technical') }}" class="btn btn-primary">Start now</a>
             </div>
 
-            <!-- HR -->
-            <div class="card" style="text-align:center; padding:24px;">
-                <div style="font-size:48px;">🤝</div>
-                <div style="font-weight:600; font-size:16px; margin-top:8px;">HR Interview</div>
-                <div style="font-size:13px; color:var(--slate);">Behavioral, communication, leadership</div>
-                <div style="margin-top:12px;">
+            <div class="card is-interactive iv-card">
+                <div class="iv-icon">
+                    <svg class="icon" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.8 0 4.5 1.9 4.5 5"/></svg>
+                </div>
+                <h3>HR interview</h3>
+                <p>Behavioral, communication, leadership</p>
+                <div class="iv-meta">
                     <span class="pill pill-green">5 questions</span>
                     <span class="pill pill-amber">~10 min</span>
                 </div>
-                <a href="{{ url_for('student.interview_start', category='hr') }}" class="btn-ink" style="margin-top:12px; display:inline-block; text-decoration:none;">Start Now</a>
+                <a href="{{ url_for('student.interview_start', category='hr') }}" class="btn btn-primary">Start now</a>
             </div>
 
-            <!-- Aptitude -->
-            <div class="card" style="text-align:center; padding:24px;">
-                <div style="font-size:48px;">🧠</div>
-                <div style="font-weight:600; font-size:16px; margin-top:8px;">Aptitude Interview</div>
-                <div style="font-size:13px; color:var(--slate);">Logical, numerical, verbal reasoning</div>
-                <div style="margin-top:12px;">
+            <div class="card is-interactive iv-card">
+                <div class="iv-icon">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M9 18h6M10 22h4"/><path d="M12 2a7 7 0 00-4 12.7c.6.5 1 1.2 1 2V17h6v-.3c0-.8.4-1.5 1-2A7 7 0 0012 2z"/></svg>
+                </div>
+                <h3>Aptitude interview</h3>
+                <p>Logical, numerical, verbal reasoning</p>
+                <div class="iv-meta">
                     <span class="pill pill-green">5 questions</span>
                     <span class="pill pill-amber">~10 min</span>
                 </div>
-                <a href="{{ url_for('student.interview_start', category='aptitude') }}" class="btn-ink" style="margin-top:12px; display:inline-block; text-decoration:none;">Start Now</a>
+                <a href="{{ url_for('student.interview_start', category='aptitude') }}" class="btn btn-primary">Start now</a>
             </div>
         </div>
 
-        <!-- Warning -->
-        <div class="card" style="background:var(--coral-light); border:1px solid var(--coral); margin-bottom:22px;">
-    <div style="display:flex; gap:10px; align-items:flex-start;">
-        <span style="font-size:20px;">🚫</span>
-        <div>
-            <strong style="font-size:14px;">Strict Proctoring Enabled</strong>
-            <ul style="font-size:13px; margin-top:6px; color:var(--ink-3); padding-left:18px;">
-                <li>Camera must remain ON throughout the interview</li>
-                <li>Full-screen mode is enforced — exiting cancels the interview</li>
-                <li>Tab switching / app switching cancels the interview</li>
-                <li>Object detection is active (phones, books, extra persons are blocked)</li>
-                <li>Copy, paste, right-click, and dev tools are disabled</li>
-                <li><strong>3 violations = auto-cancellation</strong></li>
-            </ul>
+        <!-- Proctoring notice -->
+        <div class="notice">
+            <div class="n-icon">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>
+            </div>
+            <div>
+                <h3>Strict proctoring is enabled</h3>
+                <ul>
+                    <li>Camera must remain on throughout the interview</li>
+                    <li>Full-screen mode is enforced. Exiting cancels the interview</li>
+                    <li>Tab or app switching cancels the interview</li>
+                    <li>Object detection is active (phones, books and extra people are blocked)</li>
+                    <li>Copy, paste, right-click and dev tools are disabled</li>
+                    <li><strong>3 violations = automatic cancellation</strong></li>
+                </ul>
+            </div>
         </div>
-    </div>
-</div>
 
-        <!-- Past Sessions -->
+        <!-- Past sessions -->
         <div class="card">
-            <div class="section-title">📋 Past Interview Sessions</div>
+            <div class="section-title">Past interview sessions</div>
             {% if sessions %}
             <table>
                 <tr>
@@ -102,18 +109,14 @@
                     </td>
                     <td>
                         {% if session.status == 'completed' %}
-                        <a href="{{ url_for('student.interview_result', session_id=session.id) }}" class="btn-outline" style="padding:4px 12px; font-size:12px; text-decoration:none;">
-                            View Details
-                        </a>
+                        <a href="{{ url_for('student.interview_result', session_id=session.id) }}" class="btn btn-ghost btn-sm">View details</a>
                         {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
             </table>
             {% else %}
-            <p style="color:var(--slate); text-align:center; padding:20px;">
-                No past sessions. Start your first interview above!
-            </p>
+            <p class="empty-state">No past sessions yet. Start your first interview above.</p>
             {% endif %}
         </div>
     </div>

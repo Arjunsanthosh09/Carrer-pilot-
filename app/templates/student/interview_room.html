@@ -1,143 +1,79 @@
 {% extends "base.html" %}
 
-{% block content %}
+{% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/interview.css') }}">
+{% endblock %}
 
-<!-- Move these to the TOP so they load before the inline script -->
+{% block content %}
+<!-- Load before the inline script -->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.2/dist/coco-ssd.min.js"></script>
 
-<div class="interview-room" id="interview-room">
+<div class="iv-room" id="interview-room">
 
     <!-- ============ PRE-START SCREEN ============ -->
-    <div id="pre-start-screen" style="
-        position: fixed; inset: 0; z-index: 9999;
-        background: linear-gradient(135deg, #11161F 0%, #1B2230 100%);
-        color: #fff; display: flex; flex-direction: column;
-        align-items: center; justify-content: center;
-        padding: 40px; text-align: center;
-    ">
-        <div style="max-width: 560px;">
-            <div style="font-size: 64px; margin-bottom: 16px;">🎤</div>
-            <h1 style="font-family: 'Space Grotesk', sans-serif; font-size: 28px; font-weight: 600; margin-bottom: 12px;">
-                Ready to begin your interview?
-            </h1>
-            <p style="color: #B9C0CE; font-size: 15px; line-height: 1.6; margin-bottom: 24px;">
-                When you click the button below, your browser will ask for:
-            </p>
-            <ul style="text-align: left; display: inline-block; color: #B9C0CE; font-size: 14px; line-height: 1.9; margin-bottom: 28px;">
-                <li>✅ <strong>Full-screen access</strong> (required for proctoring)</li>
-                <li>✅ <strong>Camera access</strong> (required for proctoring)</li>
+    <div id="pre-start-screen" class="ps">
+        <div class="ps-inner">
+            <div class="ps-icon">
+                <svg class="icon" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0"/><path d="M12 18v4"/></svg>
+            </div>
+            <h1>Ready to begin your interview?</h1>
+            <p>When you click the button below, your browser will ask for:</p>
+            <ul>
+                <li><strong>Full-screen access</strong> (required for proctoring)</li>
+                <li><strong>Camera access</strong> (required for proctoring)</li>
             </ul>
-            <p style="color: #8A93A2; font-size: 13px; margin-bottom: 28px;">
-                You must click <strong>Allow</strong> on both prompts. Otherwise the interview cannot proceed.
-            </p>
-            <button id="start-interview-btn" style="
-                background: #E8A33D; color: #11161F;
-                padding: 14px 40px; border: none; border-radius: 10px;
-                font-family: 'Space Grotesk', sans-serif;
-                font-weight: 700; font-size: 16px; cursor: pointer;
-                transition: all 0.2s;
-            ">
-                ▶ Start Interview
-            </button>
-            <div id="start-error" style="color: #D8634A; font-size: 13px; margin-top: 16px; display: none;"></div>
+            <p class="note">You must click <strong>Allow</strong> on both prompts. Otherwise the interview cannot proceed.</p>
+            <button id="start-interview-btn" class="btn btn-primary">Start interview</button>
+            <div id="start-error"></div>
         </div>
     </div>
 
     <!-- ============ CAMERA FEED ============ -->
     <div id="camera-container" style="display: none;">
         <video id="camera-feed" autoplay playsinline muted></video>
-        <div id="camera-status">🔴 REC</div>
+        <div id="camera-status">REC</div>
     </div>
 
     <!-- ============ MAIN CONTENT ============ -->
-    <div class="interview-content">
-        <div class="interview-header">
-            <div class="interview-title">{{ session.type|title }} Interview</div>
-            <div class="interview-progress">
+    <div class="iv-wrap">
+        <div class="iv-head">
+            <div class="iv-title">{{ session.type|title }} interview</div>
+            <div class="iv-count">
                 <span id="question-counter">1</span> / <span id="total-questions">{{ session.total_questions }}</span>
             </div>
         </div>
+        <div class="iv-bar"><span id="progress-fill"></span></div>
 
-        <div class="question-container">
-            <div class="question-badge" id="question-badge">Question 1</div>
-            <div class="question-text" id="question-text">Loading question...</div>
-            <div class="question-actions">
-                <button id="listen-btn" onclick="speakQuestion()" class="btn-outline">🔊 Listen</button>
+        <div class="q-card">
+            <span class="pill pill-green q-badge" id="question-badge">Question 1</span>
+            <div class="q-text" id="question-text">Loading question...</div>
+            <div class="q-actions">
+                <button id="listen-btn" onclick="speakQuestion()" class="btn btn-ghost btn-sm">
+                    <svg class="icon" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M11 5L6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 010 7M18.5 6a9 9 0 010 12"/></svg>
+                    Listen
+                </button>
             </div>
         </div>
 
         <div class="answer-container">
             <textarea id="answer-input" placeholder="Type your answer here..." maxlength="2000"></textarea>
             <div class="answer-actions">
-                <button id="voice-btn" onclick="startVoiceInput()" class="btn-outline">🎤 Speak Answer</button>
-                <button id="submit-btn" onclick="submitAnswer()" class="btn-ink">📤 Submit Answer</button>
+                <button id="voice-btn" onclick="startVoiceInput()" class="btn btn-ghost">Speak answer</button>
+                <button id="submit-btn" onclick="submitAnswer()" class="btn btn-primary">Submit answer</button>
             </div>
         </div>
 
-        <div class="feedback-container" id="feedback-container" style="display:none;">
-            <div class="feedback-header">📊 AI Feedback</div>
+        <div class="fb" id="feedback-container" style="display:none;">
+            <div class="fb-head">AI feedback</div>
             <div id="feedback-content"></div>
         </div>
 
-        <div class="interview-footer">
-            <button onclick="exitInterview()" class="btn-coral">🚫 Exit Interview</button>
+        <div class="iv-foot">
+            <button onclick="exitInterview()" class="btn btn-danger">Exit interview</button>
         </div>
     </div>
 </div>
-
-<style>
-.interview-room { display: flex; min-height: 100vh; background: var(--paper-2); position: relative; }
-#camera-container {
-    position: fixed; bottom: 20px; right: 20px; width: 200px; height: 150px;
-    border-radius: 12px; overflow: hidden; border: 3px solid var(--green);
-    z-index: 1000; background: #000; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-}
-#camera-feed { width: 100%; height: 100%; object-fit: cover; }
-#camera-status {
-    position: absolute; bottom: 4px; left: 4px;
-    color: #ff4d4d; font-size: 10px; font-weight: 700;
-    background: rgba(0,0,0,0.7); padding: 2px 8px; border-radius: 4px;
-}
-.interview-content { flex: 1; padding: 40px 60px; display: flex; flex-direction: column; }
-.interview-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-.interview-title { font-family: var(--font-display); font-size: 24px; font-weight: 600; }
-.interview-progress { font-size: 15px; font-weight: 600; color: var(--amber-dark); }
-.question-container {
-    flex: 1; background: var(--card); border-radius: 16px; padding: 40px;
-    border: 1px solid var(--line); margin-bottom: 20px;
-}
-.question-badge {
-    font-size: 12px; font-weight: 600; color: var(--amber-dark);
-    text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px;
-}
-.question-text { font-size: 20px; line-height: 1.6; color: var(--ink); }
-.question-actions { margin-top: 20px; }
-.answer-container { margin-bottom: 20px; }
-#answer-input {
-    width: 100%; min-height: 120px; padding: 16px;
-    border: 1.5px solid var(--line); border-radius: 12px;
-    font-size: 15px; font-family: var(--font-body); resize: vertical;
-}
-#answer-input:focus { border-color: var(--amber); outline: none; }
-.answer-actions { display: flex; gap: 12px; margin-top: 12px; }
-.feedback-container {
-    background: var(--green-light); border-radius: 12px; padding: 20px;
-    margin-bottom: 20px; border-left: 4px solid var(--green);
-}
-.feedback-header { font-weight: 600; font-size: 16px; margin-bottom: 10px; }
-.btn-coral {
-    background: var(--coral); color: #fff; padding: 10px 20px;
-    border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
-}
-.btn-coral:hover { background: var(--coral-dark); }
-@media (max-width: 768px) {
-    .interview-content { padding: 20px; }
-    #camera-container { width: 120px; height: 90px; }
-    .question-text { font-size: 16px; }
-}
-</style>
 
 <script>
 const state = {
@@ -151,12 +87,17 @@ const state = {
     maxViolations: 3,
     noFaceStartTime: null,
     detectionInterval: null,
-    proctorInterval: null,   // NEW: polling interval
+    proctorInterval: null,   // polling interval
     model: null
 };
 
 let cameraStream = null;
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+}
 
 
 // ============================================================
@@ -167,7 +108,7 @@ document.getElementById('start-interview-btn').addEventListener('click', async (
     const errBox = document.getElementById('start-error');
     errBox.style.display = 'none';
     btn.disabled = true;
-    btn.textContent = '⏳ Requesting permissions...';
+    btn.textContent = 'Requesting permissions...';
 
     // 1. Fullscreen
     try {
@@ -175,10 +116,10 @@ document.getElementById('start-interview-btn').addEventListener('click', async (
             await document.documentElement.requestFullscreen();
         }
     } catch (err) {
-        errBox.textContent = '❌ Fullscreen was denied.';
+        errBox.textContent = 'Fullscreen was denied.';
         errBox.style.display = 'block';
         btn.disabled = false;
-        btn.textContent = '▶ Start Interview';
+        btn.textContent = 'Start interview';
         return;
     }
 
@@ -194,10 +135,10 @@ document.getElementById('start-interview-btn').addEventListener('click', async (
         video.srcObject = cameraStream;
         await video.play();
     } catch (err) {
-        errBox.textContent = '❌ Camera was denied.';
+        errBox.textContent = 'Camera was denied.';
         errBox.style.display = 'block';
         btn.disabled = false;
-        btn.textContent = '▶ Start Interview';
+        btn.textContent = 'Start interview';
         if (document.fullscreenElement) document.exitFullscreen();
         return;
     }
@@ -210,10 +151,10 @@ document.getElementById('start-interview-btn').addEventListener('click', async (
     if (window.cocoSsd) {
         cocoSsd.load().then(m => {
             state.model = m;
-            console.log('✅ AI model loaded');
+            console.log('AI model loaded');
         }).catch(e => console.warn('Model failed:', e));
     } else {
-        console.warn('⚠️ cocoSsd not available');
+        console.warn('cocoSsd not available');
     }
 
     // 5. Wait 3 seconds for browser to settle
@@ -363,7 +304,7 @@ function startDetectionLoop() {
 function warn(msg) {
     if (!state.isProctoringActive) return;
     state.violations++;
-    showWarningBanner(`⚠️ Warning ${state.violations}/${state.maxViolations}: ${msg}`);
+    showWarningBanner(`Warning ${state.violations}/${state.maxViolations}: ${msg}`);
     setTimeout(hideWarningBanner, 3500);
     if (state.violations >= state.maxViolations) {
         registerViolation('Too many violations. Interview cancelled.', true);
@@ -373,19 +314,19 @@ function warn(msg) {
 function registerViolation(reason, cancelImmediately) {
     if (!state.isProctoringActive) return;
     state.violations++;
-    console.warn(`🚫 ${reason}`);
+    console.warn(reason);
 
     if (cancelImmediately || state.violations >= state.maxViolations) {
         state.isProctoringActive = false;
         stopProctoring();
-        alert('🚫 ' + reason);
+        alert(reason);
         fetch(`/student/interview/cancel/${state.sessionId}`)
             .finally(() => {
                 if (document.fullscreenElement) document.exitFullscreen();
                 window.location.href = '/student/interview';
             });
     } else {
-        showWarningBanner(`⚠️ ${state.violations}/${state.maxViolations}: ${reason}`);
+        showWarningBanner(`${state.violations}/${state.maxViolations}: ${reason}`);
         setTimeout(hideWarningBanner, 4000);
     }
 }
@@ -401,7 +342,7 @@ function showWarningBanner(msg) {
     if (!b) {
         b = document.createElement('div');
         b.id = 'proctoring-banner';
-        b.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#D8634A;color:#fff;padding:12px;text-align:center;font-weight:600;z-index:99999;font-size:14px;';
+        b.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#EF5B3F;color:#fff;padding:12px;text-align:center;font-weight:600;z-index:99999;font-size:14px;';
         document.body.appendChild(b);
     }
     b.textContent = msg;
@@ -412,7 +353,9 @@ function hideWarningBanner() {
     if (b) b.style.display = 'none';
 }
 
-// 6. VOICE
+
+// ============================================================
+// VOICE
 // ============================================================
 function speakQuestion() {
     const text = document.getElementById('question-text').textContent;
@@ -429,9 +372,8 @@ function startVoiceInput() {
     r.lang = 'en-US'; r.continuous = false; r.interimResults = false;
     r.onstart = () => {
         const btn = document.getElementById('voice-btn');
-        btn.textContent = '🎤 Listening...';
-        btn.style.background = 'var(--coral)';
-        btn.style.color = '#fff';
+        btn.textContent = 'Listening...';
+        btn.classList.add('is-listening');
     };
     r.onresult = (e) => {
         document.getElementById('answer-input').value = e.results[0][0].transcript;
@@ -444,13 +386,13 @@ function startVoiceInput() {
 
 function resetVoiceBtn() {
     const btn = document.getElementById('voice-btn');
-    btn.textContent = '🎤 Speak Answer';
-    btn.style.background = '';
-    btn.style.color = '';
+    btn.textContent = 'Speak answer';
+    btn.classList.remove('is-listening');
 }
 
+
 // ============================================================
-// 7. INTERVIEW FLOW
+// INTERVIEW FLOW
 // ============================================================
 function loadQuestion(index) {
     fetch(`/student/interview/question/${state.sessionId}/${index}`)
@@ -460,9 +402,11 @@ function loadQuestion(index) {
             document.getElementById('question-text').textContent = data.question;
             document.getElementById('question-counter').textContent = index + 1;
             document.getElementById('question-badge').textContent = `Question ${index + 1}`;
+            document.getElementById('progress-fill').style.width =
+                ((index + 1) / state.totalQuestions * 100) + '%';
             document.getElementById('answer-input').value = '';
             document.getElementById('feedback-container').style.display = 'none';
-            document.getElementById('submit-btn').textContent = '📤 Submit Answer';
+            document.getElementById('submit-btn').textContent = 'Submit answer';
             document.getElementById('submit-btn').disabled = false;
             document.getElementById('submit-btn').onclick = submitAnswer;
             state.currentIndex = index;
@@ -477,7 +421,7 @@ function submitAnswer() {
     if (state.isAnswered) { alert('Already answered.'); return; }
 
     const btn = document.getElementById('submit-btn');
-    btn.textContent = '⏳ Analyzing...';
+    btn.textContent = 'Analyzing...';
     btn.disabled = true;
 
     fetch('/student/interview/submit', {
@@ -497,34 +441,44 @@ function submitAnswer() {
         const fb = document.getElementById('feedback-container');
         fb.style.display = 'block';
         fb.innerHTML = `
-            <div class="feedback-header">📊 AI Feedback</div>
-            <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:10px;">
-                <div><strong>Score:</strong> <span style="font-size:22px;font-weight:700;color:${scoreColor}">${data.score}/10</span></div>
-                <div><strong>Clarity:</strong> ${data.clarity}/10</div>
-                <div><strong>Correctness:</strong> ${data.correctness}/10</div>
-                <div><strong>Completeness:</strong> ${data.completeness}/10</div>
-                <div><strong>Communication:</strong> ${data.communication}/10</div>
+            <div class="fb-head">AI feedback</div>
+            <div class="fb-metrics">
+                <div class="fb-metric main"><div class="k">Score</div><div class="v" style="color:${scoreColor}">${esc(data.score)}/10</div></div>
+                <div class="fb-metric"><div class="k">Clarity</div><div class="v">${esc(data.clarity)}/10</div></div>
+                <div class="fb-metric"><div class="k">Correctness</div><div class="v">${esc(data.correctness)}/10</div></div>
+                <div class="fb-metric"><div class="k">Completeness</div><div class="v">${esc(data.completeness)}/10</div></div>
+                <div class="fb-metric"><div class="k">Communication</div><div class="v">${esc(data.communication)}/10</div></div>
             </div>
-            <div style="padding:12px;background:var(--paper-2);border-radius:8px;">
-                <strong>Feedback:</strong> ${data.feedback}
-            </div>`;
+            <div class="fb-text"><strong>Feedback:</strong> ${esc(data.feedback)}</div>`;
         if (state.currentIndex + 1 >= state.totalQuestions) {
-            btn.textContent = '🎉 Complete Interview';
+            btn.textContent = 'Complete interview';
             btn.onclick = completeInterview;
         } else {
-            btn.textContent = '➡️ Next Question';
+            btn.textContent = 'Next question';
             btn.onclick = nextQuestion;
         }
     })
     .catch(() => {
         alert('Error submitting answer.');
-        btn.textContent = '📤 Submit Answer';
+        btn.textContent = 'Submit answer';
         btn.disabled = false;
     });
 }
 
 function nextQuestion() {
     if (state.currentIndex + 1 < state.totalQuestions) loadQuestion(state.currentIndex + 1);
+}
+
+// The Exit button called this, but it was never defined in the original script
+function exitInterview() {
+    if (!confirm('Exit the interview? Your session will be cancelled.')) return;
+    state.isProctoringActive = false;
+    stopProctoring();
+    fetch(`/student/interview/cancel/${state.sessionId}`)
+        .finally(() => {
+            if (document.fullscreenElement) document.exitFullscreen();
+            window.location.href = '/student/interview';
+        });
 }
 
 function completeInterview() {

@@ -1,184 +1,227 @@
 {% extends "base.html" %}
 
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/skillgap.css') }}">
+{% endblock %}
+
 {% block content %}
 <div class="shell">
     {% include "student/_sidebar.html" %}
-    
-    <div class="main">
-        <!-- Page Header -->
+
+    <div class="main skillgap">
+        <!-- Page header -->
         <div class="page-head">
             <div>
-                <h1>Skill Gap Analysis</h1>
+                <h1>Skill gap analysis</h1>
                 <p class="sub">Compare your current skills against what real job roles require.</p>
             </div>
         </div>
-        
-        <!-- Role Selection -->
-        <div class="section-title" style="margin-bottom:12px;">Choose a target role</div>
-        <div class="grid g3" style="margin-bottom:22px;">
+
+        <!-- Role selection -->
+        <div class="section-title">Choose a target role</div>
+        <div class="grid g3 role-grid">
             {% for role in roles %}
-            <div class="role-card {% if selected_role == role.name %}selected{% endif %}" 
-                 onclick="selectRole('{{ role.name }}')">
-                <div style="font-weight:600; font-size:14px;">{{ role.name }}</div>
-                <div style="font-size:12.5px; color:var(--slate); margin-top:4px;">
-                    {{ role.skill_count }} skills tracked
-                </div>
+            <button type="button"
+                    class="role-card {% if selected_role == role.name %}selected{% endif %}"
+                    data-role="{{ role.name }}"
+                    aria-pressed="{{ 'true' if selected_role == role.name else 'false' }}">
+                <div class="role-name">{{ role.name }}</div>
+                <div class="role-meta">{{ role.skill_count }} skills tracked</div>
                 {% if gap_analysis and gap_analysis.role_name == role.name %}
-                <div style="margin-top:8px;">
-                    <span class="pill {% if gap_analysis.match_percentage >= 70 %}pill-green{% elif gap_analysis.match_percentage >= 40 %}pill-amber{% else %}pill-coral{% endif %}">
-                        {{ gap_analysis.match_percentage|round|int }}% Match
-                    </span>
-                </div>
+                <span class="pill {% if gap_analysis.match_percentage >= 70 %}pill-green{% elif gap_analysis.match_percentage >= 40 %}pill-amber{% else %}pill-coral{% endif %}">
+                    <span class="dot"></span>{{ gap_analysis.match_percentage|round|int }}% match
+                </span>
                 {% endif %}
-            </div>
+            </button>
             {% endfor %}
         </div>
-        
-        <!-- Loading indicator -->
-        <div id="loading" style="display:none; text-align:center; padding:30px;">
-            <div style="display:inline-block; width:40px; height:40px; border:4px solid var(--line); border-top-color:var(--amber); border-radius:50%; animation:spin 0.8s linear infinite;"></div>
-            <p style="margin-top:12px; color:var(--slate);">Analyzing your skills with AI...</p>
+
+        <!-- Loading -->
+        <div id="loading" class="sg-loading" role="status">
+            <div class="sg-spinner"></div>
+            <p>Analyzing your skills with AI...</p>
         </div>
-        
+
         <!-- Results -->
         {% if gap_analysis %}
-        <div id="results">
-            <!-- Match Percentage Card -->
-            <div class="grid g2" style="margin-bottom:18px;">
+        {% set pct = gap_analysis.match_percentage %}
+        {% set tone = 'green' if pct >= 70 else ('amber' if pct >= 40 else 'coral') %}
+        {% set missing_n = gap_analysis.gaps|rejectattr('has_skill')|list|length %}
+        {% set below_n = gap_analysis.gaps|selectattr('has_skill')|rejectattr('is_matched')|list|length %}
+
+        <div id="results" class="stack">
+
+            <!-- Stat cards -->
+            <div class="grid g4">
+                <div class="stat-card">
+                    <div class="label">Role match</div>
+                    <div class="num">{{ pct|round|int }}%</div>
+                    <div class="delta {{ 'up' if pct >= 70 else 'warn' }}">{{ selected_role }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Skills matched</div>
+                    <div class="num">{{ gap_analysis.matched_skills }}<span style="font-size:.5em; color:var(--slate); font-weight:600;"> / {{ gap_analysis.total_skills }}</span></div>
+                    <div class="delta up">Requirement met</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Below required level</div>
+                    <div class="num">{{ below_n }}</div>
+                    <div class="delta warn">Needs practice</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Missing skills</div>
+                    <div class="num">{{ missing_n }}</div>
+                    <div class="delta warn">Not on your profile</div>
+                </div>
+            </div>
+
+            <!-- Match gauge + AI summary -->
+            <div class="grid g2">
                 <div class="card">
-                    <div class="section-title">Skills Match for {{ selected_role }}</div>
-                    <div style="display:flex; align-items:center; gap:20px;">
-                        <div style="position:relative; width:120px; height:120px;">
+                    <div class="section-title">
+                        <span class="t">
+                            <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>
+                            Skills match for {{ selected_role }}
+                        </span>
+                    </div>
+                    <div class="gauge-wrap match-wrap">
+                        <div class="match-ring">
                             <svg width="120" height="120" viewBox="0 0 120 120">
-                                <circle cx="60" cy="60" r="48" fill="none" stroke="#E4E0D4" stroke-width="12"/>
-                                <circle cx="60" cy="60" r="48" fill="none" 
-                                        stroke="{% if gap_analysis.match_percentage >= 70 %}var(--green){% elif gap_analysis.match_percentage >= 40 %}var(--amber){% else %}var(--coral){% endif %}" 
-                                        stroke-width="12" 
-                                        stroke-dasharray="301" 
-                                        stroke-dashoffset="{{ (1 - gap_analysis.match_percentage/100) * 301 }}"
-                                        stroke-linecap="round" 
+                                <circle cx="60" cy="60" r="48" fill="none" stroke="var(--paper-2)" stroke-width="12"/>
+                                <circle cx="60" cy="60" r="48" fill="none"
+                                        stroke="var(--{{ tone }})"
+                                        stroke-width="12"
+                                        stroke-dasharray="301"
+                                        stroke-dashoffset="{{ (1 - pct/100) * 301 }}"
+                                        stroke-linecap="round"
                                         transform="rotate(-90 60 60)"/>
                             </svg>
-                            <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column;">
-                                <span style="font-family:var(--font-display);font-size:28px;font-weight:700;">
-                                    {{ gap_analysis.match_percentage|round|int }}%
-                                </span>
-                                <span style="font-size:11px;color:var(--slate);">Match</span>
+                            <div class="center">
+                                <span class="pct">{{ pct|round|int }}%</span>
+                                <span class="cap">Match</span>
                             </div>
                         </div>
-                        <div>
-                            <div style="font-size:14px; font-weight:600;">{{ gap_analysis.matched_skills }} / {{ gap_analysis.total_skills }} skills matched</div>
-                            <div style="font-size:13px; color:var(--slate); margin-top:4px;">
-                                {% if gap_analysis.match_percentage >= 70 %}
-                                ✅ You're well-prepared for this role!
-                                {% elif gap_analysis.match_percentage >= 40 %}
-                                📈 Good foundation – focus on filling the gaps!
-                                {% else %}
-                                🚀 Start working on the essential skills for this role.
-                                {% endif %}
+                        <div class="match-text">
+                            <div class="big">{{ gap_analysis.matched_skills }} / {{ gap_analysis.total_skills }} skills matched</div>
+                            <div class="small">
+                                {% if pct >= 70 %}You're well prepared for this role.
+                                {% elif pct >= 40 %}Good foundation. Focus on filling the gaps.
+                                {% else %}Start with the essential skills for this role.{% endif %}
                             </div>
                         </div>
                     </div>
                 </div>
-                
-                <!-- AI Summary -->
+
                 <div class="card">
-                    <div class="section-title">AI Summary</div>
-                    <p style="font-size:13px; color:var(--ink-3); line-height:1.6;">
-                        {{ gap_analysis.recommendations.summary }}
-                    </p>
+                    <div class="section-title">
+                        <span class="t">
+                            <svg class="icon" viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/></svg>
+                            AI summary
+                        </span>
+                    </div>
+                    <p class="sg-summary">{{ gap_analysis.recommendations.summary }}</p>
                     {% if gap_analysis.recommendations.priority_skills %}
-                    <div style="margin-top:10px;">
-                        <div style="font-size:12px; font-weight:600; color:var(--slate);">Priority Skills to Improve:</div>
-                        <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:4px;">
-                            {% for skill in gap_analysis.recommendations.priority_skills %}
-                            <span class="pill pill-coral">{{ skill }}</span>
-                            {% endfor %}
-                        </div>
+                    <div class="sg-label">Priority skills to improve</div>
+                    <div class="chip-row tight">
+                        {% for skill in gap_analysis.recommendations.priority_skills %}
+                        <span class="pill pill-coral">{{ skill }}</span>
+                        {% endfor %}
                     </div>
                     {% endif %}
                 </div>
             </div>
-            
-            <!-- Your Current Skills Overview -->
-            <div class="card" style="margin-bottom:18px;">
-                <div class="section-title">📊 Your Current Skills ({{ student_skills|length }} skills)</div>
-                <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:4px;">
+
+            <!-- Current skills -->
+            <div class="card">
+                <div class="section-title">
+                    <span class="t">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+                        Your current skills ({{ student_skills|length }})
+                    </span>
+                </div>
+                <div class="chip-row">
                     {% for skill in student_skills %}
-                    <span class="chip" style="background:{% if skill.proficiency >= 70 %}var(--green-light){% elif skill.proficiency >= 40 %}var(--amber-light){% else %}var(--coral-light){% endif %};">
-                        {{ skill.skill.name }} ({{ skill.proficiency }}%)
+                    <span class="chip {% if skill.proficiency >= 70 %}green{% elif skill.proficiency >= 40 %}amber{% else %}coral{% endif %}">
+                        {{ skill.skill.name }}<span class="lvl">{{ skill.proficiency }}%</span>
                     </span>
                     {% else %}
-                    <span style="color:var(--slate); font-style:italic;">No skills added yet. Go to your profile to add skills.</span>
+                    <span class="sg-empty">No skills added yet. Go to your profile to add skills.</span>
                     {% endfor %}
                 </div>
                 {% if gap_analysis.extra_skills %}
-                <div style="margin-top:10px; font-size:12px; color:var(--slate);">
-                    💡 You have skills not required for this role: 
-                    {% for skill in gap_analysis.extra_skills %}
-                    <span class="chip" style="background:var(--paper-2);">{{ skill }}</span>
-                    {% endfor %}
+                <div class="sg-note">
+                    Skills you have that this role doesn't require:
+                    <div class="chip-row tight">
+                        {% for skill in gap_analysis.extra_skills %}
+                        <span class="chip">{{ skill }}</span>
+                        {% endfor %}
+                    </div>
                 </div>
                 {% endif %}
             </div>
-            
-            <!-- Skills Comparison Table -->
-            <div class="card" style="margin-bottom:18px;">
-                <div class="section-title">📈 Your Skills vs. {{ selected_role }} Requirements</div>
-                <div style="font-size:12px; color:var(--slate); margin-bottom:10px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
-                    <span><span style="display:inline-block;background:var(--amber);width:12px;height:12px;border-radius:3px;"></span> Your level</span>
-                    <span><span style="display:inline-block;background:var(--ink);width:3px;height:12px;"></span> Required level</span>
-                    <span><span style="display:inline-block;background:var(--green);width:12px;height:12px;border-radius:3px;"></span> ✅ Met requirement</span>
-                    <span><span style="display:inline-block;background:var(--coral);width:12px;height:12px;border-radius:3px;"></span> ❌ Gap detected</span>
-                    <span><span style="display:inline-block;background:var(--slate-light);width:12px;height:12px;border-radius:3px;"></span> 🔴 Missing skill</span>
+
+            <!-- Comparison -->
+            <div class="card">
+                <div class="section-title">
+                    <span class="t">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>
+                        Your skills vs. {{ selected_role }} requirements
+                    </span>
                 </div>
-                
+                <div class="legend">
+                    <span><i class="met"></i> Meets requirement</span>
+                    <span><i class="gap"></i> Below requirement</span>
+                    <span><i class="miss"></i> Missing</span>
+                    <span><i class="req"></i> Required level</span>
+                </div>
+
                 {% for gap in gap_analysis.gaps %}
                 <div class="skill-row">
                     <div class="skill-name">
                         {{ gap.skill_name }}
-                        {% if not gap.has_skill %}
-                        <span style="font-size:10px; color:var(--coral);">(Missing)</span>
-                        {% endif %}
+                        {% if not gap.has_skill %}<small>Missing</small>{% endif %}
                     </div>
                     <div class="skill-bar-bg">
                         {% if gap.has_skill %}
-                        <div class="skill-bar-fill" style="width:{{ gap.current }}%; background:{% if gap.is_matched %}var(--green){% else %}var(--coral){% endif %};"></div>
-                        {% else %}
-                        <div class="skill-bar-fill" style="width:0%; background:var(--slate-light);"></div>
+                        <div class="skill-bar-fill {% if gap.is_matched %}met{% else %}gap{% endif %}"
+                             style="width: {{ [gap.current, 100]|min }}%;"></div>
                         {% endif %}
-                        <div class="skill-bar-req" style="left:{{ gap.required }}%;"></div>
+                        <div class="skill-bar-req" style="left: {{ [gap.required, 100]|min }}%;"></div>
                     </div>
                     <div class="skill-pct">
-                        {% if gap.has_skill %}
-                        {{ gap.current }}% / {{ gap.required }}%
-                        {% else %}
-                        0% / {{ gap.required }}% <span style="color:var(--coral);">🔴</span>
-                        {% endif %}
-                        <span style="font-size:10px; margin-left:4px;">
-                            {% if gap.is_matched %}✅
-                            {% elif gap.has_skill %}❌
-                            {% else %}🔴{% endif %}
-                        </span>
+                        <span>{{ gap.current if gap.has_skill else 0 }}% / {{ gap.required }}%</span>
+                        {% if gap.is_matched %}<span class="pill pill-green">Met</span>
+                        {% elif gap.has_skill %}<span class="pill pill-amber">Gap</span>
+                        {% else %}<span class="pill pill-slate">Missing</span>{% endif %}
                     </div>
                 </div>
                 {% endfor %}
             </div>
-            
-            <!-- AI Recommendations -->
+
+            <!-- Recommendations -->
             <div class="grid g2">
                 <div class="card">
-                    <div class="section-title">💡 Actionable Improvements</div>
-                    <ul style="list-style-type:disc; padding-left:18px; font-size:13px; color:var(--ink-3); line-height:1.8;">
+                    <div class="section-title">
+                        <span class="t">
+                            <svg class="icon" viewBox="0 0 24 24"><path d="M9 18h6M10 22h4"/><path d="M12 2a7 7 0 00-4 12.7c.6.5 1 1.2 1 2V17h6v-.3c0-.8.4-1.5 1-2A7 7 0 0012 2z"/></svg>
+                            Actionable improvements
+                        </span>
+                    </div>
+                    <ul class="sg-list">
                         {% for improvement in gap_analysis.recommendations.improvements %}
                         <li>{{ improvement }}</li>
                         {% endfor %}
                     </ul>
                 </div>
-                
+
                 <div class="card">
-                    <div class="section-title">📚 Learning Paths</div>
-                    <ul style="list-style-type:disc; padding-left:18px; font-size:13px; color:var(--ink-3); line-height:1.8;">
+                    <div class="section-title">
+                        <span class="t">
+                            <svg class="icon" viewBox="0 0 24 24"><path d="M4 5a2 2 0 012-2h13v16H6a2 2 0 00-2 2z"/><path d="M4 19V5M9 7h6"/></svg>
+                            Learning paths
+                        </span>
+                    </div>
+                    <ul class="sg-list">
                         {% for path in gap_analysis.recommendations.learning_paths %}
                         <li>{{ path }}</li>
                         {% endfor %}
@@ -189,18 +232,19 @@
         {% endif %}
     </div>
 </div>
+{% endblock %}
 
-<style>
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-</style>
-
+{% block scripts %}
 <script>
-function selectRole(roleName) {
-    document.getElementById('loading').style.display = 'block';
-    document.getElementById('results').style.display = 'none';
-    window.location.href = '/student/skillgap?role=' + encodeURIComponent(roleName);
-}
+document.querySelectorAll('.role-card').forEach(function (card) {
+    card.addEventListener('click', function () {
+        var loading = document.getElementById('loading');
+        var results = document.getElementById('results');
+        if (loading) loading.classList.add('is-on');
+        if (results) results.style.display = 'none';
+        window.location.href = "{{ url_for('student.skillgap') }}?role=" +
+                               encodeURIComponent(card.dataset.role);
+    });
+});
 </script>
 {% endblock %}

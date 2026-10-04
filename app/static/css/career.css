@@ -1,0 +1,185 @@
+/* ==========================================================================
+   CareerPilot AI — Career recommendations page
+   Load AFTER style.css (see {% block head %} in career.html).
+   Replaces the old static/css/career.css.
+   ========================================================================== */
+
+.career .stack > * + * { margin-top: 18px; }
+
+/* ---------- Top highlight cards ---------- */
+.hl-card { position: relative; overflow: hidden; }
+.hl-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .76rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+.hl-label .icon { width: 18px; height: 18px; }
+
+/* strongest skill: the deep green panel, same family as the page banners */
+.hl-skill {
+    background: var(--forest);
+    border-color: var(--forest);
+    color: #fff;
+    isolation: isolate;
+}
+.hl-skill::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    top: -120px;
+    right: -90px;
+    width: 320px;
+    height: 320px;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 34% 40%, #fff 0 3px, rgba(255, 255, 255, .35) 4px 9px, transparent 10px),
+        repeating-radial-gradient(circle at center, transparent 0 41px, rgba(255, 255, 255, .17) 41px 42px),
+        radial-gradient(circle, rgba(52, 210, 123, .5), transparent 66%);
+}
+.hl-skill .hl-label { color: #BFF2D5; }
+.hl-skill .big {
+    margin-top: 10px;
+    font-family: var(--font-display);
+    font-size: clamp(1.7rem, 3vw, 2.2rem);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+}
+.hl-skill .small { margin-top: 8px; font-size: .9rem; color: rgba(255, 255, 255, .85); }
+
+.hl-advice { background: var(--mint); }
+.hl-advice .hl-label { color: var(--forest); }
+.hl-advice p { margin: 10px 0 0; font-size: .95rem; line-height: 1.65; color: var(--ink-soft); }
+
+/* ---------- Role cards ---------- */
+.role-rec { border-left: 4px solid var(--leaf); }
+.role-rec.green { border-left-color: var(--green); }
+.role-rec.amber { border-left-color: var(--amber); }
+.role-rec.coral { border-left-color: var(--coral); }
+
+.rr-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+.rr-id { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 220px; }
+.rank {
+    flex: 0 0 42px;
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: var(--paper-2);
+    color: var(--forest);
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+.rank.top { background: var(--leaf); color: var(--ink); box-shadow: 0 8px 16px -8px rgba(52, 210, 123, .9); }
+.rr-name { font-family: var(--font-display); font-size: 1.2rem; font-weight: 700; letter-spacing: -0.015em; }
+.rr-sub { margin-top: 4px; display: flex; align-items: center; gap: 8px; font-size: .8rem; color: var(--slate); }
+
+/* match ring */
+.m-ring { position: relative; width: 84px; height: 84px; flex-shrink: 0; }
+.m-ring .center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.m-ring .v { font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1; }
+.m-ring .c { margin-top: 3px; font-size: .6rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--slate); }
+.m-ring svg circle + circle { animation: ring 1.2s .2s var(--ease-out) both; }
+.m-ring .v.green { color: #0B5A31; }
+.m-ring .v.amber { color: #7A4B00; }
+.m-ring .v.coral { color: #A02D12; }
+
+/* why this fits */
+.why {
+    margin-bottom: 14px;
+    padding: 14px 16px;
+    background: var(--mint);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+}
+.why .t { margin-bottom: 6px; font-size: .74rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--forest); }
+.why p { margin: 0; font-size: .92rem; line-height: 1.65; color: var(--ink-soft); }
+
+/* three info panels */
+.rr-panels { gap: 14px; }
+.panel { padding: 14px 16px; border-radius: var(--radius); border: 1px solid transparent; }
+.panel .t { margin-bottom: 10px; font-size: .74rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.panel.learn { background: #FFF4F1; border-color: #F7C9BD; }
+.panel.learn .t { color: #A02D12; }
+.panel.certs { background: #FFF8E8; border-color: #F6DFAF; }
+.panel.certs .t { color: #7A4B00; }
+.panel.road { background: var(--mint); border-color: var(--line); }
+.panel.road .t { color: var(--forest); }
+
+.tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag {
+    padding: 4px 11px;
+    border-radius: 999px;
+    background: #fff;
+    border: 1px solid #F7C9BD;
+    color: #A02D12;
+    font-size: .8rem;
+    font-weight: 600;
+}
+
+.plain-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; font-size: .86rem; color: var(--ink-soft); }
+.plain-list li { position: relative; padding-left: 18px; line-height: 1.45; }
+.plain-list li::before {
+    content: "";
+    position: absolute;
+    left: 2px;
+    top: .5em;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--amber);
+}
+
+.steps { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; counter-reset: step; font-size: .86rem; color: var(--ink-soft); }
+.steps li { position: relative; padding-left: 30px; line-height: 1.45; counter-increment: step; }
+.steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: -1px;
+    display: grid;
+    place-items: center;
+    width: 21px;
+    height: 21px;
+    border-radius: 50%;
+    background: var(--leaf);
+    color: var(--ink);
+    font-size: .72rem;
+    font-weight: 800;
+}
+
+.rr-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+.rr-actions .icon { width: 16px; height: 16px; }
+
+/* ---------- How it works ---------- */
+.how { display: flex; gap: 14px; align-items: flex-start; background: var(--mint); }
+.how .h-icon {
+    flex: 0 0 40px;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: var(--sage);
+    color: var(--forest);
+}
+.how h3 { font-size: 1rem; font-weight: 700; }
+.how p { margin: 6px 0 0; font-size: .88rem; line-height: 1.65; color: var(--ink-soft); }
+.how p strong { color: var(--ink); }
+
+@media (max-width: 480px) {
+    .rr-head { align-items: flex-start; }
+}

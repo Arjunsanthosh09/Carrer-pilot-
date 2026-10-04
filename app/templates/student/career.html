@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/career.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="shell">
+    {% include "student/_sidebar.html" %}
+
+    <div class="main career">
+        <!-- Page header -->
+        <div class="page-head">
+            <div>
+                <h1>Career recommendations</h1>
+                <p class="sub">AI-powered role matches based on your skills, projects, and certifications.</p>
+            </div>
+        </div>
+
+        <div class="stack">
+
+            <!-- Strongest skill + advice -->
+            <div class="grid g2">
+                <div class="card hl-card hl-skill">
+                    <div class="hl-label">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>
+                        Your strongest skill
+                    </div>
+                    <div class="big">{{ recommendations.top_skill }}</div>
+                    <div class="small">Based on your profile analysis</div>
+                </div>
+
+                <div class="card hl-card hl-advice">
+                    <div class="hl-label">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M9 18h6M10 22h4"/><path d="M12 2a7 7 0 00-4 12.7c.6.5 1 1.2 1 2V17h6v-.3c0-.8.4-1.5 1-2A7 7 0 0012 2z"/></svg>
+                        Career advice
+                    </div>
+                    <p>{{ recommendations.career_advice }}</p>
+                </div>
+            </div>
+
+            <!-- Profile summary -->
+            <div class="grid g4">
+                <div class="stat-card">
+                    <div class="label">Skills</div>
+                    <div class="num">{{ skill_count }}</div>
+                    <div class="delta up">in your profile</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Projects</div>
+                    <div class="num">{{ project_count }}</div>
+                    <div class="delta up">showcased</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Certifications</div>
+                    <div class="num">{{ cert_count }}</div>
+                    <div class="delta up">verified</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">CGPA</div>
+                    <div class="num">{{ profile.cgpa or 'N/A' }}</div>
+                    <div class="delta up">academic score</div>
+                </div>
+            </div>
+
+            <!-- Top matches -->
+            <div class="section-title" style="margin-bottom:0;">Your top 5 career matches</div>
+
+            {% for role in recommendations.roles %}
+            {% set tone = 'green' if role.match >= 75 else ('amber' if role.match >= 50 else 'coral') %}
+            <div class="card role-rec {{ tone }}">
+
+                <!-- Header -->
+                <div class="rr-head">
+                    <div class="rr-id">
+                        <div class="rank {% if loop.index == 1 %}top{% endif %}">{{ loop.index }}</div>
+                        <div>
+                            <div class="rr-name">{{ role.role }}</div>
+                            <div class="rr-sub">
+                                <span>Rank #{{ loop.index }}</span>
+                                <span class="pill pill-{{ tone }}"><span class="dot"></span>AI-matched</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="m-ring">
+                        <svg width="84" height="84" viewBox="0 0 80 80">
+                            <circle cx="40" cy="40" r="32" fill="none" stroke="var(--paper-2)" stroke-width="8"/>
+                            <circle cx="40" cy="40" r="32" fill="none"
+                                    stroke="var(--{{ tone }})"
+                                    stroke-width="8"
+                                    stroke-dasharray="201"
+                                    stroke-dashoffset="{{ 201 - ([role.match, 100]|min / 100 * 201) }}"
+                                    stroke-linecap="round"
+                                    transform="rotate(-90 40 40)"/>
+                        </svg>
+                        <div class="center">
+                            <span class="v {{ tone }}">{{ role.match }}%</span>
+                            <span class="c">Match</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Why this fits -->
+                <div class="why">
+                    <div class="t">Why this fits you</div>
+                    <p>{{ role.why }}</p>
+                </div>
+
+                <!-- Panels -->
+                <div class="grid g3 rr-panels">
+                    <div class="panel learn">
+                        <div class="t">Skills to learn</div>
+                        <div class="tags">
+                            {% for skill in role.missing_skills %}
+                            <span class="tag">{{ skill }}</span>
+                            {% else %}
+                            <span style="font-size:.85rem; color:var(--slate);">You already cover the key skills.</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="panel certs">
+                        <div class="t">Recommended certs</div>
+                        <ul class="plain-list">
+                            {% for cert in role.recommended_certs %}
+                            <li>{{ cert }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <div class="panel road">
+                        <div class="t">Roadmap</div>
+                        <ol class="steps">
+                            {% for step in role.roadmap %}
+                            <li>{{ step }}</li>
+                            {% endfor %}
+                        </ol>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="rr-actions">
+                    <a href="{{ url_for('student.skillgap') }}?role={{ role.role|urlencode }}" class="btn btn-ghost btn-sm">
+                        <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>
+                        View skill gap for {{ role.role }}
+                    </a>
+                    <a href="{{ url_for('student.resume') }}" class="btn btn-ghost btn-sm">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6"/></svg>
+                        Update resume
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+
+            <!-- How it works -->
+            <div class="card how">
+                <div class="h-icon">
+                    <svg class="icon" viewBox="0 0 24 24"><rect x="4" y="7" width="16" height="12" rx="3"/><path d="M12 7V3M9 13h.01M15 13h.01M9 16.5h6"/></svg>
+                </div>
+                <div>
+                    <h3>How this works</h3>
+                    <p>
+                        Our AI analyzes your <strong>skills, projects, certifications, education, department, and CGPA</strong>
+                        to match you against real job roles. Match percentages show how well your current profile aligns with
+                        each role's requirements. Recommendations update automatically as you add more skills, projects, or
+                        certifications.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

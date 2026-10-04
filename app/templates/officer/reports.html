@@ -1,0 +1,137 @@
+```html
+{% extends "base.html" %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/reports.css') }}">
+
+<div class="dashboard-page">
+
+    <aside class="sidebar">
+
+        <div class="sidebar-logo">
+            <div class="logo-box">CP</div>
+            <h2>CareerPilot AI</h2>
+        </div>
+
+        <p class="menu-title">MENU</p>
+
+        <nav class="menu">
+            <a href="{{ url_for('officer.dashboard') }}">
+                <i class="fa-solid fa-house"></i>
+                Dashboard
+            </a>
+            <a href="{{ url_for('officer.students') }}">
+                <i class="fa-solid fa-users"></i>
+                Student Records
+            </a>
+            <a href="{{ url_for('officer.companies') }}">
+                <i class="fa-solid fa-building"></i>
+                Companies
+            </a>
+            <a href="{{ url_for('officer.drives') }}">
+                <i class="fa-solid fa-briefcase"></i>
+                Placement Drives
+            </a>
+            <a href="{{ url_for('officer.reports') }}" class="active">
+                <i class="fa-solid fa-chart-line"></i>
+                Reports & Analytics
+            </a>
+        </nav>
+
+        <div class="sidebar-bottom">
+
+            <div class="officer-card">
+                <div class="avatar">
+                    {% if current_user.officer_profile %}
+                        {% set officer = current_user.officer_profile %}
+                        {% set names = officer.full_name.split() if officer.full_name else ['O'] %}
+                        {{ names[0][0]|upper if names[0] else 'O' }}{% if names|length > 1 %}{{ names[-1][0]|upper if names[-1] else '' }}{% endif %}
+                    {% else %}
+                        {{ current_user.email[0]|upper }}
+                    {% endif %}
+                </div>
+                <div>
+                    <strong>
+                        {% if current_user.officer_profile %}
+                            {{ current_user.officer_profile.full_name or 'Placement Officer' }}
+                        {% else %}
+                            {{ current_user.email }}
+                        {% endif %}
+                    </strong>
+                    <p>Placement Officer</p>
+                </div>
+            </div>
+
+            <a href="{{ url_for('auth.logout') }}" class="logout-btn">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                Log out
+            </a>
+
+        </div>
+
+    </aside>
+
+    <main class="dashboard-main">
+
+        <div class="dashboard-header">
+            <div>
+                <h1>Reports & analytics</h1>
+                <p>Institution-wide placement preparedness, exportable as CSV.</p>
+            </div>
+        </div>
+
+        <div class="reports-grid">
+
+            <div class="report-card">
+                <h2>Current readiness</h2>
+                <div class="current-readiness-box">
+                    <div class="current-readiness-circle" style="--pct: {{ avg_readiness_now }}%;">
+                        <span>{{ avg_readiness_now }}%</span>
+                    </div>
+                    <p class="current-readiness-note">
+                        Average readiness score across all students, as of today. Monthly trend tracking will be available once historical data has been collected.
+                    </p>
+                </div>
+            </div>
+
+            <div class="report-card">
+                <h2>Department-wise readiness</h2>
+                <div class="dept-list">
+                    {% for dept in department_readiness %}
+                    <div class="dept-row">
+                        <span class="dept-name">{{ dept.department }}</span>
+                        <div class="dept-track">
+                            <div class="dept-fill {% if dept.avg < 45 %}fill-red{% elif dept.avg < 75 %}fill-orange{% else %}fill-green{% endif %}" style="width: {{ dept.avg }}%;"></div>
+                        </div>
+                        <span class="dept-pct">{{ dept.avg }}%</span>
+                    </div>
+                    {% else %}
+                    <p class="empty-text">No department data yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+
+        <div class="export-card">
+            <h2>Export reports</h2>
+            <div class="export-buttons">
+                <a href="{{ url_for('officer.export_readiness') }}" class="export-btn">
+                    <i class="fa-solid fa-download"></i> Readiness summary (CSV)
+                </a>
+                <a href="{{ url_for('officer.export_skillgap') }}" class="export-btn">
+                    <i class="fa-solid fa-download"></i> Skill gap report (CSV)
+                </a>
+                <a href="{{ url_for('officer.export_drives') }}" class="export-btn">
+                    <i class="fa-solid fa-download"></i> Placement drive log (CSV)
+                </a>
+            </div>
+        </div>
+
+    </main>
+
+</div>
+{% endblock %}
+```

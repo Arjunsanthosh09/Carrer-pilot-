@@ -1,0 +1,386 @@
+/* ==========================================================================
+   CareerPilot AI — Placement officer dashboard
+   static/css/dashboard.css  (loaded after style.css by the officer dashboard)
+   Everything is scoped to .dashboard-page so it can't clash with the student
+   pages, and it reuses the tokens from style.css (--forest, --leaf, --line ...).
+   ========================================================================== */
+
+.dashboard-page {
+    display: grid;
+    grid-template-columns: 264px minmax(0, 1fr);
+    min-height: 100vh;
+    min-height: 100dvh;
+    background: var(--canvas);
+    color: var(--ink);
+}
+
+/* ==========================================================================
+   Sidebar
+   ========================================================================== */
+.dashboard-page .sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100dvh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 24px 16px;
+    background: var(--forest);
+    color: #fff;
+}
+
+.dashboard-page .sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 8px;
+    margin-bottom: 24px;
+}
+.dashboard-page .logo-box {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: #fff;
+    color: var(--forest);
+    font: 700 1rem/1 var(--font-display);
+    box-shadow: 0 6px 18px -6px rgba(0, 0, 0, .35);
+}
+.dashboard-page .sidebar-logo h2 {
+    color: #fff;
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.dashboard-page .menu-title {
+    margin: 0 0 6px;
+    padding: 0 12px;
+    font-size: .74rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    color: rgba(255, 255, 255, .6);
+}
+
+.dashboard-page .menu { display: flex; flex-direction: column; gap: 4px; }
+.dashboard-page .menu a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 12px;
+    border-radius: var(--radius-sm);
+    color: rgba(255, 255, 255, .9);
+    font-size: .93rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color .2s ease, color .2s ease;
+}
+.dashboard-page .menu a i { width: 20px; text-align: center; font-size: 1rem; }
+.dashboard-page .menu a:hover { background: rgba(255, 255, 255, .12); color: #fff; }
+.dashboard-page .menu a.active { background: var(--leaf); color: var(--ink); font-weight: 600; }
+.dashboard-page .menu a:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+/* user card + log out */
+.dashboard-page .sidebar-bottom {
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, .16);
+    display: grid;
+    gap: 12px;
+}
+.dashboard-page .officer-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, .10);
+    border: 1px solid rgba(255, 255, 255, .14);
+}
+.dashboard-page .officer-card > div:last-child { min-width: 0; }
+.dashboard-page .officer-card .avatar {
+    flex: 0 0 42px;
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--leaf);
+    color: var(--ink);
+    font: 800 .95rem/1 var(--font-display);
+    letter-spacing: .02em;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, .18);
+}
+.dashboard-page .officer-card strong {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #fff;
+    font-size: .95rem;
+    line-height: 1.25;
+}
+.dashboard-page .officer-card p {
+    margin: 2px 0 0;
+    font-size: .8rem;
+    color: rgba(255, 255, 255, .72);
+}
+
+.dashboard-page .logout-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 14px;
+    border-radius: 12px;
+    border: 1.5px solid rgba(255, 255, 255, .28);
+    color: #fff;
+    font: 700 .92rem/1 var(--font-display);
+    text-decoration: none;
+    transition: background-color .2s ease, border-color .2s ease;
+}
+.dashboard-page .logout-btn:hover { background: rgba(255, 255, 255, .14); border-color: rgba(255, 255, 255, .5); }
+.dashboard-page .logout-btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+/* ==========================================================================
+   Main area
+   ========================================================================== */
+.dashboard-main { min-width: 0; padding: clamp(20px, 3.2vw, 44px); }
+
+.dashboard-header { margin-bottom: 28px; }
+.dashboard-header h1 {
+    font-size: clamp(1.6rem, 2.6vw, 2.2rem);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+}
+.dashboard-header p { margin: 6px 0 0; color: var(--slate); }
+
+/* ---------- Stat cards ---------- */
+.dashboard-page .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.dashboard-page .stat-card {
+    position: relative;
+    min-width: 0;
+    padding: 20px 22px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    transition: transform .25s var(--ease-out), box-shadow .25s ease, border-color .25s ease;
+}
+.dashboard-page .stat-card small {
+    display: block;
+    padding-right: 24px;
+    font-size: .86rem;
+    font-weight: 500;
+    color: var(--slate);
+}
+.dashboard-page .stat-card h2 {
+    margin: 8px 0 10px;
+    font-size: clamp(1.8rem, 2.4vw, 2.3rem);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+}
+.dashboard-page .stat-card span {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: .82rem;
+    font-weight: 600;
+}
+.dashboard-page .stat-card span::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: currentColor;
+}
+.dashboard-page .stat-card .green { color: #12803F; }
+.dashboard-page .stat-card .red { color: #A02D12; }
+
+/* the small "open" arrow in the corner of clickable cards */
+.dashboard-page .card-arrow {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    font-size: .8rem;
+    color: var(--slate);
+    opacity: .55;
+    transition: opacity .2s ease, transform .2s ease, color .2s ease;
+}
+
+.dashboard-page .clickable-card,
+.dashboard-page .clickable-large-card { cursor: pointer; }
+.dashboard-page .clickable-card:hover,
+.dashboard-page .clickable-large-card:hover {
+    transform: translateY(-3px);
+    border-color: #C5E0D1;
+    box-shadow: 0 18px 36px -22px rgba(11, 107, 58, .45);
+}
+.dashboard-page .clickable-card:hover .card-arrow,
+.dashboard-page .clickable-large-card:hover .card-arrow {
+    opacity: 1;
+    color: var(--forest);
+    transform: translate(2px, -2px);
+}
+
+/* ---------- Bottom grid ---------- */
+.dashboard-page .bottom-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.45fr);
+    gap: 16px;
+    align-items: start;
+}
+
+.dashboard-page .distribution-card,
+.dashboard-page .skills-card {
+    position: relative;
+    min-width: 0;
+    padding: 24px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    transition: transform .25s var(--ease-out), box-shadow .25s ease, border-color .25s ease;
+}
+.dashboard-page .distribution-card h2,
+.dashboard-page .skills-card h2 {
+    margin-bottom: 20px;
+    padding-right: 28px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+/* ---------- Readiness distribution ---------- */
+.dashboard-page .progress-row {
+    display: grid;
+    grid-template-columns: 150px minmax(0, 1fr) 46px;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+.dashboard-page .progress-row span { font-size: .88rem; font-weight: 500; color: var(--slate); }
+.dashboard-page .progress-row strong {
+    text-align: right;
+    font-size: .88rem;
+    font-variant-numeric: tabular-nums;
+}
+.dashboard-page .progress {
+    height: 10px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--paper-2);
+}
+.dashboard-page .fill {
+    height: 100%;
+    border-radius: inherit;
+    transform-origin: left center;
+    animation: grow 1s .3s var(--ease-out) both;
+}
+.dashboard-page .fill1 { background: var(--green); }
+.dashboard-page .fill2 { background: var(--amber); }
+.dashboard-page .fill3 { background: var(--coral); }
+.dashboard-page .progress-row:nth-of-type(2) .fill { animation-delay: .4s; }
+.dashboard-page .progress-row:nth-of-type(3) .fill { animation-delay: .5s; }
+
+.dashboard-page .note {
+    margin: 22px 0 0;
+    padding: 14px 16px;
+    border-radius: var(--radius);
+    background: var(--mint);
+    border: 1px solid var(--line);
+    font-size: .88rem;
+    line-height: 1.6;
+    color: var(--ink-soft);
+}
+
+/* ---------- Skill gaps table ---------- */
+.dashboard-page .skills-card { overflow-x: auto; }
+.dashboard-page .skills-card table { width: 100%; min-width: 520px; border-collapse: collapse; }
+.dashboard-page .skills-card th {
+    padding: 0 12px 12px;
+    text-align: left;
+    font-size: .74rem;
+    font-weight: 700;
+    letter-spacing: .07em;
+    color: var(--slate);
+    border-bottom: 1px solid var(--line);
+}
+.dashboard-page .skills-card td {
+    padding: 14px 12px;
+    font-size: .9rem;
+    color: var(--ink-soft);
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+}
+.dashboard-page .skills-card tr:last-child td { border-bottom: 0; }
+.dashboard-page .skills-card th:first-child,
+.dashboard-page .skills-card td:first-child { padding-left: 0; }
+.dashboard-page .skills-card td:first-child { font-weight: 700; color: var(--ink); }
+.dashboard-page .skills-card td:nth-child(2) {
+    font-weight: 700;
+    color: #A02D12;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+.dashboard-page .skills-card tbody tr:hover td { background: var(--mint); }
+.dashboard-page .skills-card td[colspan] { padding: 28px 0; color: var(--slate) !important; text-align: center; }
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+@media (max-width: 1180px) {
+    .dashboard-page .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .dashboard-page .bottom-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 960px) {
+    .dashboard-page { grid-template-columns: 1fr; }
+    /* sidebar becomes a scrollable strip across the top */
+    .dashboard-page .sidebar {
+        position: static;
+        height: auto;
+        flex-direction: row;
+        align-items: center;
+        gap: 6px;
+        padding: 12px 14px;
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
+    .dashboard-page .sidebar > * { flex: 0 0 auto; }
+    .dashboard-page .sidebar-logo { margin: 0 10px 0 0; padding: 0; }
+    .dashboard-page .sidebar-logo h2 { font-size: 1.1rem; white-space: nowrap; }
+    .dashboard-page .menu-title { display: none; }
+    .dashboard-page .menu { flex-direction: row; }
+    .dashboard-page .menu a { white-space: nowrap; }
+    .dashboard-page .sidebar-bottom {
+        margin: 0 0 0 auto;
+        padding: 0;
+        border: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .dashboard-page .officer-card { display: none; }
+    .dashboard-page .logout-btn { white-space: nowrap; }
+}
+
+@media (max-width: 560px) {
+    .dashboard-page .stats-grid { grid-template-columns: 1fr; }
+    .dashboard-page .progress-row { grid-template-columns: 1fr auto; gap: 6px 12px; }
+    .dashboard-page .progress-row span { grid-column: 1; grid-row: 1; }
+    .dashboard-page .progress-row strong { grid-column: 2; grid-row: 1; }
+    .dashboard-page .progress-row .progress { grid-column: 1 / -1; grid-row: 2; }
+    .dashboard-page .distribution-card,
+    .dashboard-page .skills-card { padding: 18px; }
+}

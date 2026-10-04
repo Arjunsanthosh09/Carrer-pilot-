@@ -1,0 +1,232 @@
+/* ==========================================================================
+   CareerPilot AI — Skill gap analysis page
+   Load AFTER style.css (see {% block head %} in skillgap.html).
+   Uses the tokens and components already defined in style.css
+   (.card, .grid, .stat-card, .pill, .section-title, .progress-track ...).
+   ========================================================================== */
+
+.skillgap {
+    /* tokens the old template used but style.css never defined */
+    --green-light: #D6F2E1;
+    --coral-light: #FFE1D9;
+    --slate-light: #C9DBD0;
+    --ink-3: var(--ink-soft);
+}
+
+.skillgap .stack > * + * { margin-top: 18px; }
+
+/* small icon that sits before a card title */
+.section-title .t {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+.section-title .t .icon { width: 20px; height: 20px; color: var(--forest); }
+
+/* ---------- Role picker ---------- */
+.role-grid { margin-bottom: 26px; }
+
+.role-card {
+    display: block;
+    width: 100%;
+    padding: 18px 20px;
+    text-align: left;
+    font: inherit;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: transform .25s var(--ease-out), box-shadow .25s ease,
+                border-color .25s ease, background-color .25s ease;
+}
+.role-card:hover {
+    transform: translateY(-3px);
+    border-color: #C5E0D1;
+    box-shadow: 0 18px 36px -22px rgba(11, 107, 58, .45);
+}
+.role-card:active { transform: translateY(0) scale(.99); }
+.role-card .role-name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.02rem;
+    letter-spacing: -0.01em;
+}
+.role-card .role-meta { margin-top: 4px; font-size: .86rem; color: var(--slate); }
+.role-card .pill { margin-top: 10px; }
+
+.role-card.selected {
+    border-color: var(--leaf);
+    background: var(--mint);
+    box-shadow: 0 0 0 4px rgba(52, 210, 123, .22);
+}
+
+/* ---------- Loading ---------- */
+.sg-loading { display: none; text-align: center; padding: 34px 0; color: var(--slate); }
+.sg-loading.is-on { display: block; }
+.sg-spinner {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--sage);
+    border-top-color: var(--leaf);
+    border-radius: 50%;
+    animation: sg-spin .8s linear infinite;
+}
+.sg-loading p { margin: 12px 0 0; }
+@keyframes sg-spin { to { transform: rotate(360deg); } }
+
+/* ---------- Match gauge ---------- */
+.match-ring { position: relative; width: 120px; height: 120px; flex-shrink: 0; }
+.match-ring .center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.match-ring .pct {
+    font-family: var(--font-display);
+    font-size: 1.9rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+}
+.match-ring .cap { margin-top: 4px; font-size: .75rem; color: var(--slate); }
+.match-text .big { font-weight: 700; font-size: 1rem; }
+.match-text .small { margin-top: 6px; font-size: .9rem; color: var(--slate); }
+
+/* ---------- AI summary ---------- */
+.sg-summary { margin: 0; font-size: .92rem; line-height: 1.65; color: var(--ink-soft); }
+.sg-label { margin: 14px 0 8px; font-size: .8rem; font-weight: 600; color: var(--slate); }
+.chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip-row.tight { gap: 6px; }
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: var(--paper-2);
+    color: var(--ink);
+    font-size: .82rem;
+    font-weight: 600;
+    line-height: 1.3;
+}
+.chip.green { background: var(--sage); color: #0B5A31; }
+.chip.amber { background: #FFF0CF; color: #7A4B00; }
+.chip.coral { background: #FFE1D9; color: #A02D12; }
+.chip .lvl { margin-left: 6px; font-weight: 500; opacity: .8; }
+
+.sg-empty { color: var(--slate); font-style: italic; font-size: .9rem; }
+.sg-note {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+    font-size: .85rem;
+    color: var(--slate);
+}
+.sg-note .chip-row { margin-top: 8px; }
+
+/* ---------- Legend ---------- */
+.legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 20px;
+    margin: -4px 0 18px;
+    font-size: .82rem;
+    color: var(--slate);
+}
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 4px; }
+.legend i.req { width: 3px; height: 14px; border-radius: 2px; background: var(--ink); }
+.legend i.met { background: var(--green); }
+.legend i.gap { background: var(--coral); }
+.legend i.miss { background: var(--slate-light); }
+
+/* ---------- Skill rows ---------- */
+.skill-row {
+    display: grid;
+    grid-template-columns: 190px minmax(0, 1fr) 150px;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+}
+.skill-row:last-child { border-bottom: 0; padding-bottom: 0; }
+.skill-row:first-of-type { padding-top: 0; }
+
+.skill-name { font-size: .92rem; font-weight: 600; }
+.skill-name small { display: block; margin-top: 2px; font-size: .74rem; font-weight: 600; color: #A02D12; }
+
+.skill-bar-bg {
+    position: relative;
+    height: 10px;
+    border-radius: 999px;
+    background: var(--paper-2);
+}
+.skill-bar-fill {
+    height: 100%;
+    border-radius: inherit;
+    transform-origin: left center;
+    animation: grow 1s .3s var(--ease-out) both;
+}
+.skill-bar-fill.met { background: var(--green); }
+.skill-bar-fill.gap { background: var(--coral); }
+.skill-bar-req {
+    position: absolute;
+    top: -4px;
+    bottom: -4px;
+    width: 3px;
+    border-radius: 2px;
+    background: var(--ink);
+    transform: translateX(-50%);
+}
+
+.skill-pct {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    font-size: .86rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+.pill.pill-slate { background: var(--paper-2); color: var(--ink-soft); }
+
+/* ---------- Lists ---------- */
+.sg-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 12px;
+    font-size: .92rem;
+    line-height: 1.55;
+    color: var(--ink-soft);
+}
+.sg-list li { position: relative; padding-left: 22px; }
+.sg-list li::before {
+    content: "";
+    position: absolute;
+    left: 2px;
+    top: .55em;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--leaf);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 760px) {
+    .skill-row { grid-template-columns: 1fr auto; gap: 8px 12px; }
+    .skill-name { grid-column: 1; grid-row: 1; }
+    .skill-pct { grid-column: 2; grid-row: 1; }
+    .skill-bar-bg { grid-column: 1 / -1; grid-row: 2; }
+}
+@media (max-width: 480px) {
+    .match-wrap { justify-content: center; text-align: center; }
+}

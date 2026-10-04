@@ -24,9 +24,9 @@ href="{{ url_for('static', filename='css/companie.css') }}">
 Dashboard
 </a>
 
-<a href="#">
-<i class="fa-solid fa-users"></i>
-Student Records
+<a href="{{ url_for('officer.students') }}">
+    <i class="fa-solid fa-users"></i>
+    Student Records
 </a>
 
 <a href="{{ url_for('officer.companies') }}" class="active">
@@ -39,9 +39,9 @@ Companies
 Placement Drives
 </a>
 
-<a href="#">
+<a href="{{ url_for('officer.reports') }}">
 <i class="fa-solid fa-chart-column"></i>
-Reports
+Reports & analytics
 </a>
 
 <div class="officer-box">

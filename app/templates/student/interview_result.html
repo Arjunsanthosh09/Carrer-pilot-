@@ -1,57 +1,101 @@
 {% extends "base.html" %}
 
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/interview.css') }}">
+{% endblock %}
+
 {% block content %}
+{% set score = session.overall_score or 0 %}
+{% set tone = 'green' if score >= 7 else ('amber' if score >= 5 else 'coral') %}
+{% set answered = session.questions|selectattr('answer')|list|length %}
+
 <div class="shell">
     {% include "student/_sidebar.html" %}
     <div class="main">
         <div class="page-head">
             <div>
-                <h1>Interview Result</h1>
-                <p class="sub">{{ session.type|title }} Interview · {{ session.date.strftime('%b %d, %Y') }}</p>
+                <h1>Interview result</h1>
+                <p class="sub">{{ session.type|title }} interview · {{ session.date.strftime('%b %d, %Y') }}</p>
             </div>
             <div class="top-actions">
-                <a href="{{ url_for('student.interview') }}" class="btn-outline" style="text-decoration:none;">Back to Interviews</a>
+                <a href="{{ url_for('student.interview') }}" class="btn btn-ghost">Back to interviews</a>
             </div>
         </div>
 
-        <!-- Overall Score -->
-        <div class="card" style="margin-bottom:18px; text-align:center;">
-            <div class="section-title">Overall Score</div>
-            <div style="font-size:56px; font-weight:700; color:{% if session.overall_score >= 7 %}var(--green){% elif session.overall_score >= 5 %}var(--amber){% else %}var(--coral){% endif %};">
-                {{ session.overall_score }}/10
-            </div>
-            <div class="pill {% if session.overall_score >= 7 %}pill-green{% elif session.overall_score >= 5 %}pill-amber{% else %}pill-coral{% endif %}" style="margin-top:8px;">
-                {% if session.overall_score >= 7 %}Excellent{% elif session.overall_score >= 5 %}Good{% else %}Needs Improvement{% endif %}
+        <!-- Overall score -->
+        <div class="card" style="margin-bottom:18px;">
+            <div class="section-title">Overall score</div>
+            <div class="res-hero">
+                <div class="res-ring">
+                    <svg width="150" height="150" viewBox="0 0 120 120">
+                        <circle cx="60" cy="60" r="48" fill="none" stroke="var(--paper-2)" stroke-width="12"/>
+                        <circle cx="60" cy="60" r="48" fill="none"
+                                stroke="var(--{{ tone }})"
+                                stroke-width="12"
+                                stroke-dasharray="301"
+                                stroke-dashoffset="{{ (1 - ([score, 10]|min)/10) * 301 }}"
+                                stroke-linecap="round"
+                                transform="rotate(-90 60 60)"/>
+                    </svg>
+                    <div class="center">
+                        <span class="score">{{ score }}/10</span>
+                        <span class="cap">Overall</span>
+                    </div>
+                </div>
+                <div class="res-text">
+                    <h2>{% if score >= 7 %}Excellent work{% elif score >= 5 %}Good effort{% else %}Needs improvement{% endif %}</h2>
+                    <p>
+                        {% if score >= 7 %}You answered with strong clarity and accuracy.
+                        {% elif score >= 5 %}A solid base. Review the feedback below to sharpen your answers.
+                        {% else %}Use the feedback below to focus your practice, then try again.{% endif %}
+                    </p>
+                    <span class="pill pill-{{ tone }}"><span class="dot"></span>{% if score >= 7 %}Excellent{% elif score >= 5 %}Good{% else %}Needs improvement{% endif %}</span>
+                </div>
             </div>
         </div>
 
-        <!-- Question Breakdown -->
+        <!-- Stats -->
+        <div class="grid g3" style="margin-bottom:18px;">
+            <div class="stat-card">
+                <div class="label">Questions</div>
+                <div class="num">{{ session.questions|length }}</div>
+                <div class="delta up">In this session</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Answered</div>
+                <div class="num">{{ answered }}</div>
+                <div class="delta {{ 'up' if answered == session.questions|length else 'warn' }}">
+                    {% if answered == session.questions|length %}All answered{% else %}{{ session.questions|length - answered }} skipped{% endif %}
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Interview type</div>
+                <div class="num" style="font-size:1.6rem;">{{ session.type|title }}</div>
+                <div class="delta up">{{ session.date.strftime('%b %d, %Y') }}</div>
+            </div>
+        </div>
+
+        <!-- Question breakdown -->
         <div class="card">
-            <div class="section-title">Question-by-Question Feedback</div>
+            <div class="section-title">Question-by-question feedback</div>
             {% for q in session.questions %}
-            <div class="feedback-card" style="margin-bottom:14px; border-left:4px solid {% if q.score >= 7 %}var(--green){% elif q.score >= 5 %}var(--amber){% else %}var(--coral){% endif %}; padding:14px 16px; background:var(--paper-2); border-radius:0 10px 10px 0;">
-                <div style="font-weight:600; font-size:14px;">Q{{ loop.index }}. {{ q.question }}</div>
-                <div style="font-size:13px; color:var(--slate); margin-top:8px;">
-                    <strong>Your Answer:</strong> {{ q.answer or 'Not answered' }}
-                </div>
-                <div style="margin-top:8px;">
-                    <span class="pill {% if q.score >= 7 %}pill-green{% elif q.score >= 5 %}pill-amber{% else %}pill-coral{% endif %}">
-                        Score: {{ q.score }}/10
-                    </span>
-                </div>
+            {% set qs = q.score or 0 %}
+            {% set qtone = 'green' if qs >= 7 else ('amber' if qs >= 5 else 'coral') %}
+            <div class="fb-q {{ qtone }}">
+                <div class="q">Q{{ loop.index }}. {{ q.question }}</div>
+                <div class="a"><strong>Your answer:</strong> {{ q.answer or 'Not answered' }}</div>
+                <span class="pill pill-{{ qtone }}">Score: {{ qs }}/10</span>
                 {% if q.feedback %}
-                <div style="font-size:13px; margin-top:8px; color:var(--ink-3);">
-                    <strong>Feedback:</strong> {{ q.feedback }}
-                </div>
+                <div class="f"><strong>Feedback:</strong> {{ q.feedback }}</div>
                 {% endif %}
             </div>
             {% endfor %}
         </div>
 
-        <!-- Action Buttons -->
-        <div style="margin-top:18px; display:flex; gap:10px;">
-            <a href="{{ url_for('student.interview') }}" class="btn-ink" style="text-decoration:none;">Start Another Interview</a>
-            <a href="{{ url_for('student.skillgap') }}" class="btn-outline" style="text-decoration:none;">Review Skill Gaps</a>
+        <!-- Actions -->
+        <div class="res-actions">
+            <a href="{{ url_for('student.interview') }}" class="btn btn-primary">Start another interview</a>
+            <a href="{{ url_for('student.skillgap') }}" class="btn btn-ghost">Review skill gaps</a>
         </div>
     </div>
 </div>

@@ -16,6 +16,7 @@ from datetime import datetime
 from app.services.gemini_ai import generate_profile_suggestions
 from app.services.skill_gap import get_all_roles, get_role_requirements, analyze_skill_gap
 from app.models import Education
+from app.services.gemini_ai import generate_career_recommendations
 
 # --- NEW: pdfkit (replaces weasyprint) ---
 import pdfkit
@@ -444,7 +445,29 @@ def interview_result(session_id):
 @student_bp.route('/career')
 @login_required
 def career():
-    return render_template('student/career.html')
+    profile = current_user.profile
+    if not profile:
+        flash('Please complete your profile first.')
+        return redirect(url_for('student.profile'))
+
+    # Fetch all student data
+    skills = StudentSkill.query.filter_by(student_id=profile.id).all()
+    projects = Project.query.filter_by(student_id=profile.id).all()
+    certs = Certification.query.filter_by(student_id=profile.id).all()
+    educations = Education.query.filter_by(student_id=profile.id)\
+                                 .order_by(Education.end_year.desc()).all()
+
+    # Get AI recommendations
+    recommendations = generate_career_recommendations(
+        profile, skills, projects, certs, educations
+    )
+
+    return render_template('student/career.html',
+                           profile=profile,
+                           recommendations=recommendations,
+                           skill_count=len(skills),
+                           project_count=len(projects),
+                           cert_count=len(certs))
 
 
 # ========== EDUCATION ==========
