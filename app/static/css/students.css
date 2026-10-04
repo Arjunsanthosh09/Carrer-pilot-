@@ -1,0 +1,282 @@
+/* ==========================================================================
+   CareerPilot AI — Officer: student records
+   static/css/students.css  (loaded after style.css)
+
+   Also holds the officer sidebar + page shell, because the student details
+   page loads this file too, then adds student_details.css on top.
+   Everything is scoped to .students-page and uses the tokens from style.css.
+   ========================================================================== */
+
+.students-page {
+    display: grid;
+    grid-template-columns: 264px minmax(0, 1fr);
+    min-height: 100vh;
+    min-height: 100dvh;
+    background: var(--canvas);
+    color: var(--ink);
+}
+
+/* ==========================================================================
+   Sidebar
+   ========================================================================== */
+.students-sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100dvh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 24px 16px;
+    background: var(--forest);
+    color: #fff;
+}
+
+.students-logo { display: flex; align-items: center; gap: 12px; padding: 0 8px; margin-bottom: 24px; }
+.students-logo-box {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: #fff;
+    color: var(--forest);
+    font: 700 1rem/1 var(--font-display);
+    box-shadow: 0 6px 18px -6px rgba(0, 0, 0, .35);
+}
+.students-logo h2 { color: #fff; font-size: 1.3rem; font-weight: 700; letter-spacing: -0.01em; }
+
+.students-sidebar .menu-title {
+    padding: 0 12px;
+    margin-bottom: 6px;
+    font-size: .74rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    color: rgba(255, 255, 255, .6);
+}
+
+.students-sidebar > a:not(.logout-btn) {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 12px;
+    border-radius: var(--radius-sm);
+    color: rgba(255, 255, 255, .9);
+    font-size: .93rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color .2s ease, color .2s ease;
+}
+.students-sidebar > a:not(.logout-btn) i { width: 20px; text-align: center; font-size: 1rem; }
+.students-sidebar > a:not(.logout-btn):hover { background: rgba(255, 255, 255, .12); color: #fff; }
+.students-sidebar > a.active { background: var(--leaf); color: var(--ink); font-weight: 600; }
+.students-sidebar a:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+/* officer card: avatar on the left, name + role stacked on the right */
+.officer-box {
+    margin-top: auto;
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr);
+    column-gap: 12px;
+    align-items: center;
+    padding: 12px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, .10);
+    border: 1px solid rgba(255, 255, 255, .14);
+}
+.officer-avatar {
+    grid-row: 1 / span 2;
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--leaf);
+    color: var(--ink);
+    font: 800 .95rem/1 var(--font-display);
+    letter-spacing: .02em;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, .18);
+}
+.officer-box strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #fff;
+    font-size: .95rem;
+    line-height: 1.25;
+}
+.officer-box p { margin: 2px 0 0; font-size: .8rem; color: rgba(255, 255, 255, .72); }
+
+.logout-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 11px 14px;
+    border-radius: 12px;
+    border: 1.5px solid rgba(255, 255, 255, .28);
+    color: #fff;
+    font: 700 .92rem/1 var(--font-display);
+    text-decoration: none;
+    transition: background-color .2s ease, border-color .2s ease;
+}
+.logout-btn:hover { background: rgba(255, 255, 255, .14); border-color: rgba(255, 255, 255, .5); }
+
+/* ==========================================================================
+   Main area
+   ========================================================================== */
+.students-main { min-width: 0; padding: clamp(20px, 3.2vw, 44px); }
+.students-main > * + * { margin-top: 18px; }
+
+.students-header { margin-bottom: 10px; }
+.students-header h1 { font-size: clamp(1.6rem, 2.6vw, 2.2rem); font-weight: 700; letter-spacing: -0.025em; }
+.students-header p { margin: 6px 0 0; color: var(--slate); }
+
+.students-panel {
+    padding: 24px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+}
+
+/* ---------- Filters ---------- */
+.filters-row { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
+
+.filters-row input,
+.filters-row select {
+    padding: 12px 14px;
+    font: 500 .95rem/1.3 var(--font-body);
+    color: var(--ink);
+    background-color: var(--paper);
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-sm);
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+.filters-row input {
+    flex: 1 1 280px;
+    padding-left: 42px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%234F6B5C' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-3.5-3.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 14px center;
+}
+.filters-row select {
+    flex: 0 1 220px;
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 40px;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%230B6B3A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+}
+.filters-row input::placeholder { color: #7A9587; font-weight: 400; }
+.filters-row input:hover, .filters-row select:hover { border-color: #BFDCCB; }
+.filters-row input:focus, .filters-row select:focus {
+    outline: none;
+    border-color: var(--leaf);
+    box-shadow: 0 0 0 4px rgba(52, 210, 123, .28);
+}
+
+/* ---------- Table ---------- */
+.students-panel { overflow-x: auto; }
+.students-table { width: 100%; min-width: 680px; border-collapse: collapse; }
+
+.students-table th {
+    padding: 0 12px 12px;
+    text-align: left;
+    font-size: .74rem;
+    font-weight: 700;
+    letter-spacing: .07em;
+    color: var(--slate);
+    border-bottom: 1px solid var(--line);
+}
+.students-table td {
+    padding: 14px 12px;
+    font-size: .92rem;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--line);
+}
+.students-table tr:last-child td { border-bottom: 0; }
+.students-table th:first-child,
+.students-table td:first-child { padding-left: 0; }
+.students-table tbody tr:hover td { background: var(--mint); }
+
+.name-cell { font-weight: 700; color: var(--ink); }
+.dept-cell { color: var(--slate); }
+
+.readiness-cell { display: flex; align-items: center; gap: 12px; min-width: 170px; }
+.readiness-cell .progress-track { flex: 1; min-width: 90px; }
+.readiness-cell > span { width: 44px; text-align: right; font-weight: 700; font-size: .88rem; font-variant-numeric: tabular-nums; }
+
+/* progress bars (shared with the details page) */
+.students-page .progress-track { height: 8px; overflow: hidden; border-radius: 999px; background: var(--paper-2); }
+.students-page .progress-fill { height: 100%; border-radius: inherit; transform-origin: left center; animation: grow 1s .25s var(--ease-out) both; }
+.fill-green  { background: var(--green); }
+.fill-orange { background: var(--amber); }
+.fill-red    { background: var(--coral); }
+
+/* status badges */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: .78rem;
+    font-weight: 600;
+    line-height: 1.3;
+    white-space: nowrap;
+}
+.status-badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.status-ontrack   { background: var(--sage); color: #0B5A31; }
+.status-progress  { background: #FFF0CF; color: #7A4B00; }
+.status-attention { background: #FFE1D9; color: #A02D12; }
+
+.view-profile-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 7px 14px;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: #fff;
+    color: var(--forest);
+    font: 700 .82rem/1 var(--font-display);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color .2s ease, border-color .2s ease, transform .2s ease;
+}
+.view-profile-btn:hover { background: var(--mint); border-color: #BFDCCB; transform: translateY(-1px); }
+
+.students-table td[colspan] { padding: 32px 0; text-align: center; color: var(--slate) !important; }
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+@media (max-width: 960px) {
+    .students-page { grid-template-columns: 1fr; }
+    /* sidebar becomes a scrollable strip across the top */
+    .students-sidebar {
+        position: static;
+        height: auto;
+        flex-direction: row;
+        align-items: center;
+        gap: 6px;
+        padding: 12px 14px;
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
+    .students-sidebar > * { flex: 0 0 auto; }
+    .students-logo { margin: 0 10px 0 0; padding: 0; }
+    .students-logo h2 { font-size: 1.1rem; white-space: nowrap; }
+    .students-sidebar .menu-title,
+    .officer-box { display: none; }
+    .students-sidebar > a:not(.logout-btn) { white-space: nowrap; }
+    .logout-btn { margin: 0 0 0 auto; white-space: nowrap; }
+}
+
+@media (max-width: 560px) {
+    .students-panel { padding: 16px; }
+    .filters-row select { flex: 1 1 100%; }
+}

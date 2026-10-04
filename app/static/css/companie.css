@@ -1,318 +1,221 @@
-body {
-  margin: 0;
-  padding: 0;
-  background: #F7F4EC;
-  font-family: Arial, Helvetica, sans-serif;
-}
+/* ==========================================================================
+   CareerPilot AI — Officer: companies list
+   Green theme. Loaded after style.css, so it reuses its tokens
+   (--forest, --leaf, --line, --canvas ...). Everything is scoped to
+   .company-page so it can't clash with the other pages.
+   ========================================================================== */
 
 .company-page {
-  display: flex;
-  min-height: 100vh;
-  background: #F7F4EC;
+    display: grid;
+    grid-template-columns: 264px minmax(0, 1fr);
+    min-height: 100vh;
+    min-height: 100dvh;
+    background: var(--canvas);
+    color: var(--ink);
 }
+.company-page .company-main { min-width: 0; padding: clamp(20px, 3.2vw, 44px); }
+.company-page .company-main > * + * { margin-top: 18px; }
 
-/* =========================
-   Sidebar - Smaller
-========================= */
-.company-sidebar {
-  width: 260px;
-  height: 100vh;
-  background: #111827;
-  position: fixed;
-  left: 0;
-  top: 0;
-  display: flex;
-  flex-direction: column;
-  padding: 24px 20px;
-  box-sizing: border-box;
+/* ---------- Sidebar ---------- */
+.company-page .company-sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100dvh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 24px 16px;
+    background: var(--forest);
+    color: #fff;
 }
-
-.company-logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 30px;
+.company-page .company-logo { display: flex; align-items: center; gap: 12px; padding: 0 8px; margin-bottom: 24px; }
+.company-page .company-logo-box {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: #fff;
+    color: var(--forest);
+    font: 700 1rem/1 var(--font-display);
+    box-shadow: 0 6px 18px -6px rgba(0, 0, 0, .35);
 }
+.company-page .company-logo h2 { color: #fff; font-size: 1.3rem; font-weight: 700; letter-spacing: -0.01em; }
 
-.company-logo-box {
-  width: 34px;
-  height: 34px;
-  background: #F6A623;
-  color: #111827;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 15px;
+.company-page .menu-title {
+    padding: 0 12px;
+    margin-bottom: 6px;
+    font-size: .74rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    color: rgba(255, 255, 255, .6);
 }
-
-.company-logo h2 {
-  color: #fff;
-  font-size: 18px;
-  margin: 0;
-  font-weight: 700;
+.company-page .company-sidebar > a:not(.logout-btn) {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 12px;
+    border-radius: var(--radius-sm);
+    color: rgba(255, 255, 255, .9);
+    font-size: .93rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color .2s ease, color .2s ease;
 }
+.company-page .company-sidebar > a:not(.logout-btn) i { width: 20px; text-align: center; font-size: 1rem; }
+.company-page .company-sidebar > a:not(.logout-btn):hover { background: rgba(255, 255, 255, .12); color: #fff; }
+.company-page .company-sidebar > a.active { background: var(--leaf); color: var(--ink); font-weight: 600; }
+.company-page .company-sidebar a:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 
-.menu-title {
-  color: #6B7280;
-  font-size: 10px;
-  letter-spacing: 2px;
-  margin-bottom: 10px;
-  font-weight: 600;
+.company-page .officer-box {
+    margin-top: auto;
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr);
+    column-gap: 12px;
+    align-items: center;
+    padding: 12px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, .10);
+    border: 1px solid rgba(255, 255, 255, .14);
 }
-
-.company-sidebar a {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: #D1D5DB;
-  text-decoration: none;
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-bottom: 2px;
-  transition: .25s;
-  font-size: 15px;
+.company-page .officer-avatar {
+    grid-row: 1 / span 2;
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--leaf);
+    color: var(--ink);
+    font: 800 .95rem/1 var(--font-display);
+    letter-spacing: .02em;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, .18);
 }
-
-.company-sidebar a:hover {
-  background: #2E3A59;
-  color: #fff;
+.company-page .officer-box strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #fff;
+    font-size: .95rem;
+    line-height: 1.25;
 }
+.company-page .officer-box p { margin: 2px 0 0; font-size: .8rem; color: rgba(255, 255, 255, .72); }
 
-.company-sidebar a.active {
-  background: #2E3A59;
-  color: #fff;
-  border-left: 3px solid #F6A623;
+.company-page .logout-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 11px 14px;
+    border-radius: 12px;
+    border: 1.5px solid rgba(255, 255, 255, .28);
+    color: #fff;
+    font: 700 .92rem/1 var(--font-display);
+    text-decoration: none;
+    transition: background-color .2s ease, border-color .2s ease;
 }
+.company-page .logout-btn:hover { background: rgba(255, 255, 255, .14); border-color: rgba(255, 255, 255, .5); }
 
-.company-sidebar a i {
-  width: 22px;
-  font-size: 18px;
-  color: #9CA3AF;
+/* ---------- Header ---------- */
+.company-page .company-header h1 { font-size: clamp(1.6rem, 2.6vw, 2.2rem); font-weight: 700; letter-spacing: -0.025em; }
+.company-page .company-header p { margin: 6px 0 0; color: var(--slate); }
+
+/* ---------- Company cards ---------- */
+.company-page .company-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
 }
-
-.company-sidebar a.active i {
-  color: #F6A623;
+.company-page .company-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 22px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    color: var(--ink);
+    text-decoration: none;
+    transition: transform .25s var(--ease-out), box-shadow .25s ease, border-color .25s ease;
 }
-
-.officer-box {
-  margin-top: auto;
-  padding: 18px;
-  background: #2E3A59;
-  border-radius: 12px;
+.company-page .company-card:hover {
+    transform: translateY(-3px);
+    border-color: #C5E0D1;
+    box-shadow: 0 18px 36px -22px rgba(11, 107, 58, .45);
 }
+.company-page .company-card:focus-visible { outline: 3px solid var(--leaf); outline-offset: 3px; }
 
-.officer-avatar {
-  width: 44px;
-  height: 44px;
-  background: #F6A623;
-  color: #111827;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-weight: 700;
-  font-size: 14px;
-  margin-bottom: 8px;
+/* icon tile (the template sets font-size inline) */
+.company-page .company-card > div:first-child {
+    display: grid;
+    place-items: center;
+    width: 54px;
+    height: 54px;
+    margin-bottom: 16px;
+    border-radius: 14px;
+    background: var(--sage);
+    color: var(--forest);
 }
+.company-page .company-card h3 { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.01em; }
+.company-page .company-card p { margin: 4px 0 16px; font-size: .9rem; color: var(--slate); }
 
-.officer-box strong {
-  color: #fff;
-  display: block;
-  font-size: 13px;
-  font-weight: 600;
+.company-page .badge-open,
+.company-page .badge-close {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: auto;
+    padding: 4px 11px;
+    border-radius: 999px;
+    font-size: .78rem;
+    font-weight: 600;
+    line-height: 1.3;
 }
+.company-page .badge-open::before,
+.company-page .badge-close::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.company-page .badge-open  { background: var(--sage); color: #0B5A31; }
+.company-page .badge-close { background: var(--paper-2); color: var(--ink-soft); }
 
-.officer-box p {
-  color: #BFC7D5;
-  margin: 3px 0 0;
-  font-size: 12px;
+/* ---------- Add button ---------- */
+.company-page .company-main > br { display: none; }
+.company-page .add-company-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 22px;
+    padding: 13px 22px;
+    border-radius: var(--radius-sm);
+    background: var(--leaf);
+    color: var(--ink);
+    font: 700 .95rem/1 var(--font-display);
+    text-decoration: none;
+    box-shadow: 0 10px 20px -10px rgba(52, 210, 123, .9);
+    transition: transform .2s ease, box-shadow .2s ease, background-color .2s ease;
 }
+.company-page .add-company-btn:hover { background: var(--leaf-hover); transform: translateY(-2px); box-shadow: 0 14px 24px -10px rgba(52, 210, 123, .95); }
+.company-page .add-company-btn:active { transform: translateY(0) scale(.99); }
 
-.logout-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  color: #fff;
-  text-decoration: none;
-  font-size: 13px;
-  padding: 10px;
-  border-radius: 8px;
-  transition: .25s;
-  margin-top: 10px;
-  border: 1px solid #4B5A7A;
-}
-
-.logout-btn:hover {
-  background: #1F2A40;
-}
-
-.logout-btn i {
-  font-size: 13px;
-}
-
-/* =========================
-   Main 
-========================= */
-.company-main {
-  margin-left: 260px;
-  padding: 32px 42px;
-  min-height: 100vh;
-  background: #F7F4EC;
-  flex: 1;
-}
-
-.company-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 24px;
-}
-
-.company-header h1 {
-  margin: 0;
-  font-size: 32px;
-  color: #111827;
-  font-weight: 700;
-}
-
-.company-header p {
-  margin-top: 4px;
-  color: #6B7280;
-  font-size: 17px;
-}
-
-.notify-btn {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  background: white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-shadow: 0 2px 10px rgba(0,0,0,.06);
-  cursor: pointer;
-  font-size: 16px;
-  border: 1px solid #EDE8DE;
-}
-
-/* =========================
-   Company Cards - Smaller
-========================= */
-.company-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-}
-
-.company-card {
-  background: white;
-  border: 1px solid #E8E2D6;
-  border-radius: 14px;
-  padding: 24px;
-  min-height:160px;
-  text-decoration: none;
-  color: #111827;
-  transition: .2s;
-  display: block;
-}
-
-.company-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(0,0,0,.07);
-}
-
-.company-card .company-icon {
-  font-size: 20px;
-  color: #D97706;
-}
-
-.company-card h3 {
-  margin: 8px 0 3px;
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.company-card .company-tag {
-  margin: 0;
-  color: #6B7280;
-  font-size: 15px;
-}
-
-.badge-open {
-  display: inline-block;
-  margin-top: 12px;
-  background: #DDF5E5;
-  color: #0B7A3E;
-  padding: 4px 14px;
-  border-radius: 50px;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.badge-close {
-  display: inline-block;
-  margin-top: 12px;
-  background: #F0ECE4;
-  color: #6B7280;
-  padding: 4px 14px;
-  border-radius: 50px;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-/* =========================
-   Add Company Button
-========================= */
-.add-company-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 22px;
-  background: #111827;
-  color: white;
-  text-decoration: none;
-  padding: 14px 26px;
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 600;
-  transition: .2s;
-}
-
-.add-company-btn:hover {
-  background: #1F2937;
-}
-
-.add-company-btn i {
-  font-size: 14px;
-}
-
-/* =========================
-   Responsive
-========================= */
-@media (max-width: 1100px) {
-  .company-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 768px) {
-  .company-sidebar {
-    display: none;
-  }
-  .company-main {
-    margin-left: 0;
-    padding: 16px;
-  }
-  .company-grid {
-    grid-template-columns: 1fr;
-  }
-  .company-header h1 {
-    font-size: 26px;
-  }
-  .company-header p {
-    font-size: 14px;
-  }
+@media (max-width: 960px) {
+    .company-page { grid-template-columns: 1fr; }
+    .company-page .company-sidebar {
+        position: static;
+        height: auto;
+        flex-direction: row;
+        align-items: center;
+        gap: 6px;
+        padding: 12px 14px;
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
+    .company-page .company-sidebar > * { flex: 0 0 auto; }
+    .company-page .company-logo { margin: 0 10px 0 0; padding: 0; }
+    .company-page .company-logo h2 { font-size: 1.1rem; white-space: nowrap; }
+    .company-page .menu-title,
+    .company-page .officer-box { display: none; }
+    .company-page .company-sidebar > a:not(.logout-btn) { white-space: nowrap; }
+    .company-page .logout-btn { margin: 0 0 0 auto; white-space: nowrap; }
 }

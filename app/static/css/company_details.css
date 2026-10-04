@@ -1,295 +1,274 @@
-body{
-    margin:0;
-    padding:0;
-    background:#F7F4EC;
-    font-family:Arial,Helvetica,sans-serif;
+/* ==========================================================================
+   CareerPilot AI — Officer: company details
+   Green theme. Loaded after style.css, so it reuses its tokens
+   (--forest, --leaf, --line, --canvas ...). Everything is scoped to
+   .details-page so it can't clash with the other pages.
+   ========================================================================== */
+
+.details-page {
+    display: grid;
+    grid-template-columns: 264px minmax(0, 1fr);
+    min-height: 100vh;
+    min-height: 100dvh;
+    background: var(--canvas);
+    color: var(--ink);
+}
+.details-page .details-main { min-width: 0; padding: clamp(20px, 3.2vw, 44px); }
+.details-page .details-main > * + * { margin-top: 18px; }
+
+/* ---------- Sidebar ---------- */
+.details-page .company-sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100dvh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 24px 16px;
+    background: var(--forest);
+    color: #fff;
+}
+.details-page .company-logo { display: flex; align-items: center; gap: 12px; padding: 0 8px; margin-bottom: 24px; }
+.details-page .company-logo-box {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: #fff;
+    color: var(--forest);
+    font: 700 1rem/1 var(--font-display);
+    box-shadow: 0 6px 18px -6px rgba(0, 0, 0, .35);
+}
+.details-page .company-logo h2 { color: #fff; font-size: 1.3rem; font-weight: 700; letter-spacing: -0.01em; }
+
+.details-page .menu-title {
+    padding: 0 12px;
+    margin-bottom: 6px;
+    font-size: .74rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    color: rgba(255, 255, 255, .6);
+}
+.details-page .company-sidebar > a:not(.logout-btn) {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 12px;
+    border-radius: var(--radius-sm);
+    color: rgba(255, 255, 255, .9);
+    font-size: .93rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color .2s ease, color .2s ease;
+}
+.details-page .company-sidebar > a:not(.logout-btn) i { width: 20px; text-align: center; font-size: 1rem; }
+.details-page .company-sidebar > a:not(.logout-btn):hover { background: rgba(255, 255, 255, .12); color: #fff; }
+.details-page .company-sidebar > a.active { background: var(--leaf); color: var(--ink); font-weight: 600; }
+.details-page .company-sidebar a:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+.details-page .officer-box {
+    margin-top: auto;
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr);
+    column-gap: 12px;
+    align-items: center;
+    padding: 12px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, .10);
+    border: 1px solid rgba(255, 255, 255, .14);
+}
+.details-page .officer-avatar {
+    grid-row: 1 / span 2;
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--leaf);
+    color: var(--ink);
+    font: 800 .95rem/1 var(--font-display);
+    letter-spacing: .02em;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, .18);
+}
+.details-page .officer-box strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #fff;
+    font-size: .95rem;
+    line-height: 1.25;
+}
+.details-page .officer-box p { margin: 2px 0 0; font-size: .8rem; color: rgba(255, 255, 255, .72); }
+
+.details-page .logout-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 11px 14px;
+    border-radius: 12px;
+    border: 1.5px solid rgba(255, 255, 255, .28);
+    color: #fff;
+    font: 700 .92rem/1 var(--font-display);
+    text-decoration: none;
+    transition: background-color .2s ease, border-color .2s ease;
+}
+.details-page .logout-btn:hover { background: rgba(255, 255, 255, .14); border-color: rgba(255, 255, 255, .5); }
+
+/* ---------- Header ---------- */
+.details-page .details-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+.details-page .details-header h1 { font-size: clamp(1.6rem, 2.6vw, 2.2rem); font-weight: 700; letter-spacing: -0.025em; }
+.details-page .details-header p { margin: 6px 0 0; color: var(--slate); }
+.details-page .header-buttons { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.details-page .edit-btn,
+.details-page .delete-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 18px;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: #fff;
+    font: 700 .9rem/1 var(--font-display);
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color .2s ease, border-color .2s ease, transform .2s ease;
+}
+.details-page .edit-btn { color: var(--forest); }
+.details-page .edit-btn:hover { background: var(--mint); border-color: #BFDCCB; transform: translateY(-1px); }
+.details-page .delete-btn { color: #A02D12; border-color: #F0B8A9; }
+.details-page .delete-btn:hover { background: #FFE1D9; border-color: var(--coral); transform: translateY(-1px); }
+
+/* ---------- Info cards ---------- */
+.details-page .info-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.details-page .info-card {
+    min-width: 0;
+    padding: 20px 22px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+}
+.details-page .info-card h3 {
+    margin-bottom: 8px;
+    font-family: var(--font-body);
+    font-size: .74rem;
+    font-weight: 700;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--slate);
+}
+.details-page .info-card p { margin: 0; font-size: 1.02rem; font-weight: 600; word-break: break-word; }
+.details-page .info-card a {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--forest);
+    word-break: break-all;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: border-color .2s ease;
+}
+.details-page .info-card a:hover { border-bottom-color: var(--leaf); }
+
+/* ---------- Description ---------- */
+.details-page .description-card {
+    padding: 24px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+}
+.details-page .description-card h2 { margin-bottom: 12px; font-size: 1.05rem; font-weight: 700; letter-spacing: -0.01em; }
+.details-page .description-card p { margin: 0; line-height: 1.7; color: var(--ink-soft); white-space: pre-line; }
+
+/* ---------- Drives ---------- */
+.details-page .section-title { margin: 8px 0 -4px; }
+.details-page .section-title h2 { font-size: 1.2rem; font-weight: 700; letter-spacing: -0.015em; }
+
+.details-page .drive-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; }
+.details-page .drive-card {
+    padding: 20px 22px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    transition: transform .25s var(--ease-out), box-shadow .25s ease, border-color .25s ease;
+}
+.details-page .drive-card:hover { transform: translateY(-3px); border-color: #C5E0D1; box-shadow: 0 18px 36px -22px rgba(11, 107, 58, .45); }
+.details-page .drive-card h3 { margin: 12px 0 14px; font-size: 1.1rem; font-weight: 700; letter-spacing: -0.01em; }
+.details-page .drive-card p { margin: 0 0 10px; font-size: .92rem; line-height: 1.4; color: var(--ink-soft); }
+.details-page .drive-card p:last-child { margin-bottom: 0; }
+.details-page .drive-card p strong {
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--slate);
 }
 
-/* PAGE */
-
-.details-page{
-    display:flex;
-    min-height:100vh;
-    background:#F7F4EC;
+/* status pill: styled by the status text the template prints as a class */
+.details-page .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 11px;
+    border-radius: 999px;
+    background: var(--paper-2);
+    color: var(--ink-soft);
+    font-size: .76rem;
+    font-weight: 700;
+    text-transform: capitalize;
 }
+.details-page .status::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.details-page .status.open,
+.details-page .status.active,
+.details-page .status.ongoing   { background: var(--sage); color: #0B5A31; }
+.details-page .status.upcoming,
+.details-page .status.scheduled,
+.details-page .status.pending   { background: #FFF0CF; color: #7A4B00; }
+.details-page .status.closed,
+.details-page .status.completed { background: var(--paper-2); color: var(--ink-soft); }
+.details-page .status.cancelled { background: #FFE1D9; color: #A02D12; }
 
-/* SIDEBAR */
-
-.company-sidebar{
-    width:270px;
-    height:100vh;
-    position:fixed;
-    left:0;
-    top:0;
-    background:#111827;
-    display:flex;
-    flex-direction:column;
-    padding:22px;
-    box-sizing:border-box;
+/* ---------- Empty state ---------- */
+.details-page .empty-card {
+    padding: 34px 20px;
+    text-align: center;
+    background: var(--mint);
+    border: 1.5px dashed #A9D4BB;
+    border-radius: var(--radius-lg);
 }
+.details-page .empty-card i { font-size: 1.6rem; color: var(--forest); }
+.details-page .empty-card h3 { margin-top: 10px; font-size: 1.05rem; font-weight: 700; }
+.details-page .empty-card p { margin: 4px 0 0; color: var(--slate); }
 
-.company-logo{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin-bottom:35px;
-}
+@media (max-width: 900px) { .details-page .info-grid { grid-template-columns: 1fr; } }
 
-.company-logo-box{
-    width:38px;
-    height:38px;
-    border-radius:10px;
-    background:#F6A623;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    font-weight:bold;
-}
-
-.company-logo h2{
-    color:white;
-    font-size:18px;
-    margin:0;
-}
-
-.menu-title{
-    color:#6B7280;
-    font-size:11px;
-    letter-spacing:2px;
-    margin-bottom:12px;
-}
-
-.company-sidebar a{
-    display:flex;
-    align-items:center;
-    gap:12px;
-    color:#D1D5DB;
-    text-decoration:none;
-    padding:12px 15px;
-    border-radius:10px;
-    margin-bottom:4px;
-    transition:.2s;
-}
-
-.company-sidebar a:hover{
-    background:#2E3A59;
-}
-
-.company-sidebar a.active{
-    background:#2E3A59;
-    color:white;
-}
-
-.company-sidebar i{
-    width:18px;
-}
-
-.officer-box{
-    margin-top:auto;
-    background:#2E3A59;
-    padding:16px;
-    border-radius:14px;
-}
-
-.officer-avatar{
-    width:42px;
-    height:42px;
-    border-radius:50%;
-    background:#F6A623;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    font-weight:bold;
-    margin-bottom:10px;
-}
-
-.officer-box strong{
-    color:white;
-}
-
-.officer-box p{
-    color:#CBD5E1;
-    font-size:13px;
-    margin-top:4px;
-}
-
-.logout-btn{
-    margin-top:12px;
-    border:1px solid #3B465F;
-}
-
-/* MAIN */
-
-.details-main{
-    margin-left:270px;
-    width:100%;
-    padding:35px;
-}
-
-/* HEADER */
-
-.details-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:30px;
-}
-
-.details-header h1{
-    margin:0;
-    font-size:36px;
-    color:#111827;
-}
-
-.details-header p{
-    color:#6B7280;
-    margin-top:6px;
-}
-
-.header-buttons{
-    display:flex;
-    gap:12px;
-}
-
-.edit-btn,
-.delete-btn{
-
-    padding:12px 18px;
-    border-radius:10px;
-    text-decoration:none;
-    color:white;
-    font-weight:600;
-}
-
-.edit-btn{
-    background:#2563EB;
-}
-
-.delete-btn{
-    background:#DC2626;
-}
-
-/* INFO */
-
-.info-grid{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:20px;
-    margin-bottom:30px;
-}
-
-.info-card{
-    background:white;
-    border-radius:18px;
-    padding:24px;
-    box-shadow:0 4px 10px rgba(0,0,0,.05);
-}
-
-.info-card h3{
-    margin-top:0;
-    color:#6B7280;
-    font-size:15px;
-}
-
-.info-card p,
-.info-card a{
-    color:#111827;
-    text-decoration:none;
-    font-size:17px;
-    font-weight:600;
-}
-
-/* DESCRIPTION */
-
-.description-card{
-    background:white;
-    border-radius:18px;
-    padding:25px;
-    margin-bottom:30px;
-    box-shadow:0 4px 10px rgba(0,0,0,.05);
-}
-
-.description-card h2{
-    margin-top:0;
-}
-
-.description-card p{
-    line-height:1.8;
-    color:#4B5563;
-}
-
-/* SECTION */
-
-.section-title{
-    margin-bottom:20px;
-}
-
-/* DRIVES */
-
-.drive-grid{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:20px;
-}
-
-.drive-card{
-    background:white;
-    border-radius:18px;
-    padding:22px;
-    box-shadow:0 4px 10px rgba(0,0,0,.05);
-}
-
-.drive-card h3{
-    margin-top:15px;
-}
-
-.drive-card p{
-    color:#6B7280;
-}
-
-.status{
-    display:inline-block;
-    padding:6px 14px;
-    border-radius:30px;
-    font-size:13px;
-    font-weight:600;
-}
-
-.status.open{
-    background:#DCFCE7;
-    color:#15803D;
-}
-
-.status.closed{
-    background:#FEE2E2;
-    color:#B91C1C;
-}
-
-.status.upcoming{
-    background:#DBEAFE;
-    color:#1D4ED8;
-}
-
-/* EMPTY */
-
-.empty-card{
-    background:white;
-    border-radius:18px;
-    padding:60px;
-    text-align:center;
-    box-shadow:0 4px 10px rgba(0,0,0,.05);
-}
-
-.empty-card i{
-    font-size:45px;
-    color:#9CA3AF;
-    margin-bottom:15px;
-}
-
-.empty-card h3{
-    margin-bottom:8px;
-}
-
-.empty-card p{
-    color:#6B7280;
+@media (max-width: 960px) {
+    .details-page { grid-template-columns: 1fr; }
+    .details-page .company-sidebar {
+        position: static;
+        height: auto;
+        flex-direction: row;
+        align-items: center;
+        gap: 6px;
+        padding: 12px 14px;
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
+    .details-page .company-sidebar > * { flex: 0 0 auto; }
+    .details-page .company-logo { margin: 0 10px 0 0; padding: 0; }
+    .details-page .company-logo h2 { font-size: 1.1rem; white-space: nowrap; }
+    .details-page .menu-title,
+    .details-page .officer-box { display: none; }
+    .details-page .company-sidebar > a:not(.logout-btn) { white-space: nowrap; }
+    .details-page .logout-btn { margin: 0 0 0 auto; white-space: nowrap; }
 }

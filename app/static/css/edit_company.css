@@ -1,432 +1,252 @@
-body {
-  margin: 0;
-  padding: 0;
-  background: #F7F4EC;
-  font-family: Arial, Helvetica, sans-serif;
-}
+/* ==========================================================================
+   CareerPilot AI — Officer: edit company
+   Green theme. Loaded after style.css, so it reuses its tokens
+   (--forest, --leaf, --line, --canvas ...). Everything is scoped to
+   .edit-page so it can't clash with the other pages.
+   ========================================================================== */
 
-/* ==========================
-PAGE
-========================== */
 .edit-page {
-  display: flex;
-  background: #F7F4EC;
-  min-height: 100vh;
-  height: 100vh;
-  overflow: hidden;
+    display: grid;
+    grid-template-columns: 264px minmax(0, 1fr);
+    min-height: 100vh;
+    min-height: 100dvh;
+    background: var(--canvas);
+    color: var(--ink);
 }
+.edit-page .edit-main { min-width: 0; padding: clamp(20px, 3.2vw, 44px); }
+.edit-page .edit-main > * + * { margin-top: 18px; }
 
-/* ==========================
-SIDEBAR
-========================== */
-.company-sidebar {
-  width: 260px;
-  height: 100vh;
-  background: #111827;
-  position: fixed;
-  left: 0;
-  top: 0;
-  padding: 24px 20px;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-  overflow-y: auto;
-  z-index: 100;
-}
-
-.company-logo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 38px;
-  flex-shrink: 0;
-}
-
-.company-logo-box {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  background: #F6A623;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-weight: 700;
-  font-size: 18px;
-  color: #111827;
-}
-
-.company-logo h2 {
-  color: #fff;
-  margin: 0;
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.menu-title {
-  color: #6B7280;
-  font-size: 12px;
-  letter-spacing: 2px;
-  margin-bottom: 14px;
-  font-weight: 600;
-  flex-shrink: 0;
-}
-
-.company-sidebar a {
-  color: #D1D5DB;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  border-radius: 10px;
-  margin-bottom: 4px;
-  transition: .25s;
-  font-size: 15px;
-  flex-shrink: 0;
-}
-
-.company-sidebar a i {
-  width: 20px;
-  text-align: center;
-  font-size: 15px;
-  color: #9CA3AF;
-}
-
-.company-sidebar a:hover {
-  background: #2E3A59;
-  color: #fff;
-}
-
-.company-sidebar a.active {
-  background: #2E3A59;
-  color: #fff;
-  border-left: 3px solid #F6A623;
-}
-
-.company-sidebar a.active i {
-  color: #F6A623;
-}
-
-.officer-box {
-  margin-top: auto;
-  background: #2E3A59;
-  border-radius: 14px;
-  padding: 16px;
-  flex-shrink: 0;
-}
-
-.officer-avatar {
-  width: 44px;
-  height: 44px;
-  background: #F6A623;
-  color: #111827;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-weight: 700;
-  font-size: 16px;
-  margin-bottom: 10px;
-}
-
-.officer-box strong {
-  color: #fff;
-  display: block;
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.officer-box p {
-  color: #BFC7D5;
-  margin: 4px 0 0;
-  font-size: 13px;
-}
-
-.logout-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  color: #fff;
-  text-decoration: none;
-  font-size: 14px;
-  padding: 12px;
-  border-radius: 10px;
-  transition: .25s;
-  margin-top: 14px;
-  border: 1px solid #4B5A7A;
-}
-
-.logout-btn:hover {
-  background: #1F2A40;
-}
-
-.logout-btn i {
-  font-size: 14px;
-}
-
-/* ==========================
-MAIN - Center Content
-========================== */
-.edit-main {
-  margin-left: 260px;
-  width: 100%;
-  padding: 0 44px;
-  height: 100vh;
-  background: #F7F4EC;
-  flex: 1;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
-.page-header {
-  margin-bottom: 12px;
-  flex-shrink: 0;
-  text-align: center;
-  width: 100%;
-  max-width: 720px;
-}
-
-.page-header h1 {
-  margin: 0;
-  font-size: 28px;
-  color: #111827;
-  font-weight: 700;
-}
-
-.page-header p {
-  color: #6B7280;
-  margin-top: 4px;
-  margin-bottom: 0;
-  font-size: 14px;
-}
-
-/* ==========================
-CARD - Curved Box Center
-========================== */
-.form-card {
-  background: #fff;
-  border-radius: 20px;
-  padding: 20px 30px;
-  border: 1px solid #E8E2D6;
-  max-width: 760px;
-  width: 100%;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-  flex-shrink: 0;
-  max-height: calc(100vh - 120px);
-  overflow: visible;
-}
-
-/* ==========================
-FORM
-========================== */
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.form-group {
-  margin-bottom: 8px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 4px;
-  font-weight: 600;
-  color: #374151;
-  font-size: 13px;
-}
-
-.form-group input,
-.form-group textarea {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #D1D5DB;
-  border-radius: 8px;
-  font-size: 14px;
-  box-sizing: border-box;
-  outline: none;
-  transition: .2s;
-  color: #111827;
-  background: white;
-}
-
-.form-group input:focus,
-.form-group textarea:focus {
-  border-color: #F6A623;
-  box-shadow: 0 0 0 3px rgba(246, 166, 35, .1);
-}
-
-.form-group textarea {
-  resize: none;
-  min-height: 42px;
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-/* Full width fields */
-.form-group.full-width {
-  grid-column: 1 / -1;
-}
-
-/* ==========================
-LOGO
-========================== */
-.logo-section {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 30px;
-  margin-top: 2px;
-  padding: 8px 0;
-}
-
-.logo-section label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: 600;
-  font-size: 13px;
-  color: #374151;
-}
-
-.logo-preview {
-  width: 52px;
-  height: 52px;
-  border: 2px dashed #D1D5DB;
-  border-radius: 12px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-  background: #FAFAFA;
-}
-
-.logo-preview img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.logo-preview span {
-  color: #9CA3AF;
-  font-size: 11px;
-}
-
-.logo-upload input[type="file"] {
-  display: block;
-  margin-top: 4px;
-  padding: 5px 0;
-  font-size: 13px;
-  color: #6B7280;
-}
-
-/* ==========================
-BUTTONS - Center
-========================== */
-.button-group {
-  display: flex;
-  gap: 12px;
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid #E5E7EB;
-  flex-shrink: 0;
-  justify-content: center;
-}
-
-.save-btn {
-  background: #111827;
-  color: #fff;
-  border: none;
-  padding: 10px 30px;
-  border-radius: 10px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-  transition: .2s;
-  min-width: 130px;
-}
-
-.save-btn:hover {
-  background: #1F2937;
-}
-
-.cancel-btn {
-  text-decoration: none;
-  background: white;
-  color: #374151;
-  padding: 10px 30px;
-  border-radius: 10px;
-  font-weight: 600;
-  font-size: 14px;
-  transition: .2s;
-  border: 1px solid #D1D5DB;
-  min-width: 130px;
-  text-align: center;
-}
-
-.cancel-btn:hover {
-  background: #F3F4F6;
-}
-
-/* ==========================
-RESPONSIVE
-========================== */
-@media (max-width: 992px) {
-  .edit-page {
-    height: auto;
-    overflow: auto;
-  }
-
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .form-group.full-width {
-    grid-column: 1;
-  }
-
-  .logo-section {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-
-  .company-sidebar {
-    display: none;
-  }
-
-  .edit-main{
-    width:100%;
-    min-height:100vh;
-    height:auto;
-
-    display:flex;
-    flex-direction:column;
-
-    justify-content:center;
-    align-items:center;
-
-    padding:30px;
-    box-sizing:border-box;
-}
-
-  .form-card {
-    max-height: none;
-    padding: 20px;
-  }
-
-  .page-header h1 {
-    font-size: 24px;
-  }
-
-  .button-group {
+/* ---------- Sidebar ---------- */
+.edit-page .company-sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100dvh;
+    overflow-y: auto;
+    display: flex;
     flex-direction: column;
-    align-items: center;
-  }
+    gap: 4px;
+    padding: 24px 16px;
+    background: var(--forest);
+    color: #fff;
+}
+.edit-page .company-logo { display: flex; align-items: center; gap: 12px; padding: 0 8px; margin-bottom: 24px; }
+.edit-page .company-logo-box {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: #fff;
+    color: var(--forest);
+    font: 700 1rem/1 var(--font-display);
+    box-shadow: 0 6px 18px -6px rgba(0, 0, 0, .35);
+}
+.edit-page .company-logo h2 { color: #fff; font-size: 1.3rem; font-weight: 700; letter-spacing: -0.01em; }
 
-  .save-btn, .cancel-btn {
+.edit-page .menu-title {
+    padding: 0 12px;
+    margin-bottom: 6px;
+    font-size: .74rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    color: rgba(255, 255, 255, .6);
+}
+.edit-page .company-sidebar > a:not(.logout-btn) {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 12px;
+    border-radius: var(--radius-sm);
+    color: rgba(255, 255, 255, .9);
+    font-size: .93rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color .2s ease, color .2s ease;
+}
+.edit-page .company-sidebar > a:not(.logout-btn) i { width: 20px; text-align: center; font-size: 1rem; }
+.edit-page .company-sidebar > a:not(.logout-btn):hover { background: rgba(255, 255, 255, .12); color: #fff; }
+.edit-page .company-sidebar > a.active { background: var(--leaf); color: var(--ink); font-weight: 600; }
+.edit-page .company-sidebar a:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+.edit-page .officer-box {
+    margin-top: auto;
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr);
+    column-gap: 12px;
+    align-items: center;
+    padding: 12px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, .10);
+    border: 1px solid rgba(255, 255, 255, .14);
+}
+.edit-page .officer-avatar {
+    grid-row: 1 / span 2;
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--leaf);
+    color: var(--ink);
+    font: 800 .95rem/1 var(--font-display);
+    letter-spacing: .02em;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, .18);
+}
+.edit-page .officer-box strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #fff;
+    font-size: .95rem;
+    line-height: 1.25;
+}
+.edit-page .officer-box p { margin: 2px 0 0; font-size: .8rem; color: rgba(255, 255, 255, .72); }
+
+.edit-page .logout-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 11px 14px;
+    border-radius: 12px;
+    border: 1.5px solid rgba(255, 255, 255, .28);
+    color: #fff;
+    font: 700 .92rem/1 var(--font-display);
+    text-decoration: none;
+    transition: background-color .2s ease, border-color .2s ease;
+}
+.edit-page .logout-btn:hover { background: rgba(255, 255, 255, .14); border-color: rgba(255, 255, 255, .5); }
+
+/* ---------- Header ---------- */
+.edit-page .page-header h1 { font-size: clamp(1.6rem, 2.6vw, 2.2rem); font-weight: 700; letter-spacing: -0.025em; }
+.edit-page .page-header p { margin: 6px 0 0; color: var(--slate); }
+
+/* ---------- Form card ---------- */
+.edit-page .form-card {
+    max-width: 880px;
+    padding: clamp(20px, 3vw, 32px);
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+}
+.edit-page .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 18px; }
+.edit-page .form-group { margin-bottom: 18px; }
+.edit-page .form-card label { display: block; margin-bottom: 6px; font-size: .86rem; font-weight: 700; color: var(--ink); }
+
+.edit-page .form-group input,
+.edit-page .form-group textarea {
+    display: block;
     width: 100%;
-    min-width: auto;
-  }
+    padding: 13px 14px;
+    font: 500 1rem/1.4 var(--font-body);
+    color: var(--ink);
+    background: var(--paper);
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-sm);
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+.edit-page .form-group textarea { min-height: 130px; line-height: 1.55; resize: vertical; }
+.edit-page .form-group input::placeholder,
+.edit-page .form-group textarea::placeholder { color: #7A9587; font-weight: 400; }
+.edit-page .form-group input:hover,
+.edit-page .form-group textarea:hover { border-color: #BFDCCB; }
+.edit-page .form-group input:focus,
+.edit-page .form-group textarea:focus {
+    outline: none;
+    border-color: var(--leaf);
+    box-shadow: 0 0 0 4px rgba(52, 210, 123, .28);
+}
+
+/* ---------- Logo ---------- */
+.edit-page .logo-section {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    gap: 28px;
+    padding: 20px;
+    margin-bottom: 24px;
+    background: var(--mint);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+}
+.edit-page .logo-preview {
+    display: grid;
+    place-items: center;
+    width: 130px;
+    height: 100px;
+    overflow: hidden;
+    border: 1.5px dashed #A9D4BB;
+    border-radius: var(--radius-sm);
+    background: #fff;
+    font-size: .85rem;
+    color: var(--slate);
+}
+.edit-page .logo-preview img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+.edit-page .logo-section input[type="file"] { max-width: 100%; font-size: .9rem; color: var(--ink-soft); }
+.edit-page .logo-section input[type="file"]::file-selector-button {
+    margin-right: 12px;
+    padding: 9px 16px;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: #fff;
+    color: var(--forest);
+    font: 700 .85rem/1 var(--font-display);
+    cursor: pointer;
+    transition: background-color .2s ease, border-color .2s ease;
+}
+.edit-page .logo-section input[type="file"]::file-selector-button:hover { background: var(--sage); border-color: #BFDCCB; }
+
+/* ---------- Buttons ---------- */
+.edit-page .button-group { display: flex; flex-wrap: wrap; gap: 12px; }
+.edit-page .save-btn,
+.edit-page .cancel-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 24px;
+    border-radius: var(--radius-sm);
+    font: 700 .95rem/1 var(--font-display);
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform .2s ease, box-shadow .2s ease, background-color .2s ease, border-color .2s ease;
+}
+.edit-page .save-btn {
+    border: 0;
+    background: var(--leaf);
+    color: var(--ink);
+    box-shadow: 0 10px 20px -10px rgba(52, 210, 123, .9);
+}
+.edit-page .save-btn:hover { background: var(--leaf-hover); transform: translateY(-2px); box-shadow: 0 14px 24px -10px rgba(52, 210, 123, .95); }
+.edit-page .save-btn:active { transform: translateY(0) scale(.99); }
+.edit-page .cancel-btn { border: 1.5px solid var(--line); background: #fff; color: var(--forest); }
+.edit-page .cancel-btn:hover { background: var(--mint); border-color: #BFDCCB; }
+
+@media (max-width: 640px) {
+    .edit-page .form-grid { grid-template-columns: 1fr; }
+    .edit-page .logo-section { grid-template-columns: 1fr; gap: 18px; }
+    .edit-page .save-btn, .edit-page .cancel-btn { flex: 1 1 100%; }
+}
+
+@media (max-width: 960px) {
+    .edit-page { grid-template-columns: 1fr; }
+    .edit-page .company-sidebar {
+        position: static;
+        height: auto;
+        flex-direction: row;
+        align-items: center;
+        gap: 6px;
+        padding: 12px 14px;
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
+    .edit-page .company-sidebar > * { flex: 0 0 auto; }
+    .edit-page .company-logo { margin: 0 10px 0 0; padding: 0; }
+    .edit-page .company-logo h2 { font-size: 1.1rem; white-space: nowrap; }
+    .edit-page .menu-title,
+    .edit-page .officer-box { display: none; }
+    .edit-page .company-sidebar > a:not(.logout-btn) { white-space: nowrap; }
+    .edit-page .logout-btn { margin: 0 0 0 auto; white-space: nowrap; }
 }
