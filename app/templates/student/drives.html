@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="shell">
+    {% include "student/_sidebar.html" %}
+
+    <div class="main">
+
+        <!-- Page header -->
+        <div class="page-head">
+            <div>
+                <h1>Placement drives</h1>
+                <p class="sub">View open drives, check eligibility, and apply to companies.</p>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid g3" style="margin-bottom: 22px;">
+            <div class="stat-card">
+                <div class="label">Total drives</div>
+                <div class="num">{{ total_drives }}</div>
+                <div class="delta up">across all companies</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">You're eligible for</div>
+                <div class="num">{{ eligible_count }}</div>
+                <div class="delta up">open drives</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Applications</div>
+                <div class="num">{{ applied_count }}</div>
+                <div class="delta up">submitted</div>
+            </div>
+        </div>
+
+        <!-- Filter tabs -->
+        <div class="tab-row" id="drive-tabs">
+            <button type="button" class="tab active" data-filter="all">All drives</button>
+            <button type="button" class="tab" data-filter="eligible">Eligible</button>
+            <button type="button" class="tab" data-filter="applied">Applied</button>
+            <button type="button" class="tab" data-filter="open">Open</button>
+        </div>
+
+        <!-- Drive list -->
+        <div id="drive-list">
+            {% for item in drive_list %}
+            <div class="card drive-card {% if item.has_applied %}is-applied{% elif item.is_eligible and item.drive.status == 'open' %}is-eligible{% else %}is-muted{% endif %}"
+                 data-status="{{ item.drive.status }}"
+                 data-eligible="{{ 'yes' if item.is_eligible else 'no' }}"
+                 data-applied="{{ 'yes' if item.has_applied else 'no' }}">
+
+                <!-- Header -->
+                <div class="drive-head">
+                    <div>
+                        <div class="drive-title">
+                            <h3>{{ item.drive.company.company_name }}</h3>
+                            {% if item.drive.status == 'open' %}
+                                <span class="pill pill-green"><span class="dot"></span>Open</span>
+                            {% else %}
+                                <span class="pill pill-slate">Closed</span>
+                            {% endif %}
+                        </div>
+                        <div class="drive-role">{{ item.drive.role }}</div>
+                    </div>
+
+                    {% if item.has_applied %}
+                    <div>
+                        {% if item.application.status == 'applied' %}
+                            <span class="pill pill-amber"><span class="dot"></span>Applied</span>
+                        {% elif item.application.status == 'shortlisted' %}
+                            <span class="pill pill-green"><span class="dot"></span>Shortlisted</span>
+                        {% elif item.application.status == 'selected' %}
+                            <span class="pill pill-green"><span class="dot"></span>Selected</span>
+                        {% elif item.application.status == 'rejected' %}
+                            <span class="pill pill-coral"><span class="dot"></span>Rejected</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Details -->
+                <div class="grid g3 drive-details">
+                    <div class="detail-tile">
+                        <div class="detail-label">Drive date</div>
+                        <div class="detail-value">
+                            {{ item.drive.drive_date.strftime('%b %d, %Y') if item.drive.drive_date else 'TBA' }}
+                        </div>
+                    </div>
+                    <div class="detail-tile">
+                        <div class="detail-label">Min CGPA</div>
+                        <div class="detail-value">{{ item.drive.min_cgpa or 'N/A' }}</div>
+                    </div>
+                    <div class="detail-tile">
+                        <div class="detail-label">Your CGPA</div>
+                        <div class="detail-value">
+                            {{ profile.cgpa or 'N/A' }}
+                            {% if item.is_eligible %}
+                                <span class="pill pill-green">Eligible</span>
+                            {% else %}
+                                <span class="pill pill-coral">Not eligible</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Eligibility note -->
+                {% if not item.is_eligible and item.drive.status == 'open' %}
+                <div class="notice notice-coral">
+                    You need a minimum CGPA of {{ item.drive.min_cgpa }} to apply.
+                    Your current CGPA is {{ profile.cgpa or 'not set' }}.
+                </div>
+                {% endif %}
+
+                <!-- Actions -->
+                <div class="drive-actions">
+                    {% if item.has_applied %}
+                        {% if item.application.status == 'applied' %}
+                            <form method="POST"
+                                  action="{{ url_for('student.withdraw_application', application_id=item.application.id) }}"
+                                  onsubmit="return confirm('Withdraw your application?');">
+                                <button type="submit" class="btn btn-danger-ghost">Withdraw application</button>
+                            </form>
+                        {% else %}
+                            <button class="btn btn-ghost" disabled>Application in progress</button>
+                        {% endif %}
+                    {% elif item.drive.status == 'open' and item.is_eligible %}
+                        <form method="POST"
+                              action="{{ url_for('student.apply_drive', drive_id=item.drive.id) }}"
+                              onsubmit="return confirm('Apply to {{ item.drive.company.company_name }}?');">
+                            <button type="submit" class="btn btn-primary">Apply now</button>
+                        </form>
+                    {% elif item.drive.status == 'closed' %}
+                        <button class="btn btn-ghost" disabled>Drive closed</button>
+                    {% else %}
+                        <button class="btn btn-ghost" disabled>Not eligible</button>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="card empty-state">
+                <div class="empty-icon">&#128237;</div>
+                <h3>No placement drives yet</h3>
+                <p>Check back later — your placement officer will add drives soon.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+// Filter tabs
+document.querySelectorAll('#drive-tabs .tab').forEach(tab => {
+    tab.addEventListener('click', function () {
+        document.querySelectorAll('#drive-tabs .tab').forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+
+        const filter = this.dataset.filter;
+        document.querySelectorAll('.drive-item, .drive-card').forEach(item => {
+            const status = item.dataset.status;
+            const eligible = item.dataset.eligible;
+            const applied = item.dataset.applied;
+            if (status === undefined) return;   // skip the empty-state card
+
+            let show = false;
+            if (filter === 'all') show = true;
+            else if (filter === 'eligible') show = (eligible === 'yes' && status === 'open' && applied === 'no');
+            else if (filter === 'applied') show = (applied === 'yes');
+            else if (filter === 'open') show = (status === 'open');
+
+            item.style.display = show ? '' : 'none';
+        });
+    });
+});
+</script>
+{% endblock %}

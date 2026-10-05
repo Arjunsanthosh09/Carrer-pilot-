@@ -283,3 +283,31 @@ StudentProfile.education_entries = db.relationship(
     cascade='all, delete-orphan',
     order_by='Education.end_year.desc()'
 )
+
+# ============================================================
+# EXPERIENCE MODEL
+# ============================================================
+
+class Experience(db.Model):
+    __tablename__ = 'experience'
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('student_profile.id'), nullable=False)
+    type = db.Column(db.Enum('Internship','Full-Time','Part-Time','Freelance','Volunteer'), default='Internship')
+    job_title = db.Column(db.String(150), nullable=False)
+    company = db.Column(db.String(200), nullable=False)
+    location = db.Column(db.String(100))
+    start_date = db.Column(db.Date)
+    end_date = db.Column(db.Date)
+    is_current = db.Column(db.Boolean, default=False)
+    description = db.Column(db.Text)
+    technologies = db.Column(db.String(255))
+    link = db.Column(db.String(255))
+
+
+StudentProfile.experiences = db.relationship(
+    'Experience',
+    backref='profile',
+    lazy='dynamic',
+    cascade='all, delete-orphan',
+    order_by='Experience.start_date.desc()'
+)

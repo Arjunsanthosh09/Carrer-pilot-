@@ -2,13 +2,16 @@ from flask import render_template
 from app import db
 from app.models import StudentProfile, StudentSkill, Certification, Project, Education
 from app.services.gemini_ai import generate_summary, generate_project_bullets
-
+from app.models import (
+    StudentProfile, StudentSkill, Certification, Project, Education, Experience
+)
 
 def generate_resume_html(student_id):
     profile = StudentProfile.query.filter_by(user_id=student_id).first()
     if not profile:
         return "<p>Profile not found.</p>"
-
+    experiences = Experience.query.filter_by(student_id=profile.id)\
+                              .order_by(Experience.start_date.desc()).all()
     skills = StudentSkill.query.filter_by(student_id=profile.id).all()
     certs = Certification.query.filter_by(student_id=profile.id).all()
     projects = Project.query.filter_by(student_id=profile.id).all()
@@ -50,6 +53,7 @@ def generate_resume_html(student_id):
         'certs': certs,
         'projects': projects,
         'educations': educations,          # 👈 NEW: passed to template
+        'experiences': experiences,
         'summary': summary,
         'soft_skills': profile.soft_skills.split(',') if profile.soft_skills else [],
         'contact': {

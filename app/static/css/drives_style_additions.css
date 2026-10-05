@@ -1,0 +1,88 @@
+/* ==========================================================================
+   Additions for the student Placement drives page — paste at END of style.css
+   (If you already added .empty-state / .empty-icon / .btn-sm earlier, skip those.)
+   ========================================================================== */
+
+/* extra pill + button variants */
+.pill-slate { background: var(--paper-2); color: var(--slate); }
+.btn-danger-ghost { background: transparent; color: #A02D12; border-color: #F5C2B6; }
+.btn-danger-ghost:hover { background: #FFE1D9; border-color: var(--coral); }
+.btn:disabled,
+.btn[disabled] { opacity: .55; cursor: not-allowed; transform: none; }
+.btn:disabled:hover { background: transparent; border-color: var(--line); }
+
+/* filter tabs */
+.tab-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.tab {
+    padding: 9px 16px;
+    border: 1.5px solid var(--line);
+    border-radius: 999px;
+    background: var(--paper);
+    color: var(--slate);
+    font: 600 .88rem/1 var(--font-body);
+    cursor: pointer;
+    transition: background-color .2s ease, border-color .2s ease, color .2s ease;
+}
+.tab:hover { background: var(--mint); border-color: #BFDCCB; color: var(--ink); }
+.tab.active { background: var(--leaf); border-color: var(--leaf); color: var(--ink); }
+
+/* drive cards */
+.drive-card { margin-bottom: 16px; border-left: 4px solid #B7C9BE; }
+.drive-card.is-applied  { border-left-color: var(--green); }
+.drive-card.is-eligible { border-left-color: var(--amber); }
+
+.drive-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+.drive-title { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.drive-title h3 { font-size: 1.15rem; font-weight: 700; }
+.drive-role { margin-top: 4px; font-weight: 600; color: var(--forest); }
+
+.drive-details { gap: 12px; margin-top: 16px; }
+.detail-tile { padding: 12px 14px; border-radius: var(--radius-sm); background: var(--paper-2); }
+.detail-label {
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--slate);
+}
+.detail-value {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+    font-weight: 600;
+}
+
+.notice {
+    margin-top: 14px;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    font-size: .88rem;
+}
+.notice-coral { background: #FFE1D9; color: #A02D12; }
+
+.drive-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+.drive-actions form { margin: 0; }
+
+/* empty state */
+.empty-state { padding: 48px 16px; text-align: center; color: var(--slate); }
+.empty-icon {
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    background: var(--mint);
+    color: var(--forest);
+    font-size: 1.6rem;
+}
+.empty-state h3 { margin-bottom: 6px; color: var(--ink); font-size: 1.15rem; }
+.empty-state p { margin: 0; }

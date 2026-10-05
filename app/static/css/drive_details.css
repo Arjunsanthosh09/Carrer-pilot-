@@ -1,138 +1,77 @@
-/* ============ DESIGN SYSTEM TOKENS ============ */
-:root{
-  --ink:#11161F;
-  --ink-3:#262F42;
-  --paper:#FAF8F3;
-  --paper-2:#F2EFE6;
-  --card:#FFFFFF;
-  --amber:#E8A33D;
-  --amber-dark:#B97A1F;
-  --amber-light:#FCEACB;
-  --green:#3DA35D;
-  --green-dark:#256B3C;
-  --green-light:#DCF0E1;
-  --coral:#D8634A;
-  --coral-dark:#A3402A;
-  --coral-light:#F9DFD7;
-  --slate:#5B6472;
-  --slate-light:#8A93A2;
-  --line:#E4E0D4;
-  --font-display:'Space Grotesk', sans-serif;
+/* ==========================================================================
+   CareerPilot AI — Officer: drive details
+   static/css/drive_details.css  (load after drives.css)
+   ========================================================================== */
+
+.drive-page .detail-title {
+    font-size: clamp(1.5rem, 2.6vw, 2.1rem);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+}
+.drive-page .detail-pill { font-size: .85rem; padding: 6px 14px; }
+
+/* ---------- Key facts ---------- */
+.drive-page .detail-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+.drive-page .detail-stat {
+    min-width: 0;
+    padding: 20px 22px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+}
+.drive-page .stat-label {
+    margin-bottom: 8px;
+    font-size: .74rem;
+    font-weight: 700;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--slate);
+}
+.drive-page .stat-value {
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+    word-break: break-word;
 }
 
-/* ============ DRIVE DETAILS PAGE ============ */
-.detail-hero{
-  background:var(--ink);
-  border-radius:18px;
-  padding:32px 34px;
-  color:#fff;
-  position:relative;
-  overflow:hidden;
-  margin-bottom:24px;
-}
-.detail-hero::after{
-  content:"";
-  position:absolute;
-  right:-70px; bottom:-70px;
-  width:220px; height:220px;
-  border-radius:50%;
-  border:1px solid rgba(232,163,61,0.25);
-}
-.detail-hero-top{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  position:relative;
-  z-index:1;
-}
-.detail-hero h1{
-  font-family:var(--font-display);
-  font-size:26px;
-  font-weight:600;
-}
-.detail-hero .company-tag{
-  color:var(--amber);
-  font-size:13.5px;
-  font-weight:600;
-  text-transform:uppercase;
-  letter-spacing:.04em;
-  margin-bottom:6px;
-}
-.detail-hero .drive-date-txt{
-  color:#B9C0CE;
-  font-size:14px;
-  margin-top:8px;
-}
-.detail-pill{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  padding:6px 14px;
-  border-radius:99px;
-  font-size:13px;
-  font-weight:600;
-}
-.detail-pill.open{ background:var(--green-light); color:var(--green-dark); }
-.detail-pill.closed{ background:rgba(255,255,255,0.12); color:#D1D5DB; }
+/* ---------- Actions ---------- */
+.drive-page .detail-actions { display: flex; flex-wrap: wrap; gap: 12px; }
 
-.detail-grid{
-  display:grid;
-  grid-template-columns:repeat(3, 1fr);
-  gap:16px;
-  margin-bottom:24px;
+.drive-page .btn-ink-lg,
+.drive-page .btn-coral-lg {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 24px;
+    border-radius: var(--radius-sm);
+    font: 700 .95rem/1 var(--font-display);
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform .2s ease, box-shadow .2s ease, background-color .2s ease, border-color .2s ease;
 }
-.detail-stat{
-  background:var(--card);
-  border:1px solid var(--line);
-  border-radius:14px;
-  padding:18px;
+.drive-page .btn-ink-lg {
+    border: 0;
+    background: var(--leaf);
+    color: var(--ink);
+    box-shadow: 0 10px 20px -10px rgba(52, 210, 123, .9);
 }
-.detail-stat .stat-label{
-  font-size:12px;
-  color:var(--slate);
-  font-weight:600;
-  text-transform:uppercase;
-  letter-spacing:.04em;
-  margin-bottom:6px;
-}
-.detail-stat .stat-value{
-  font-family:var(--font-display);
-  font-size:20px;
-  font-weight:700;
-  color:var(--ink);
-}
+.drive-page .btn-ink-lg:hover { background: var(--leaf-hover); transform: translateY(-2px); box-shadow: 0 14px 24px -10px rgba(52, 210, 123, .95); }
+.drive-page .btn-coral-lg { border: 1.5px solid #F0B8A9; background: #fff; color: #A02D12; }
+.drive-page .btn-coral-lg:hover { background: #FFE1D9; border-color: var(--coral); transform: translateY(-2px); }
+.drive-page .btn-ink-lg:active,
+.drive-page .btn-coral-lg:active { transform: translateY(0) scale(.99); }
 
-.detail-actions{
-  display:flex;
-  gap:12px;
+@media (max-width: 900px) {
+    .drive-page .detail-grid { grid-template-columns: 1fr; }
 }
-.btn-ink-lg{
-  background:var(--ink);
-  color:#fff;
-  padding:13px 22px;
-  border-radius:10px;
-  border:none;
-  font-weight:600;
-  font-size:14.5px;
-  text-decoration:none;
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  transition:.2s;
+@media (max-width: 560px) {
+    .drive-page .btn-ink-lg, .drive-page .btn-coral-lg { flex: 1 1 100%; }
 }
-.btn-ink-lg:hover{ background:var(--ink-3); }
-.btn-coral-lg{
-  background:var(--card);
-  color:var(--coral-dark);
-  padding:13px 22px;
-  border-radius:10px;
-  border:1.3px solid var(--coral-light);
-  font-weight:600;
-  font-size:14.5px;
-  text-decoration:none;
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  transition:.2s;
-}
-.btn-coral-lg:hover{ background:var(--coral-light); }

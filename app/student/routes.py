@@ -17,10 +17,23 @@ from app.services.gemini_ai import generate_profile_suggestions
 from app.services.skill_gap import get_all_roles, get_role_requirements, analyze_skill_gap
 from app.models import Education
 from app.services.gemini_ai import generate_career_recommendations
-
+from app.models import Application   # add to imports
+from datetime import datetime
 # --- NEW: pdfkit (replaces weasyprint) ---
 import pdfkit
-
+from app.models import (
+    StudentProfile,
+    Skill,
+    StudentSkill,
+    Certification,
+    Project,
+    PlacementDrive,
+    Company,
+    InterviewSession,
+    Education,
+    Experience,
+    Application
+)
 student_bp = Blueprint('student', __name__)
 
 # ========== DASHBOARD ==========
@@ -112,7 +125,6 @@ def dashboard():
     
 # ========== PROFILE ==========
 
-
 @student_bp.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
@@ -125,7 +137,7 @@ def profile():
         profile.full_name = request.form.get('full_name')
         profile.department = request.form.get('department')
         profile.roll_number = request.form.get('roll_number')
-        # profile.cgpa = request.form.get('cgpa')   # 👈 REMOVED - CGPA now lives in Education
+        # profile.cgpa = request.form.get('cgpa')   # removed — CGPA now lives in Education
         profile.phone = request.form.get('phone')
         profile.location = request.form.get('location')
         profile.linkedin = request.form.get('linkedin')
@@ -137,15 +149,21 @@ def profile():
         flash('Profile updated successfully.')
         return redirect(url_for('student.profile'))
 
+    # ---- Fetch all profile data ----
     skills = StudentSkill.query.filter_by(student_id=profile.id).all()
     certs = Certification.query.filter_by(student_id=profile.id).all()
     projects = Project.query.filter_by(student_id=profile.id).all()
     all_skills = Skill.query.order_by(Skill.name).all()
 
-    # 👇 NEW: fetch education entries (most recent first)
+    # ---- Education (most recent first) ----
     educations = Education.query.filter_by(student_id=profile.id) \
                                 .order_by(Education.end_year.desc()) \
                                 .all()
+
+    # ---- 👇 NEW: Experience (most recent first) ----
+    experiences = Experience.query.filter_by(student_id=profile.id) \
+                                  .order_by(Experience.start_date.desc()) \
+                                  .all()
 
     return render_template('student/profile.html',
                            profile=profile,
@@ -153,7 +171,8 @@ def profile():
                            certs=certs,
                            projects=projects,
                            all_skills=all_skills,
-                           educations=educations)   # 👈 pass to template
+                           educations=educations,
+                           experiences=experiences)   # 👈 pass to template
     
 # ========== SKILLS ==========
 @student_bp.route('/add_skill', methods=['POST'])
@@ -507,10 +526,127 @@ def remove_education(edu_id):
         flash('Education entry removed.')
     return redirect(url_for('student.profile'))
 
+
+
+# ========== PLACEMENT DRIVES ==========
 @student_bp.route('/drives')
 @login_required
 def drives():
-    return render_template('student/drives.html')
+    profile = current_user.profile
+    if not profile:
+        flash('Please complete your profile first.')
+        return redirect(url_for('student.profile'))
+
+    # Get all drives (open + closed)
+    all_drives = PlacementDrive.query.order_by(
+        PlacementDrive.drive_date.desc()
+    ).all()
+
+    # Get student's applications
+    applications = Application.query.filter_by(
+        student_id=current_user.id
+    ).all()
+
+    # Build a dict for quick lookup: {drive_id: application}
+    applied_map = {app.drive_id: app for app in applications}
+
+    # Build enriched drive list
+    drive_list = []
+    for drive in all_drives:
+        student_cgpa = float(profile.cgpa) if profile.cgpa else 0
+        min_cgpa = float(drive.min_cgpa) if drive.min_cgpa else 0
+        is_eligible = student_cgpa >= min_cgpa
+
+        application = applied_map.get(drive.id)
+
+        drive_list.append({
+            'drive': drive,
+            'is_eligible': is_eligible,
+            'has_applied': application is not None,
+            'application': application
+        })
+
+    # Stats
+    total_drives = len(drive_list)
+    applied_count = len(applications)
+    eligible_count = sum(1 for d in drive_list if d['is_eligible'] and d['drive'].status == 'open')
+
+    return render_template('student/drives.html',
+                           drive_list=drive_list,
+                           total_drives=total_drives,
+                           applied_count=applied_count,
+                           eligible_count=eligible_count,
+                           profile=profile)
+
+
+# ========== APPLY TO DRIVE ==========
+@student_bp.route('/drives/apply/<int:drive_id>', methods=['POST'])
+@login_required
+def apply_drive(drive_id):
+    profile = current_user.profile
+    if not profile:
+        flash('Please complete your profile first.')
+        return redirect(url_for('student.profile'))
+
+    drive = PlacementDrive.query.get_or_404(drive_id)
+
+    # Check if drive is open
+    if drive.status != 'open':
+        flash('This drive is closed.')
+        return redirect(url_for('student.drives'))
+
+    # Check if already applied
+    existing = Application.query.filter_by(
+        student_id=current_user.id,
+        drive_id=drive_id
+    ).first()
+
+    if existing:
+        flash('You have already applied to this drive.')
+        return redirect(url_for('student.drives'))
+
+    # Check eligibility (CGPA)
+    student_cgpa = float(profile.cgpa) if profile.cgpa else 0
+    min_cgpa = float(drive.min_cgpa) if drive.min_cgpa else 0
+
+    if student_cgpa < min_cgpa:
+        flash(f'You are not eligible. Minimum CGPA required: {min_cgpa}')
+        return redirect(url_for('student.drives'))
+
+    # Create application
+    application = Application(
+        student_id=current_user.id,
+        drive_id=drive_id,
+        status='applied'
+    )
+    db.session.add(application)
+    db.session.commit()
+
+    flash(f'✅ Successfully applied to {drive.company.company_name} - {drive.role}!')
+    return redirect(url_for('student.drives'))
+
+
+# ========== WITHDRAW APPLICATION ==========
+@student_bp.route('/drives/withdraw/<int:application_id>', methods=['POST'])
+@login_required
+def withdraw_application(application_id):
+    application = Application.query.get_or_404(application_id)
+
+    # Verify ownership
+    if application.student_id != current_user.id:
+        flash('Access denied.')
+        return redirect(url_for('student.drives'))
+
+    # Only allow withdrawal if status is 'applied'
+    if application.status != 'applied':
+        flash('Cannot withdraw — your application is already being processed.')
+        return redirect(url_for('student.drives'))
+
+    db.session.delete(application)
+    db.session.commit()
+
+    flash('Application withdrawn.')
+    return redirect(url_for('student.drives'))
 
 
 # ========== TEST FORM (keep for debugging) ==========
@@ -595,3 +731,45 @@ def extract_text_from_docx(file):
     doc = Document(file)
     text = "\n".join([para.text for para in doc.paragraphs])
     return text
+
+# ========== EXPERIENCE ==========
+@student_bp.route('/add_experience', methods=['POST'])
+@login_required
+def add_experience():
+    profile = current_user.profile
+    if not profile:
+        flash('Profile not found.')
+        return redirect(url_for('student.profile'))
+
+    start_date = request.form.get('start_date')
+    end_date = request.form.get('end_date')
+    is_current = request.form.get('is_current') == 'on'
+
+    exp = Experience(
+        student_id=profile.id,
+        type=request.form.get('type', 'Internship'),
+        job_title=request.form.get('job_title'),
+        company=request.form.get('company'),
+        location=request.form.get('location'),
+        start_date=datetime.strptime(start_date, '%Y-%m-%d').date() if start_date else None,
+        end_date=datetime.strptime(end_date, '%Y-%m-%d').date() if end_date and not is_current else None,
+        is_current=is_current,
+        description=request.form.get('description'),
+        technologies=request.form.get('technologies'),
+        link=request.form.get('link')
+    )
+    db.session.add(exp)
+    db.session.commit()
+    flash('Experience added successfully!')
+    return redirect(url_for('student.profile'))
+
+
+@student_bp.route('/remove_experience/<int:exp_id>', methods=['POST'])
+@login_required
+def remove_experience(exp_id):
+    exp = Experience.query.get_or_404(exp_id)
+    if exp.student_id == current_user.profile.id:
+        db.session.delete(exp)
+        db.session.commit()
+        flash('Experience removed.')
+    return redirect(url_for('student.profile'))

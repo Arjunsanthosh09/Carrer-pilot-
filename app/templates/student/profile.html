@@ -27,9 +27,10 @@
     </div>
 
     <!-- Tabs -->
-    <div class="tab-row" id="profile-tabs">
+   <div class="tab-row" id="profile-tabs">
   <div class="tab active" data-tab="basic">Basic info</div>
   <div class="tab" data-tab="education">Education</div>
+  <div class="tab" data-tab="experience">Experience</div>   <!-- 👈 NEW -->
   <div class="tab" data-tab="skills">Skills</div>
   <div class="tab" data-tab="certs">Certifications</div>
   <div class="tab" data-tab="projects">Projects</div>
@@ -384,6 +385,126 @@
 
       <div style="margin-top: 12px;">
         <button class="btn-ink" type="submit">+ Add Education</button>
+      </div>
+    </form>
+  </div>
+</div>
+<!-- ===== EXPERIENCE TAB ===== -->
+<div class="tab-content" id="tab-experience" style="display: none">
+  <div class="card">
+    <div class="section-title">Your Experience</div>
+
+    {% for exp in experiences %}
+    <div style="border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin-bottom: 12px;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div style="flex: 1;">
+          <div style="font-size: 14px; font-weight: 600;">
+            {{ exp.job_title }}
+            <span class="pill pill-amber" style="margin-left: 8px; font-size: 11px;">{{ exp.type }}</span>
+          </div>
+          <div style="font-size: 13px; color: var(--slate); margin-top: 4px;">
+            {{ exp.company }}{% if exp.location %} · {{ exp.location }}{% endif %}
+          </div>
+          <div style="font-size: 12.5px; color: var(--slate); margin-top: 4px;">
+            {% if exp.start_date %}{{ exp.start_date.strftime('%b %Y') }}{% endif %}
+            –
+            {% if exp.is_current %}Present
+            {% elif exp.end_date %}{{ exp.end_date.strftime('%b %Y') }}
+            {% else %}Present{% endif %}
+          </div>
+          {% if exp.description %}
+          <div style="font-size: 13px; color: var(--ink-3); margin-top: 8px;">{{ exp.description }}</div>
+          {% endif %}
+          {% if exp.technologies %}
+          <div style="font-size: 12px; color: var(--slate-light); margin-top: 6px;">
+            <strong>Tech:</strong> {{ exp.technologies }}
+          </div>
+          {% endif %}
+          {% if exp.link %}
+          <div style="font-size: 12px; margin-top: 4px;">
+            <a href="{{ exp.link }}" target="_blank" style="color: var(--amber-dark);">Link</a>
+          </div>
+          {% endif %}
+        </div>
+        <form method="POST" action="{{ url_for('student.remove_experience', exp_id=exp.id) }}">
+          <button type="submit" class="icon-btn"
+                  style="background: transparent; border: none; color: var(--slate-light);"
+                  onclick="return confirm('Remove this experience?')">✕</button>
+        </form>
+      </div>
+    </div>
+    {% else %}
+    <p style="color: var(--slate); font-style: italic;">No experience added yet.</p>
+    {% endfor %}
+
+    <!-- Add Experience Form -->
+    <form method="POST" action="{{ url_for('student.add_experience') }}"
+          style="margin-top: 16px; border-top: 1px solid var(--line); padding-top: 16px;">
+      <div class="grid g2" style="gap: 12px;">
+
+        <div class="field">
+          <label>Type *</label>
+          <select name="type" required>
+            <option value="Internship">Internship</option>
+            <option value="Full-Time">Full-Time</option>
+            <option value="Part-Time">Part-Time</option>
+            <option value="Freelance">Freelance</option>
+            <option value="Volunteer">Volunteer</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Job Title *</label>
+          <input type="text" name="job_title" placeholder="e.g. Frontend Intern" required>
+        </div>
+
+        <div class="field">
+          <label>Company *</label>
+          <input type="text" name="company" placeholder="e.g. Google" required>
+        </div>
+
+        <div class="field">
+          <label>Location</label>
+          <input type="text" name="location" placeholder="e.g. Bengaluru, India">
+        </div>
+
+        <div class="field">
+          <label>Start Date</label>
+          <input type="date" name="start_date">
+        </div>
+
+        <div class="field">
+          <label>End Date</label>
+          <input type="date" name="end_date">
+        </div>
+
+        <div class="field" style="grid-column: span 2;">
+          <label style="display: flex; align-items: center; gap: 8px;">
+            <input type="checkbox" name="is_current" style="width: auto;"> Currently working here
+          </label>
+        </div>
+
+        <div class="field" style="grid-column: span 2;">
+          <label>Description</label>
+          <textarea name="description" rows="3"
+                    placeholder="What did you do? What did you learn?"
+                    style="width: 100%; padding: 11px 13px; border-radius: 8px; border: 1.3px solid var(--line); font-size: 14px;"></textarea>
+        </div>
+
+        <div class="field">
+          <label>Technologies Used</label>
+          <input type="text" name="technologies" placeholder="e.g. React, Node.js">
+        </div>
+
+        <div class="field">
+          <label>Link (optional)</label>
+          <input type="url" name="link" placeholder="https://...">
+        </div>
+
+      </div>
+
+      <div style="margin-top: 12px;">
+        <button class="btn-ink" type="submit">+ Add Experience</button>
       </div>
     </form>
   </div>
