@@ -1,6 +1,7 @@
 from app.models import StudentProfile, StudentSkill, Certification, Project, InterviewSession
 from app import db
 
+
 def compute_readiness_score(student_id):
     """
     Compute readiness score (0-100) and sub-scores for a student.
@@ -33,11 +34,38 @@ def compute_readiness_score(student_id):
     project_count = Project.query.filter_by(student_id=profile.id).count()
     projects = min(project_count * 20, 100)  # Each project = 20%, max 100%
 
-    # 4. Aptitude – placeholder (not implemented yet)
-    aptitude = 0
+    # 4. Aptitude – computed from completed aptitude mock interviews
+    aptitude_sessions = InterviewSession.query.filter_by(
+        student_id=student_id,
+        type='aptitude',
+        status='completed'
+    ).all()
 
-    # 5. Communication – placeholder (not implemented yet)
-    communication = 0
+    if aptitude_sessions:
+        apt_scores = [float(s.overall_score) for s in aptitude_sessions if s.overall_score]
+        # Convert 0-10 scale to 0-100
+        aptitude = (sum(apt_scores) / len(apt_scores)) * 10 if apt_scores else 0
+    else:
+        aptitude = 0
+
+    # 5. Communication – computed from all completed interview sessions
+    all_sessions = InterviewSession.query.filter_by(
+        student_id=student_id,
+        status='completed'
+    ).all()
+
+    comm_scores = []
+    for session in all_sessions:
+        if session.questions:
+            for q in session.questions:
+                if isinstance(q, dict) and q.get('communication'):
+                    comm_scores.append(q['communication'])
+
+    if comm_scores:
+        # Average of 0-10 scale, then convert to 0-100
+        communication = (sum(comm_scores) / len(comm_scores)) * 10
+    else:
+        communication = 0
 
     # 6. Academics (CGPA out of 10 → percentage)
     if profile.cgpa:
@@ -73,6 +101,7 @@ def compute_readiness_score(student_id):
         "communication": round(communication, 1),
         "academics": round(academics, 1)
     }
+
 
 def compute_profile_completeness(profile):
     """
