@@ -3,6 +3,66 @@
 {% block content %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
+<style>
+    /* ---------- Reports page extras ---------- */
+    .rep-head { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; }
+    .rep-actions { display:flex; gap:8px; flex-wrap:wrap; }
+
+    .kpi-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; margin-bottom:16px; }
+    @media (max-width:1100px){ .kpi-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media (max-width:600px){ .kpi-grid { grid-template-columns:1fr; } }
+
+    .kpi { display:flex; align-items:center; gap:14px; }
+    .kpi-ic { width:44px; height:44px; border-radius:13px; display:grid; place-items:center; font-size:16px; flex:0 0 auto; }
+    .kpi-ic.indigo { background:rgba(99,102,241,.13);  color:#6366f1; }
+    .kpi-ic.green  { background:rgba(16,185,129,.13);  color:#10b981; }
+    .kpi-ic.amber  { background:rgba(245,158,11,.15);  color:#f59e0b; }
+    .kpi-ic.coral  { background:rgba(244,63,94,.13);   color:#f43f5e; }
+
+    .kpi-label { font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; opacity:.6; }
+    .kpi-value { font-size:24px; font-weight:700; line-height:1.2; }
+    .kpi-value small { font-size:13px; font-weight:600; opacity:.55; }
+    .kpi-sub { font-size:12px; opacity:.62; }
+
+    .ring-block { display:flex; align-items:center; gap:24px; flex-wrap:wrap; }
+    .ring-meta { flex:1; min-width:190px; }
+    .pill { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700;
+            padding:4px 11px; border-radius:999px; }
+
+    .band-list { display:flex; flex-direction:column; gap:13px; margin-top:16px; }
+    .band-row { display:grid; grid-template-columns:140px 1fr 84px; align-items:center; gap:12px; font-size:13px; }
+    @media (max-width:520px){ .band-row { grid-template-columns:110px 1fr 64px; } }
+    .band-name { display:flex; align-items:center; gap:8px; font-weight:600; }
+    .band-dot { width:9px; height:9px; border-radius:50%; flex:0 0 auto; }
+    .band-val { text-align:right; font-weight:700; font-variant-numeric:tabular-nums; }
+    .band-val small { font-weight:600; opacity:.55; }
+
+    .dept-row { padding:11px 0; border-bottom:1px solid rgba(148,163,184,.16); }
+    .dept-row:last-child { border-bottom:none; }
+    .dept-top { display:flex; justify-content:space-between; align-items:baseline; gap:10px; margin-bottom:7px; }
+    .dept-name { font-size:13px; font-weight:600; }
+    .dept-avg { font-size:13px; font-weight:700; font-variant-numeric:tabular-nums; }
+    .dept-sub { font-size:11.5px; opacity:.6; margin-top:6px; }
+
+    .gap-row { display:grid; grid-template-columns:1fr 120px 96px; align-items:center; gap:12px;
+               padding:10px 0; border-bottom:1px solid rgba(148,163,184,.16); font-size:13px; }
+    .gap-row:last-child { border-bottom:none; }
+    @media (max-width:640px){ .gap-row { grid-template-columns:1fr 90px; } .gap-action { display:none; } }
+    .gap-name { font-weight:600; }
+    .gap-name small { display:block; font-weight:500; font-size:11.5px; opacity:.6; margin-top:2px; }
+    .gap-action { font-size:11.5px; font-weight:600; opacity:.75; text-align:right; }
+
+    .funnel { display:flex; flex-direction:column; gap:10px; }
+    .funnel-row { display:grid; grid-template-columns:104px 1fr 72px; align-items:center; gap:12px; font-size:13px; }
+    .funnel-label { font-weight:600; opacity:.85; }
+    .funnel-val { text-align:right; font-weight:700; font-variant-numeric:tabular-nums; }
+
+    .export-buttons { display:flex; gap:10px; flex-wrap:wrap; margin-top:6px; }
+    .export-note { font-size:12px; opacity:.62; margin-top:12px; }
+
+    .empty-text { font-size:13px; opacity:.6; padding:8px 0; }
+</style>
+
 <div class="shell">
 
     <!-- ================= SIDEBAR ================= -->
@@ -59,52 +119,218 @@
     <!-- ================= MAIN ================= -->
     <main class="main">
 
-        <div class="page-head">
+        <div class="page-head rep-head">
             <div>
                 <h1>Reports &amp; analytics</h1>
                 <p class="sub">Institution-wide placement preparedness, exportable as CSV.</p>
             </div>
+            <div class="rep-actions">
+                <button type="button" class="btn btn-ghost" onclick="window.print()">
+                    <i class="fa-solid fa-print"></i> Print / PDF
+                </button>
+                <a href="{{ url_for('officer.export_readiness') }}" class="btn btn-ghost">
+                    <i class="fa-solid fa-download"></i> Readiness CSV
+                </a>
+            </div>
         </div>
 
+        <!-- ============ KPI STRIP ============ -->
+        <div class="kpi-grid">
+
+            <div class="card kpi">
+                <div class="kpi-ic indigo"><i class="fa-solid fa-users"></i></div>
+                <div>
+                    <div class="kpi-label">Students tracked</div>
+                    <div class="kpi-value">{{ total_students }}</div>
+                    <div class="kpi-sub">Across all departments</div>
+                </div>
+            </div>
+
+            <div class="card kpi">
+                <div class="kpi-ic green"><i class="fa-solid fa-gauge-high"></i></div>
+                <div>
+                    <div class="kpi-label">Average readiness</div>
+                    <div class="kpi-value">{{ avg_readiness_now }}<small>%</small></div>
+                    <div class="kpi-sub">{{ readiness_label }}</div>
+                </div>
+            </div>
+
+            <div class="card kpi">
+                <div class="kpi-ic coral"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                <div>
+                    <div class="kpi-label">Need attention</div>
+                    <div class="kpi-value">{{ students_need_attention }}</div>
+                    <div class="kpi-sub">Readiness below 45%</div>
+                </div>
+            </div>
+
+            <div class="card kpi">
+                <div class="kpi-ic amber"><i class="fa-solid fa-briefcase"></i></div>
+                <div>
+                    <div class="kpi-label">Drives open</div>
+                    <div class="kpi-value">{{ open_drives }}<small> / {{ total_drives }}</small></div>
+                    <div class="kpi-sub">{{ selected }} offers confirmed</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ============ READINESS + DEPARTMENTS ============ -->
         <div class="grid g2" style="margin-bottom:16px;">
 
             <!-- Current readiness -->
             <div class="card">
                 <div class="section-title">Current readiness</div>
-                <div class="gauge-wrap">
+
+                <div class="ring-block">
                     <div class="readiness-ring" style="--pct: {{ avg_readiness_now }}%;">
                         <span>{{ avg_readiness_now }}%</span>
                     </div>
-                    <p class="readiness-note">
-                        Average readiness score across all students, as of today. Monthly trend tracking will be available once historical data has been collected.
-                    </p>
+
+                    <div class="ring-meta">
+                        <span class="pill"
+                              style="background:{{ readiness_color }}1f; color:{{ readiness_color }};">
+                            <i class="fa-solid fa-circle" style="font-size:7px;"></i>
+                            {{ readiness_label }} cohort
+                        </span>
+                        <p class="readiness-note" style="margin-top:10px;">
+                            Average readiness across {{ total_students }} students, as of today.
+                            Monthly trend tracking unlocks once historical snapshots accumulate.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="band-list">
+                    {% for band in readiness_bands %}
+                    <div class="band-row">
+                        <span class="band-name">
+                            <span class="band-dot" style="background:{{ band.color }};"></span>
+                            {{ band.label }}
+                        </span>
+                        <div class="progress-track">
+                            <div class="progress-fill"
+                                 style="width: {{ band.pct }}%; background: {{ band.color }};"></div>
+                        </div>
+                        <span class="band-val">
+                            {{ band.count }} <small>({{ band.pct }}%)</small>
+                        </span>
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
 
             <!-- Department-wise readiness -->
             <div class="card">
                 <div class="section-title">Department-wise readiness</div>
-                <div class="gauge-breakdown" style="min-width:0;">
-                    {% for dept in department_readiness %}
-                    <div class="gb-row">
-                        <span class="gb-label">{{ dept.department }}</span>
-                        <div class="gb-track">
-                            <div class="progress-track">
-                                <div class="progress-fill"
-                                     style="width: {{ dept.avg }}%; background: {% if dept.avg < 45 %}var(--coral){% elif dept.avg < 75 %}var(--amber){% else %}var(--green){% endif %};"></div>
-                            </div>
-                        </div>
-                        <span class="gb-val">{{ dept.avg }}%</span>
+
+                {% for dept in department_readiness %}
+                {% set color = 'var(--coral,#f43f5e)' if dept.avg < 45
+                               else ('var(--amber,#f59e0b)' if dept.avg < 75
+                               else 'var(--green,#10b981)') %}
+                <div class="dept-row">
+                    <div class="dept-top">
+                        <span class="dept-name">{{ dept.department }}</span>
+                        <span class="dept-avg" style="color:{{ color }};">{{ dept.avg }}%</span>
                     </div>
-                    {% else %}
-                    <p class="empty-text">No department data yet.</p>
-                    {% endfor %}
+                    <div class="progress-track">
+                        <div class="progress-fill"
+                             style="width: {{ dept.avg }}%; background: {{ color }};"></div>
+                    </div>
+                    <div class="dept-sub">
+                        {{ dept.students }} student{{ '' if dept.students == 1 else 's' }}
+                        {% if dept.at_risk %} · {{ dept.at_risk }} need attention{% endif %}
+                    </div>
+                </div>
+                {% else %}
+                <p class="empty-text">No department data yet.</p>
+                {% endfor %}
+            </div>
+
+        </div>
+
+        <!-- ============ SKILL GAPS + FUNNEL ============ -->
+        <div class="grid g2" style="margin-bottom:16px;">
+
+            <!-- Skill gaps -->
+            <div class="card">
+                <div class="section-title">Top skill gaps</div>
+
+                {% for gap in skill_gaps %}
+                {% set color = 'var(--coral,#f43f5e)' if gap.pct >= 60
+                               else ('var(--amber,#f59e0b)' if gap.pct >= 30
+                               else 'var(--green,#10b981)') %}
+                <div class="gap-row">
+                    <div class="gap-name">
+                        {{ gap.skill }}
+                        <small>{{ gap.lacking }} of {{ gap.students }} students below 60%</small>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill"
+                             style="width: {{ gap.pct }}%; background: {{ color }};"></div>
+                    </div>
+                    <div class="gap-action">
+                        {{ gap.pct }}%<br>
+                        <span style="opacity:.7;">{{ gap.action }}</span>
+                    </div>
+                </div>
+                {% else %}
+                <p class="empty-text">Not enough skill data recorded yet.</p>
+                {% endfor %}
+            </div>
+
+            <!-- Placement funnel -->
+            <div class="card">
+                <div class="section-title">Placement funnel</div>
+
+                {% set funnel_max = total_applications if total_applications > 0 else 1 %}
+
+                <div class="funnel">
+                    <div class="funnel-row">
+                        <span class="funnel-label">Applications</span>
+                        <div class="progress-track">
+                            <div class="progress-fill"
+                                 style="width: 100%; background: #6366f1;"></div>
+                        </div>
+                        <span class="funnel-val">{{ total_applications }}</span>
+                    </div>
+
+                    <div class="funnel-row">
+                        <span class="funnel-label">Shortlisted</span>
+                        <div class="progress-track">
+                            <div class="progress-fill"
+                                 style="width: {{ (shortlisted / funnel_max * 100)|round }}%; background: var(--amber,#f59e0b);"></div>
+                        </div>
+                        <span class="funnel-val">{{ shortlisted }}</span>
+                    </div>
+
+                    <div class="funnel-row">
+                        <span class="funnel-label">Selected</span>
+                        <div class="progress-track">
+                            <div class="progress-fill"
+                                 style="width: {{ (selected / funnel_max * 100)|round }}%; background: var(--green,#10b981);"></div>
+                        </div>
+                        <span class="funnel-val">{{ selected }}</span>
+                    </div>
+
+                    <div class="funnel-row">
+                        <span class="funnel-label">Rejected</span>
+                        <div class="progress-track">
+                            <div class="progress-fill"
+                                 style="width: {{ (rejected / funnel_max * 100)|round }}%; background: var(--coral,#f43f5e);"></div>
+                        </div>
+                        <span class="funnel-val">{{ rejected }}</span>
+                    </div>
+                </div>
+
+                <div class="dept-sub" style="margin-top:16px;">
+                    <strong>{{ selection_rate }}%</strong> of applications converted to offers ·
+                    <strong>{{ placement_rate }}%</strong> of students placed
                 </div>
             </div>
 
         </div>
 
-        <!-- Export -->
+        <!-- ============ EXPORT ============ -->
         <div class="card">
             <div class="section-title">Export reports</div>
             <div class="export-buttons">
@@ -118,6 +344,9 @@
                     <i class="fa-solid fa-download"></i> Placement drive log (CSV)
                 </a>
             </div>
+            <p class="export-note">
+                CSV files open directly in Excel or Google Sheets for sharing with departments and committees.
+            </p>
         </div>
 
     </main>

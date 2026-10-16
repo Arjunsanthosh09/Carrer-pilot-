@@ -673,81 +673,127 @@ def student_details(id):
 @officer_bp.route('/reports')
 @login_required
 def reports():
+    # --- Students & readiness ---
+    students = User.query.filter_by(role='student').all()
+    total_students = len(students)
 
-    # Department-wise readiness
-    students = User.query.filter_by(
-        role='student'
-    ).all()
-
-    dept_data = {}
-
-    for student in students:
-
-        profile = student.profile
-
-        if profile and profile.department:
-
-            score = compute_readiness_score(
-                student.id
-            )
-
-            if score:
-
-                dept = profile.department
-
-                if dept not in dept_data:
-                    dept_data[dept] = []
-
-                dept_data[dept].append(
-                    score.get('overall', 0)
-                )
-
-    department_readiness = []
-
-    for dept, scores in dept_data.items():
-
-        avg = round(
-            sum(scores) / len(scores)
-        )
-
-        department_readiness.append({
-            'department': dept,
-            'avg': avg
-        })
-
-    department_readiness.sort(
-        key=lambda x: x['avg'],
-        reverse=True
-    )
-
-    # Current average readiness
+    dept_data = {}          # dept -> list of scores
     all_scores = []
 
     for student in students:
-
-        score = compute_readiness_score(
-            student.id
-        )
-
+        profile = student.profile
+        score = compute_readiness_score(student.id)
         if score:
-            all_scores.append(
-                score.get('overall', 0)
-            )
+            s = score.get('overall', 0)
+            all_scores.append(s)
+            if profile and profile.department:
+                dept = profile.department
+                dept_data.setdefault(dept, []).append(s)
 
-    avg_readiness_now = (
-        round(
-            sum(all_scores) / len(all_scores)
-        )
-        if all_scores
-        else 0
-    )
+    # Overall average
+    avg_readiness_now = round(sum(all_scores) / len(all_scores)) if all_scores else 0
+
+    # Readiness label & colour
+    if avg_readiness_now >= 75:
+        readiness_label = 'Strong'
+        readiness_color = '#10b981'   # green
+    elif avg_readiness_now >= 45:
+        readiness_label = 'Developing'
+        readiness_color = '#f59e0b'   # amber
+    else:
+        readiness_label = 'At risk'
+        readiness_color = '#f43f5e'   # coral
+
+    # Students needing attention
+    students_need_attention = sum(1 for s in all_scores if s < 45)
+
+    # Readiness bands
+    on_track       = sum(1 for s in all_scores if s >= 75)
+    in_progress    = sum(1 for s in all_scores if 45 <= s < 75)
+    needs_attention = sum(1 for s in all_scores if s < 45)
+    total_with     = len(all_scores) if all_scores else 1
+
+    readiness_bands = [
+        {'label': 'On track',        'count': on_track,        'pct': round(on_track / total_with * 100),        'color': '#10b981'},
+        {'label': 'In progress',     'count': in_progress,     'pct': round(in_progress / total_with * 100),     'color': '#f59e0b'},
+        {'label': 'Needs attention', 'count': needs_attention, 'pct': round(needs_attention / total_with * 100), 'color': '#f43f5e'},
+    ]
+
+    # Department-wise readiness (with student counts & at-risk counts)
+    department_readiness = []
+    for dept, scores in dept_data.items():
+        avg = round(sum(scores) / len(scores))
+        at_risk = sum(1 for s in scores if s < 45)
+        department_readiness.append({
+            'department': dept,
+            'avg': avg,
+            'students': len(scores),
+            'at_risk': at_risk,
+        })
+    department_readiness.sort(key=lambda x: x['avg'], reverse=True)
+
+    # --- Drives & applications ---
+    total_drives = PlacementDrive.query.count()
+    open_drives  = PlacementDrive.query.filter_by(status="open").count()
+
+    total_applications = Application.query.count()
+    shortlisted        = Application.query.filter_by(status="shortlisted").count()
+    selected           = Application.query.filter_by(status="selected").count()
+    rejected           = Application.query.filter_by(status="rejected").count()
+
+    selection_rate = round(selected / total_applications * 100) if total_applications else 0
+    placement_rate = round(selected / total_students * 100) if total_students else 0
+
+    # --- Skill gaps (top 5) ---
+    skill_gap_data = {}
+    all_skill_entries = StudentSkill.query.all()
+    for entry in all_skill_entries:
+        skill_name = entry.skill.name
+        if skill_name not in skill_gap_data:
+            skill_gap_data[skill_name] = {'total': 0, 'lacking': 0}
+        skill_gap_data[skill_name]['total'] += 1
+        if entry.proficiency < 60:
+            skill_gap_data[skill_name]['lacking'] += 1
+
+    skill_gaps = []
+    for skill_name, data in skill_gap_data.items():
+        if data['total'] >= 2:
+            pct_lacking = round(data['lacking'] / data['total'] * 100)
+            if pct_lacking > 0:
+                action = ('Soft-skills training'
+                          if skill_name.lower() in ['communication', 'teamwork']
+                          else 'Add workshop')
+                skill_gaps.append({
+                    'skill': skill_name,
+                    'pct': pct_lacking,
+                    'lacking': data['lacking'],
+                    'students': data['total'],
+                    'action': action,
+                })
+    skill_gaps.sort(key=lambda x: x['pct'], reverse=True)
+    skill_gaps = skill_gaps[:5]          # top 5
 
     return render_template(
         'officer/reports.html',
+        # existing variables
         department_readiness=department_readiness,
-        avg_readiness_now=avg_readiness_now
+        avg_readiness_now=avg_readiness_now,
+        # new variables required by the upgraded template
+        total_students=total_students,
+        students_need_attention=students_need_attention,
+        open_drives=open_drives,
+        total_drives=total_drives,
+        selected=selected,
+        readiness_label=readiness_label,
+        readiness_color=readiness_color,
+        readiness_bands=readiness_bands,
+        skill_gaps=skill_gaps,
+        total_applications=total_applications,
+        shortlisted=shortlisted,
+        rejected=rejected,
+        selection_rate=selection_rate,
+        placement_rate=placement_rate,
     )
-
 
 # ===========================
 # EXPORT: READINESS SUMMARY (CSV)

@@ -4,6 +4,7 @@
     CareerPilot AI
   </div>
   <div class="nav-section-label">Menu</div>
+
   <div
     class="navitem {% if request.endpoint == 'student.dashboard' %}active{% endif %}"
     onclick="location.href='{{ url_for('student.dashboard') }}'"
@@ -16,6 +17,7 @@
     </span>
     Dashboard
   </div>
+
   <div
     class="navitem {% if request.endpoint == 'student.profile' %}active{% endif %}"
     onclick="location.href='{{ url_for('student.profile') }}'"
@@ -28,8 +30,9 @@
     </span>
     My profile
   </div>
+
   <div
-    class="navitem"
+    class="navitem {% if request.endpoint == 'student.resume' %}active{% endif %}"
     onclick="location.href='{{ url_for('student.resume') }}'"
   >
     <span class="ic">
@@ -40,8 +43,9 @@
     </span>
     Resume builder
   </div>
+
   <div
-    class="navitem"
+    class="navitem {% if request.endpoint == 'student.skillgap' %}active{% endif %}"
     onclick="location.href='{{ url_for('student.skillgap') }}'"
   >
     <span class="ic">
@@ -53,8 +57,9 @@
     </span>
     Skill gap analysis
   </div>
+
   <div
-    class="navitem"
+    class="navitem {% if request.endpoint == 'student.interview' %}active{% endif %}"
     onclick="location.href='{{ url_for('student.interview') }}'"
   >
     <span class="ic">
@@ -66,8 +71,9 @@
     </span>
     Mock interview
   </div>
+
   <div
-    class="navitem"
+    class="navitem {% if request.endpoint == 'student.career' %}active{% endif %}"
     onclick="location.href='{{ url_for('student.career') }}'"
   >
     <span class="ic">
@@ -78,8 +84,9 @@
     </span>
     Career recommendations
   </div>
+
   <div
-    class="navitem"
+    class="navitem {% if request.endpoint == 'student.drives' %}active{% endif %}"
     onclick="location.href='{{ url_for('student.drives') }}'"
   >
     <span class="ic">
@@ -90,8 +97,9 @@
     </span>
     Placement drives
   </div>
+
   <div
-    class="navitem"
+    class="navitem {% if request.endpoint == 'student.ats_analysis' %}active{% endif %}"
     onclick="location.href='{{ url_for('student.ats_analysis') }}'"
   >
     <span class="ic">
@@ -100,6 +108,22 @@
       </svg>
     </span>
     ATS Analysis
+  </div>
+
+  <!-- ✅ NEW: AI Mentor Chat -->
+  <div
+    class="navitem {% if request.endpoint == 'student.chatbot' %}active{% endif %}"
+    onclick="location.href='{{ url_for('student.chatbot') }}'"
+  >
+    <span class="ic">
+      <svg class="icon" viewBox="0 0 24 24">
+        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+        <circle cx="8.5" cy="10.5" r="0.8" fill="currentColor" stroke="none" />
+        <circle cx="12" cy="10.5" r="0.8" fill="currentColor" stroke="none" />
+        <circle cx="15.5" cy="10.5" r="0.8" fill="currentColor" stroke="none" />
+      </svg>
+    </span>
+    AI Mentor Chat
   </div>
 
   <div class="sidebar-foot">

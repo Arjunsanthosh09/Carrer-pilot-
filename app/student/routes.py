@@ -8,6 +8,7 @@ from app.services.resume_builder import generate_resume_html
 import pdfplumber
 from docx import Document
 import io
+from flask import session
 import json
 from flask import request, jsonify, render_template, Response
 from app.models import StudentProfile, Skill, StudentSkill, Certification, Project, PlacementDrive, Company, InterviewSession
@@ -15,10 +16,11 @@ from app.models import PlacementDrive
 from datetime import datetime
 from app.services.gemini_ai import generate_profile_suggestions
 from app.services.skill_gap import get_all_roles, get_role_requirements, analyze_skill_gap
-from app.models import Education
+from app.models import Education,ChatMessage
 from app.services.gemini_ai import generate_career_recommendations
 from app.models import Application   # add to imports
 from datetime import datetime
+
 # --- NEW: pdfkit (replaces weasyprint) ---
 import pdfkit
 from app.models import (
@@ -773,3 +775,75 @@ def remove_experience(exp_id):
         db.session.commit()
         flash('Experience removed.')
     return redirect(url_for('student.profile'))
+
+# ========== AI MENTOR CHATBOT ==========
+@student_bp.route('/chatbot')
+@login_required
+def chatbot():
+    """Chatbot page."""
+    # If using persistence, load chat history
+    history = ChatMessage.query.filter_by(student_id=current_user.id)\
+                               .order_by(ChatMessage.created_at.asc()).all()
+
+    history_data = [{'role': m.role, 'message': m.message} for m in history]
+
+    return render_template('student/chatbot.html', chat_history=history_data)
+
+
+@student_bp.route('/chatbot/send', methods=['POST'])
+@login_required
+def chatbot_send():
+    """Handle chatbot message."""
+    data = request.get_json()
+    user_message = data.get('message', '').strip()
+
+    if not user_message:
+        return jsonify({'error': 'Message is required'}), 400
+
+    # Fetch student data for context
+    profile = current_user.profile
+    if not profile:
+        return jsonify({'error': 'Profile not found'}), 400
+
+    skills = StudentSkill.query.filter_by(student_id=profile.id).all()
+    projects = Project.query.filter_by(student_id=profile.id).all()
+    certs = Certification.query.filter_by(student_id=profile.id).all()
+
+    # Build chat history from session (last 6 messages)
+    history = session.get('chat_history', [])
+
+    # Add user message to history
+    history.append({'role': 'user', 'message': user_message})
+
+    # Generate AI response
+    from app.services.gemini_ai import generate_chatbot_response
+    ai_response = generate_chatbot_response(
+        user_message, history, profile, skills, projects, certs
+    )
+
+    # Add AI response to history
+    history.append({'role': 'assistant', 'message': ai_response})
+
+    # Keep only last 20 messages
+    session['chat_history'] = history[-20:]
+    session.modified = True
+
+    # (Optional) Save to database
+    # user_msg = ChatMessage(student_id=current_user.id, role='user', message=user_message)
+    # ai_msg = ChatMessage(student_id=current_user.id, role='assistant', message=ai_response)
+    # db.session.add_all([user_msg, ai_msg])
+    # db.session.commit()
+
+    return jsonify({
+        'response': ai_response,
+        'role': 'assistant'
+    })
+
+
+@student_bp.route('/chatbot/clear', methods=['POST'])
+@login_required
+def chatbot_clear():
+    """Clear chat history."""
+    session.pop('chat_history', None)
+    # (Optional) If using persistence: ChatMessage.query.filter_by(student_id=current_user.id).delete(); db.session.commit()
+    return jsonify({'status': 'cleared'})

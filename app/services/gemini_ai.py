@@ -604,3 +604,56 @@ def get_fallback_career_recommendations(profile, skills, projects, certs):
         "top_skill": skill_names[0].title() if skill_names else "None yet",
         "career_advice": "Focus on building strong fundamentals, complete 2-3 projects, and earn relevant certifications to boost your profile."
     }
+    
+def generate_chatbot_response(student_message, chat_history, profile, skills, projects, certs):
+    """
+    Generate a personalized chatbot response for career/placement questions.
+    Uses the student's profile data for context.
+    """
+    # Prepare student context
+    skills_str = ', '.join([f"{s.skill.name} ({s.proficiency}%)" for s in skills]) if skills else 'No skills added'
+    projects_str = ', '.join([p.title for p in projects]) if projects else 'No projects'
+    certs_str = ', '.join([c.title for c in certs]) if certs else 'No certifications'
+
+    # Build chat history string (last 6 messages for context)
+    history_str = ''
+    for msg in chat_history[-6:]:
+        role = 'Student' if msg['role'] == 'user' else 'Mentor'
+        history_str += f"{role}: {msg['message']}\n"
+
+    prompt = f"""
+You are CareerPilot AI Mentor — a friendly, expert career counselor helping students with placement preparation.
+
+=== STUDENT PROFILE ===
+Name: {profile.full_name or 'Student'}
+Department: {profile.department or 'Not specified'}
+Year: {profile.year or 'Not specified'}
+CGPA: {profile.cgpa or 'Not specified'}
+Skills: {skills_str}
+Projects: {projects_str}
+Certifications: {certs_str}
+
+=== PREVIOUS CONVERSATION ===
+{history_str if history_str else 'No previous messages'}
+
+=== STUDENT'S NEW QUESTION ===
+{student_message}
+
+=== YOUR TASK ===
+Answer the student's question in a helpful, friendly, and personalized way.
+- Keep the answer under 200 words
+- Use bullet points for lists
+- Reference their actual skills/projects when relevant
+- If asked about career paths, be specific and actionable
+- If asked about placements, give practical advice
+- If the question is off-topic (not about career/placement/tech), politely redirect
+
+Return ONLY the answer text, no extra formatting.
+"""
+
+    result = call_llm(prompt)
+    if result:
+        return result.strip()
+
+    # Fallback
+    return "I'm having trouble responding right now. Please try again in a moment, or check your profile for AI-powered suggestions."

@@ -311,3 +311,15 @@ StudentProfile.experiences = db.relationship(
     cascade='all, delete-orphan',
     order_by='Experience.start_date.desc()'
 )
+
+# ============================================================
+# CHAT MESSAGE MODEL
+# ============================================================
+
+class ChatMessage(db.Model):
+    __tablename__ = 'chat_message'
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    role = db.Column(db.Enum('user','assistant'), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)

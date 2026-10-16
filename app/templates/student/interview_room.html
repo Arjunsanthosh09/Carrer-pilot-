@@ -22,6 +22,7 @@
             <ul>
                 <li><strong>Full-screen access</strong> (required for proctoring)</li>
                 <li><strong>Camera access</strong> (required for proctoring)</li>
+                <li><strong>Microphone access</strong> (only when you click "Speak answer")</li>
             </ul>
             <p class="note">You must click <strong>Allow</strong> on both prompts. Otherwise the interview cannot proceed.</p>
             <button id="start-interview-btn" class="btn btn-primary">Start interview</button>
@@ -57,9 +58,9 @@
         </div>
 
         <div class="answer-container">
-            <textarea id="answer-input" placeholder="Type your answer here..." maxlength="2000"></textarea>
+            <textarea id="answer-input" placeholder="Type your answer here, or click 'Speak answer' to use voice..." maxlength="2000"></textarea>
             <div class="answer-actions">
-                <button id="voice-btn" onclick="startVoiceInput()" class="btn btn-ghost">Speak answer</button>
+                <button id="voice-btn" onclick="startVoiceInput()" class="btn btn-ghost">🎤 Speak answer</button>
                 <button id="submit-btn" onclick="submitAnswer()" class="btn btn-primary">Submit answer</button>
             </div>
         </div>
@@ -87,11 +88,14 @@ const state = {
     maxViolations: 3,
     noFaceStartTime: null,
     detectionInterval: null,
-    proctorInterval: null,   // polling interval
+    proctorInterval: null,
     model: null
 };
 
 let cameraStream = null;
+let recognition = null;
+let isListening = false;
+
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
@@ -151,10 +155,10 @@ document.getElementById('start-interview-btn').addEventListener('click', async (
     if (window.cocoSsd) {
         cocoSsd.load().then(m => {
             state.model = m;
-            console.log('AI model loaded');
+            console.log('✅ AI model loaded');
         }).catch(e => console.warn('Model failed:', e));
     } else {
-        console.warn('cocoSsd not available');
+        console.warn('⚠️ cocoSsd not available');
     }
 
     // 5. Wait 3 seconds for browser to settle
@@ -240,19 +244,16 @@ function startProctoringPoll() {
     state.proctorInterval = setInterval(() => {
         if (!state.isProctoringActive) return;
 
-        // 1. Fullscreen check
         if (!document.fullscreenElement) {
             registerViolation('Full-screen mode exited. Interview cancelled.', true);
             return;
         }
 
-        // 2. Tab visibility check
         if (document.hidden) {
             registerViolation('Tab switched. Interview cancelled.', true);
             return;
         }
 
-        // 3. Camera check
         if (cameraStream) {
             const track = cameraStream.getVideoTracks()[0];
             if (!track || track.readyState === 'ended' || !track.enabled) {
@@ -260,12 +261,12 @@ function startProctoringPoll() {
                 return;
             }
         }
-    }, 1000); // every 1 second
+    }, 1000);
 }
 
 
 // ============================================================
-// AI DETECTION LOOP (unchanged)
+// AI DETECTION LOOP
 // ============================================================
 function startDetectionLoop() {
     state.detectionInterval = setInterval(async () => {
@@ -355,39 +356,116 @@ function hideWarningBanner() {
 
 
 // ============================================================
-// VOICE
+// VOICE OUTPUT (Text-to-Speech) — reads question aloud
 // ============================================================
 function speakQuestion() {
     const text = document.getElementById('question-text').textContent;
     const u = new SpeechSynthesisUtterance(text);
-    u.rate = 0.9; u.lang = 'en-US';
+    u.rate = 0.9;
+    u.lang = 'en-US';
     speechSynthesis.cancel();
     speechSynthesis.speak(u);
 }
 
+
+// ============================================================
+// VOICE INPUT (Speech-to-Text) — ROBUST VERSION
+// ============================================================
 function startVoiceInput() {
+    const btn = document.getElementById('voice-btn');
+
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) { alert('Speech recognition not supported.'); return; }
-    const r = new SR();
-    r.lang = 'en-US'; r.continuous = false; r.interimResults = false;
-    r.onstart = () => {
-        const btn = document.getElementById('voice-btn');
-        btn.textContent = 'Listening...';
-        btn.classList.add('is-listening');
+    if (!SR) {
+        alert('⚠️ Speech recognition is not supported.\n\nUse Google Chrome or Microsoft Edge.');
+        return;
+    }
+
+    if (isListening && recognition) {
+        try { recognition.stop(); } catch (e) {}
+        return;
+    }
+
+    recognition = new SR();
+    recognition.lang = 'en-US';
+    recognition.continuous = true;         // 👈 keep listening
+    recognition.interimResults = true;     // 👈 show partial results
+    recognition.maxAlternatives = 1;
+
+    const input = document.getElementById('answer-input');
+    let finalTranscript = input.value ? input.value + ' ' : '';
+
+    // ----- LOG EVERY EVENT -----
+    recognition.onstart = () => {
+        isListening = true;
+        btn.textContent = '🎤 Listening... (click to stop)';
+        btn.style.background = '#EF5B3F';
+        btn.style.color = '#fff';
+        console.log('🎤 onstart — recognition started');
     };
-    r.onresult = (e) => {
-        document.getElementById('answer-input').value = e.results[0][0].transcript;
+
+    recognition.onaudiostart = () => console.log('🎤 onaudiostart — mic opened');
+    recognition.onsoundstart = () => console.log('🔊 onsoundstart — sound detected');
+    recognition.onspeechstart = () => console.log('🗣️ onspeechstart — speech detected');
+    recognition.onspeechend = () => console.log('🤐 onspeechend — speech stopped');
+    recognition.onsoundend = () => console.log('🔇 onsoundend — sound stopped');
+    recognition.onaudioend = () => console.log('🎤 onaudioend — mic closed');
+
+    recognition.onresult = (e) => {
+        console.log('✅ onresult fired', e.results.length);
+        let interim = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+            const transcript = e.results[i][0].transcript;
+            if (e.results[i].isFinal) {
+                finalTranscript += transcript + ' ';
+                console.log('📝 FINAL:', transcript);
+            } else {
+                interim += transcript;
+                console.log('📝 interim:', transcript);
+            }
+        }
+        input.value = finalTranscript + interim;
+    };
+
+    recognition.onerror = (e) => {
+        console.warn('❌ onerror:', e.error, e.message);
+        if (e.error !== 'aborted' && e.error !== 'no-speech') {
+            alert('⚠️ Voice error: ' + e.error);
+        }
         resetVoiceBtn();
     };
-    r.onerror = resetVoiceBtn;
-    r.onend = resetVoiceBtn;
-    r.start();
+
+    recognition.onend = () => {
+        console.log('🎤 onend — recognition stopped');
+        resetVoiceBtn();
+    };
+
+    try {
+        recognition.start();
+    } catch (e) {
+        alert('⚠️ Could not start mic: ' + e.message);
+        resetVoiceBtn();
+    }
 }
 
 function resetVoiceBtn() {
+    isListening = false;
     const btn = document.getElementById('voice-btn');
-    btn.textContent = 'Speak answer';
-    btn.classList.remove('is-listening');
+    if (btn) {
+        btn.textContent = '🎤 Speak answer';
+        btn.style.background = '';
+        btn.style.color = '';
+    }
+}
+
+function resetVoiceBtn() {
+    isListening = false;
+    const btn = document.getElementById('voice-btn');
+    if (btn) {
+        btn.textContent = '🎤 Speak answer';
+        btn.classList.remove('is-listening');
+        btn.style.background = '';
+        btn.style.color = '';
+    }
 }
 
 
@@ -469,7 +547,6 @@ function nextQuestion() {
     if (state.currentIndex + 1 < state.totalQuestions) loadQuestion(state.currentIndex + 1);
 }
 
-// The Exit button called this, but it was never defined in the original script
 function exitInterview() {
     if (!confirm('Exit the interview? Your session will be cancelled.')) return;
     state.isProctoringActive = false;

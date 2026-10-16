@@ -1,0 +1,604 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="shell">
+    {% include "student/_sidebar.html" %}
+
+    <div class="main">
+        <div class="page-head">
+            <div>
+                <h1>AI Mentor Chat</h1>
+                <p class="sub">Ask anything about placements, skills, careers, or interview prep.</p>
+            </div>
+            <div class="top-actions">
+                <button class="btn btn-ghost" onclick="clearChat()" type="button">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v5M14 11v5"/></svg>
+                    Clear chat
+                </button>
+            </div>
+        </div>
+
+        <div class="chat-layout">
+            <aside class="chat-side">
+                <div class="card side-card">
+                    <div class="section-title" style="margin-bottom: 4px;">Try asking</div>
+                    <p class="side-hint">Tap a question to start.</p>
+                    <div class="suggested-prompts">
+                        <button class="prompt-btn" type="button" onclick="sendSuggested('How do I prepare for TCS placements?')">
+                            <span>How do I prepare for TCS placements?</span>
+                            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                        </button>
+                        <button class="prompt-btn" type="button" onclick="sendSuggested('Which certifications should I get for Data Science roles?')">
+                            <span>Which certifications for Data Science?</span>
+                            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                        </button>
+                        <button class="prompt-btn" type="button" onclick="sendSuggested('How can I improve my resume?')">
+                            <span>How can I improve my resume?</span>
+                            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                        </button>
+                        <button class="prompt-btn" type="button" onclick="sendSuggested('What skills am I missing for Frontend Developer?')">
+                            <span>What skills am I missing for Frontend?</span>
+                            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                        </button>
+                        <button class="prompt-btn" type="button" onclick="sendSuggested('Tips for HR interviews?')">
+                            <span>Tips for HR interviews?</span>
+                            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                        </button>
+                        <button class="prompt-btn" type="button" onclick="sendSuggested('Should I learn AWS or Azure first?')">
+                            <span>AWS or Azure first?</span>
+                            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                        </button>
+                        <button class="prompt-btn" type="button" onclick="sendSuggested('How do I negotiate salary?')">
+                            <span>How do I negotiate salary?</span>
+                            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                        </button>
+                        <button class="prompt-btn" type="button" onclick="sendSuggested('Explain the STAR method for interviews')">
+                            <span>Explain the STAR method</span>
+                            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- CHAT AREA -->
+            <section class="chat-main" aria-label="Chat with AI Mentor">
+                <header class="chat-head">
+                    <div class="mentor-avatar" aria-hidden="true">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8L19 16z"/></svg>
+                    </div>
+                    <div class="chat-head-meta">
+                        <div class="chat-head-name">CareerPilot Mentor</div>
+                        <div class="chat-head-status"><span class="live-dot"></span> Online · knows your skills &amp; projects</div>
+                    </div>
+                </header>
+
+                <div class="chat-messages" id="chat-messages" aria-live="polite">
+                    <!-- Welcome message -->
+                    <div class="chat-bubble assistant">
+                        <div class="avatar" aria-hidden="true">
+                            <svg class="icon" viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z"/></svg>
+                        </div>
+                        <div class="bubble-content">
+                            <p>Hi {{ current_user.profile.full_name or 'there' }}! I'm your CareerPilot AI Mentor.</p>
+                            <p>I know your skills, projects, and certifications — so ask me anything about placements, interviews, skills, or career paths. What can I help you with today?</p>
+                        </div>
+                    </div>
+
+                    {% for msg in chat_history %}
+                    <div class="chat-bubble {{ 'user' if msg.role == 'user' else 'assistant' }}">
+                        <div class="avatar" aria-hidden="true">
+                            {% if msg.role == 'user' %}
+                                {{ (current_user.profile.full_name or 'U')[0]|upper }}
+                            {% else %}
+                                <svg class="icon" viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z"/></svg>
+                            {% endif %}
+                        </div>
+                        <div class="bubble-content {{ 'js-format' if msg.role != 'user' else '' }}"><p>{{ msg.message }}</p></div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Quick prompts for small screens (sidebar is hidden there) -->
+                <div class="chip-row" aria-label="Suggested questions">
+                    <button type="button" class="chip" onclick="sendSuggested('How can I improve my resume?')">Improve my resume</button>
+                    <button type="button" class="chip" onclick="sendSuggested('Tips for HR interviews?')">HR interview tips</button>
+                    <button type="button" class="chip" onclick="sendSuggested('Explain the STAR method for interviews')">STAR method</button>
+                    <button type="button" class="chip" onclick="sendSuggested('How do I negotiate salary?')">Negotiate salary</button>
+                </div>
+
+                <div class="chat-input-bar">
+                    <div class="input-shell">
+                        <textarea id="chat-input" placeholder="Ask about placements, skills, interviews…" rows="1"
+                                  aria-label="Your message" onkeydown="handleKeyDown(event)"></textarea>
+                        <button id="send-btn" onclick="sendMessage()" class="send-btn" type="button" aria-label="Send message">
+                            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                        </button>
+                    </div>
+                    <div class="input-hint">Enter to send · Shift + Enter for a new line</div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<style>
+/* ==========================================================================
+   AI Mentor Chat — uses only the theme tokens from style.css
+   ========================================================================== */
+.chat-layout {
+    display: grid;
+    grid-template-columns: 290px minmax(0, 1fr);
+    gap: 20px;
+    height: calc(100vh - 200px);
+    height: calc(100dvh - 200px);
+    min-height: 540px;
+}
+
+/* ----- Left: suggested prompts ----- */
+.chat-side { min-height: 0; overflow-y: auto; }
+.side-card { padding: 20px; }
+.side-hint { margin: 0 0 14px; font-size: .85rem; color: var(--ink-soft); }
+
+.suggested-prompts { display: flex; flex-direction: column; gap: 8px; }
+
+.prompt-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    padding: 11px 12px;
+    text-align: left;
+    font: 500 .88rem/1.35 var(--font-body);
+    color: var(--ink);
+    background: var(--paper);
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background-color .2s ease, border-color .2s ease, transform .2s var(--ease-out), box-shadow .2s ease;
+}
+.prompt-btn .icon { width: 16px; height: 16px; color: var(--forest); opacity: .55; transition: transform .2s ease, opacity .2s ease; }
+.prompt-btn:hover {
+    background: var(--mint);
+    border-color: var(--leaf);
+    transform: translateX(3px);
+    box-shadow: inset 3px 0 0 var(--leaf);
+}
+.prompt-btn:hover .icon { opacity: 1; transform: translateX(3px); }
+.prompt-btn:active { transform: translateX(3px) scale(.99); }
+
+/* ----- Right: chat card ----- */
+.chat-main {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 24px 48px -32px rgba(11, 107, 58, .35);
+}
+
+/* header */
+.chat-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 20px;
+    background: linear-gradient(180deg, var(--mint), var(--paper));
+    border-bottom: 1px solid var(--line);
+}
+.mentor-avatar {
+    display: grid;
+    place-items: center;
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: var(--forest);
+    color: #fff;
+    box-shadow: 0 8px 18px -8px rgba(11, 107, 58, .7);
+}
+.mentor-avatar .icon { width: 22px; height: 22px; fill: currentColor; stroke: none; }
+.chat-head-meta { min-width: 0; }
+.chat-head-name { font: 700 1rem/1.2 var(--font-display); letter-spacing: -0.01em; }
+.chat-head-status {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 3px;
+    font-size: .8rem;
+    color: var(--ink-soft);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.live-dot {
+    position: relative;
+    flex: 0 0 8px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+}
+.live-dot::after {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid var(--leaf);
+    opacity: 0;
+    animation: ping 2.4s var(--ease-out) infinite;
+}
+@keyframes ping { 0% { transform: scale(.5); opacity: .8; } 80%, 100% { transform: scale(1.3); opacity: 0; } }
+
+/* messages */
+.chat-messages {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 24px 22px;
+    background:
+        radial-gradient(circle at 100% 0%, rgba(214, 242, 225, .55) 0, transparent 40%),
+        var(--canvas);
+    scroll-behavior: smooth;
+}
+.chat-messages::-webkit-scrollbar,
+.chat-side::-webkit-scrollbar { width: 8px; }
+.chat-messages::-webkit-scrollbar-thumb,
+.chat-side::-webkit-scrollbar-thumb { background: #C5E0D1; border-radius: 999px; border: 2px solid transparent; background-clip: padding-box; }
+
+.chat-bubble {
+    display: flex;
+    gap: 10px;
+    max-width: min(760px, 88%);
+    animation: pop .35s var(--ease-out) both;
+}
+.chat-bubble.user { align-self: flex-end; flex-direction: row-reverse; }
+.chat-bubble.assistant { align-self: flex-start; }
+
+@keyframes pop { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: none; } }
+
+.chat-bubble .avatar {
+    display: grid;
+    place-items: center;
+    flex: 0 0 34px;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    font: 700 .85rem/1 var(--font-display);
+    align-self: flex-end;
+}
+.chat-bubble.assistant .avatar { background: var(--forest); color: #fff; }
+.chat-bubble.assistant .avatar .icon { width: 17px; height: 17px; fill: currentColor; stroke: none; }
+.chat-bubble.user .avatar { background: var(--leaf); color: var(--ink); box-shadow: 0 0 0 3px rgba(52, 210, 123, .25); }
+
+.chat-bubble .bubble-content {
+    min-width: 0;
+    padding: 12px 16px;
+    font-size: .95rem;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+.chat-bubble.assistant .bubble-content {
+    background: var(--paper);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 16px 16px 16px 4px;
+    box-shadow: 0 6px 16px -12px rgba(11, 107, 58, .45);
+}
+.chat-bubble.user .bubble-content {
+    background: var(--forest);
+    color: #fff;
+    border-radius: 16px 16px 4px 16px;
+    box-shadow: 0 10px 20px -12px rgba(11, 107, 58, .8);
+}
+
+.bubble-content p { margin: 0 0 8px; }
+.bubble-content p:last-child { margin-bottom: 0; }
+.bubble-content ul,
+.bubble-content ol { margin: 6px 0 8px; padding-left: 20px; }
+.bubble-content li { margin-bottom: 4px; }
+.bubble-content li::marker { color: var(--forest); font-weight: 700; }
+.bubble-content strong { font-weight: 700; }
+.bubble-content code {
+    padding: 2px 6px;
+    font-size: .86em;
+    background: var(--sage);
+    color: var(--forest-deep);
+    border-radius: 6px;
+}
+.bubble-content pre {
+    margin: 8px 0;
+    padding: 12px 14px;
+    overflow-x: auto;
+    background: var(--ink);
+    color: #E6FFF0;
+    border-radius: var(--radius-sm);
+}
+.bubble-content pre code { padding: 0; background: none; color: inherit; font-size: .84rem; }
+.chat-bubble.user .bubble-content code { background: rgba(255, 255, 255, .18); color: #fff; }
+
+/* typing indicator */
+.typing-indicator {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 15px 18px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 16px 16px 16px 4px;
+}
+.typing-indicator span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--leaf);
+    animation: typing 1.3s infinite;
+}
+.typing-indicator span:nth-child(2) { animation-delay: .18s; }
+.typing-indicator span:nth-child(3) { animation-delay: .36s; }
+@keyframes typing {
+    0%, 60%, 100% { transform: translateY(0); opacity: .4; }
+    30% { transform: translateY(-6px); opacity: 1; }
+}
+
+/* mobile quick chips */
+.chip-row {
+    display: none;
+    gap: 8px;
+    padding: 10px 16px 0;
+    overflow-x: auto;
+    background: var(--paper);
+}
+.chip {
+    flex: 0 0 auto;
+    padding: 7px 12px;
+    font: 600 .8rem/1 var(--font-body);
+    color: var(--forest);
+    background: var(--mint);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background-color .2s ease, border-color .2s ease;
+}
+.chip:hover { background: var(--sage); border-color: var(--leaf); }
+
+/* input bar */
+.chat-input-bar {
+    padding: 14px 18px 12px;
+    background: var(--paper);
+    border-top: 1px solid var(--line);
+}
+.input-shell {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    padding: 6px 6px 6px 16px;
+    background: var(--paper);
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+.input-shell:hover { border-color: #BFDCCB; }
+.input-shell:focus-within {
+    border-color: var(--leaf);
+    box-shadow: 0 0 0 4px rgba(52, 210, 123, .25);
+}
+#chat-input {
+    flex: 1;
+    min-width: 0;
+    max-height: 120px;
+    padding: 9px 0;
+    font: 500 .98rem/1.45 var(--font-body);
+    color: var(--ink);
+    background: transparent;
+    border: 0;
+    outline: none;
+    resize: none;
+}
+#chat-input::placeholder { color: #7A9587; font-weight: 400; }
+
+.send-btn {
+    display: grid;
+    place-items: center;
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: var(--leaf);
+    color: var(--ink);
+    cursor: pointer;
+    box-shadow: 0 10px 18px -10px rgba(52, 210, 123, .9);
+    transition: transform .2s ease, background-color .2s ease, box-shadow .2s ease, opacity .2s ease;
+}
+.send-btn .icon { width: 19px; height: 19px; }
+.send-btn:hover:not(:disabled) { background: var(--leaf-hover); transform: translateY(-2px); }
+.send-btn:active:not(:disabled) { transform: scale(.96); }
+.send-btn:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; }
+.send-btn:focus-visible { outline-color: var(--ink); }
+
+.input-hint { margin-top: 8px; text-align: center; font-size: .75rem; color: var(--ink-soft); }
+
+/* ----- Responsive ----- */
+@media (max-width: 900px) {
+    .chat-layout { grid-template-columns: 1fr; height: auto; min-height: 0; }
+    .chat-side { display: none; }
+    .chat-main { height: calc(100dvh - 190px); min-height: 480px; }
+    .chip-row { display: flex; }
+    .input-hint { display: none; }
+}
+@media (max-width: 560px) {
+    .chat-messages { padding: 18px 14px; }
+    .chat-bubble { max-width: 94%; }
+    .chat-bubble .avatar { display: none; }
+    .chat-head { padding: 14px 16px; }
+    .page-head .top-actions .btn { padding: 10px 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .chat-messages { scroll-behavior: auto; }
+    .live-dot::after { animation: none; }
+}
+</style>
+
+<script>
+const chatMessages = document.getElementById('chat-messages');
+const chatInput = document.getElementById('chat-input');
+const sendBtn = document.getElementById('send-btn');
+const USER_INITIAL = {{ ((current_user.profile.full_name or 'U')[0]|upper)|tojson }};
+const BOT_ICON = '<svg class="icon" viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z"/></svg>';
+
+// Auto-grow textarea
+chatInput.addEventListener('input', function () {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+});
+
+// Send on Enter (Shift+Enter for newline)
+function handleKeyDown(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+}
+
+function sendSuggested(text) {
+    chatInput.value = text;
+    sendMessage();
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+/* Small, safe formatter for assistant replies: **bold**, `code`, ``` blocks,
+   "- " / "* " bullets and "1. " numbered lists. Input is escaped first. */
+function formatMessage(raw) {
+    let s = escapeHtml(raw);
+
+    const blocks = [];
+    s = s.replace(/```(?:\w+)?\n?([\s\S]*?)```/g, (_, code) => {
+        blocks.push('<pre><code>' + code.replace(/\n$/, '') + '</code></pre>');
+        return '\u0000' + (blocks.length - 1) + '\u0000';
+    });
+
+    s = s.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+    s = s.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+
+    const out = [];
+    let list = null;      // 'ul' | 'ol' | null
+    let para = [];
+
+    const flushPara = () => { if (para.length) { out.push('<p>' + para.join('<br>') + '</p>'); para = []; } };
+    const closeList = () => { if (list) { out.push('</' + list + '>'); list = null; } };
+
+    s.split('\n').forEach(line => {
+        const t = line.trim();
+        let m;
+        if (!t) { flushPara(); closeList(); return; }
+        if (/^\u0000\d+\u0000$/.test(t)) { flushPara(); closeList(); out.push(t); return; }
+        if ((m = t.match(/^[-*•]\s+(.*)$/))) {
+            flushPara();
+            if (list !== 'ul') { closeList(); out.push('<ul>'); list = 'ul'; }
+            out.push('<li>' + m[1] + '</li>');
+        } else if ((m = t.match(/^\d+[.)]\s+(.*)$/))) {
+            flushPara();
+            if (list !== 'ol') { closeList(); out.push('<ol>'); list = 'ol'; }
+            out.push('<li>' + m[1] + '</li>');
+        } else if ((m = t.match(/^#{1,4}\s+(.*)$/))) {
+            flushPara(); closeList();
+            out.push('<p><strong>' + m[1] + '</strong></p>');
+        } else {
+            closeList();
+            para.push(t);
+        }
+    });
+    flushPara(); closeList();
+
+    return out.join('').replace(/\u0000(\d+)\u0000/g, (_, i) => blocks[+i]);
+}
+
+function appendMessage(role, text) {
+    const bubble = document.createElement('div');
+    bubble.className = 'chat-bubble ' + role;
+    const body = role === 'user'
+        ? '<p>' + escapeHtml(text).replace(/\n/g, '<br>') + '</p>'
+        : formatMessage(text);
+    bubble.innerHTML = `
+        <div class="avatar" aria-hidden="true">${role === 'user' ? escapeHtml(USER_INITIAL) : BOT_ICON}</div>
+        <div class="bubble-content">${body}</div>
+    `;
+    chatMessages.appendChild(bubble);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function appendTyping() {
+    const div = document.createElement('div');
+    div.className = 'chat-bubble assistant';
+    div.id = 'typing-bubble';
+    div.innerHTML = `
+        <div class="avatar" aria-hidden="true">${BOT_ICON}</div>
+        <div class="typing-indicator" aria-label="Mentor is typing"><span></span><span></span><span></span></div>
+    `;
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function removeTyping() {
+    const el = document.getElementById('typing-bubble');
+    if (el) el.remove();
+}
+
+function sendMessage() {
+    const message = chatInput.value.trim();
+    if (!message || sendBtn.disabled) return;
+
+    appendMessage('user', message);
+    chatInput.value = '';
+    chatInput.style.height = 'auto';
+    sendBtn.disabled = true;
+
+    appendTyping();
+
+    fetch('/student/chatbot/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: message })
+    })
+    .then(res => res.json())
+    .then(data => {
+        removeTyping();
+        if (data.error) {
+            appendMessage('assistant', '⚠️ ' + data.error);
+        } else {
+            appendMessage('assistant', data.response);
+        }
+        sendBtn.disabled = false;
+        chatInput.focus();
+    })
+    .catch(() => {
+        removeTyping();
+        appendMessage('assistant', '⚠️ Something went wrong. Please try again.');
+        sendBtn.disabled = false;
+    });
+}
+
+function clearChat() {
+    if (!confirm('Clear all chat history?')) return;
+    fetch('/student/chatbot/clear', { method: 'POST' })
+        .then(() => location.reload());
+}
+
+document.querySelectorAll('.bubble-content.js-format').forEach(el => {
+    el.innerHTML = formatMessage(el.textContent);
+});
+
+chatMessages.scrollTop = chatMessages.scrollHeight;
+</script>
+{% endblock %}
