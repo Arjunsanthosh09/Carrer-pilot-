@@ -1,6 +1,5 @@
-from app.models import StudentProfile, StudentSkill, Certification, Project, InterviewSession
+from app.models import StudentProfile, StudentSkill, Certification, Project, InterviewSession, AptitudeResult
 from app import db
-
 
 def compute_readiness_score(student_id):
     """
@@ -34,17 +33,16 @@ def compute_readiness_score(student_id):
     project_count = Project.query.filter_by(student_id=profile.id).count()
     projects = min(project_count * 20, 100)  # Each project = 20%, max 100%
 
-    # 4. Aptitude – computed from completed aptitude mock interviews
-    aptitude_sessions = InterviewSession.query.filter_by(
-        student_id=student_id,
-        type='aptitude',
-        status='completed'
-    ).all()
-
-    if aptitude_sessions:
-        apt_scores = [float(s.overall_score) for s in aptitude_sessions if s.overall_score]
-        # Convert 0-10 scale to 0-100
-        aptitude = (sum(apt_scores) / len(apt_scores)) * 10 if apt_scores else 0
+    # 4. Aptitude – computed from the highest Aptitude Test score
+    aptitude_results = AptitudeResult.query.filter_by(student_id=student_id).all()
+    if aptitude_results:
+        # Calculate percentage for each test, take the highest one
+        valid_results = [r for r in aptitude_results if r.total_questions > 0]
+        if valid_results:
+            best_pct = max([(r.score / r.total_questions) * 100 for r in valid_results])
+            aptitude = best_pct
+        else:
+            aptitude = 0
     else:
         aptitude = 0
 

@@ -34,7 +34,9 @@ from app.models import (
     InterviewSession,
     Education,
     Experience,
-    Application
+    Application,
+    AptitudeQuestion,
+    AptitudeResult
 )
 student_bp = Blueprint('student', __name__)
 
@@ -840,6 +842,153 @@ def chatbot_send():
     })
 
 
+# ========== APTITUDE TEST ==========
+@student_bp.route('/aptitude')
+@login_required
+def aptitude():
+    """Dashboard for aptitude tests."""
+    # Fetch past results
+    results = AptitudeResult.query.filter_by(student_id=current_user.id)\
+                                  .order_by(AptitudeResult.date.desc()).all()
+    
+    # Calculate best score
+    best_score = 0
+    if results:
+        best_score = max([(r.score / r.total_questions) * 100 for r in results])
+    
+    return render_template('student/aptitude.html', results=results, best_score=round(best_score))
+
+
+@student_bp.route('/aptitude/start')
+@login_required
+def aptitude_start():
+    """Start a new aptitude test with 10 questions per section."""
+    # Fetch 10 random questions per category
+    logical_qs = AptitudeQuestion.query.filter_by(category='Logical').order_by(db.func.random()).limit(10).all()
+    numerical_qs = AptitudeQuestion.query.filter_by(category='Numerical').order_by(db.func.random()).limit(10).all()
+    verbal_qs = AptitudeQuestion.query.filter_by(category='Verbal').order_by(db.func.random()).limit(10).all()
+    
+    # Check if we have enough questions (10 each)
+    if len(logical_qs) < 10 or len(numerical_qs) < 10 or len(verbal_qs) < 10:
+        flash('Not enough questions in the database to start a test. Please ask admin to add more.', 'danger')
+        return redirect(url_for('student.aptitude'))
+    
+    # Combine for the total count, but we pass them separately to the template for sections
+    total_questions = len(logical_qs) + len(numerical_qs) + len(verbal_qs)
+    
+    return render_template(
+        'student/aptitude_test.html', 
+        logical_qs=logical_qs, 
+        numerical_qs=numerical_qs, 
+        verbal_qs=verbal_qs,
+        total_questions=total_questions
+    )
+    
+    
+@student_bp.route('/aptitude/submit', methods=['POST'])
+@login_required
+def aptitude_submit():
+    data = request.get_json()
+    user_answers = data.get('answers', {})
+    
+    if not user_answers:
+        return jsonify({'error': 'No answers submitted'}), 400
+        
+    score = 0
+    total_questions = len(user_answers)
+    
+    question_ids = [int(qid) for qid in user_answers.keys()]
+    questions = AptitudeQuestion.query.filter(AptitudeQuestion.id.in_(question_ids)).all()
+    
+    # Calculate category scores
+    category_stats = {
+        'Logical': {'correct': 0, 'total': 0},
+        'Numerical': {'correct': 0, 'total': 0},
+        'Verbal': {'correct': 0, 'total': 0}
+    }
+    
+    for q in questions:
+        qid = str(q.id)
+        user_ans = user_answers.get(qid)
+        cat = q.category
+        
+        if cat not in category_stats:
+            category_stats[cat] = {'correct': 0, 'total': 0}
+            
+        category_stats[cat]['total'] += 1
+        
+        if user_ans == q.correct_option:
+            score += 1
+            category_stats[cat]['correct'] += 1
+            
+    # Format category scores for AI
+    cat_scores_str = {}
+    for cat, stats in category_stats.items():
+        if stats['total'] > 0:
+            cat_scores_str[cat] = f"{stats['correct']}/{stats['total']}"
+            
+    # Call AI for feedback
+    from app.services.gemini_ai import generate_aptitude_feedback
+    ai_feedback = generate_aptitude_feedback(score, total_questions, cat_scores_str)
+    
+    # Save result WITH the user's answers
+    result = AptitudeResult(
+        student_id=current_user.id,
+        score=score,
+        total_questions=total_questions,
+        ai_feedback=ai_feedback,
+        answers_json=user_answers  # 👈 Save their choices
+    )
+    db.session.add(result)
+    db.session.commit()
+    
+    percentage = round((score / total_questions) * 100) if total_questions > 0 else 0
+    
+    return jsonify({
+        'success': True,
+        'result_id': result.id, # 👈 Return ID to redirect
+        'score': score,
+        'total': total_questions,
+        'percentage': percentage
+    })
+
+# ========== APTITUDE REVIEW ==========
+@student_bp.route('/aptitude/review/<int:result_id>')
+@login_required
+def aptitude_review(result_id):
+    """Review page showing answers and explanations."""
+    result = AptitudeResult.query.get_or_404(result_id)
+    
+    # Security check
+    if result.student_id != current_user.id:
+        flash('Access denied.')
+        return redirect(url_for('student.aptitude'))
+        
+    user_answers = result.answers_json or {}
+    
+    # Fetch the questions that were in this test
+    question_ids = [int(qid) for qid in user_answers.keys()]
+    questions = AptitudeQuestion.query.filter(AptitudeQuestion.id.in_(question_ids)).all()
+    
+    # Format the data for the template
+    review_data = []
+    for q in questions:
+        qid = str(q.id)
+        user_ans = user_answers.get(qid, 'Not Answered')
+        
+        review_data.append({
+            'question': q,
+            'user_answer': user_ans,
+            'is_correct': user_ans == q.correct_option
+        })
+        
+    # Sort by category (Logical -> Numerical -> Verbal)
+    review_data.sort(key=lambda x: (x['question'].category, x['question'].id))
+
+    return render_template('student/aptitude_review.html', 
+                           result=result, 
+                           review_data=review_data)
+    
 @student_bp.route('/chatbot/clear', methods=['POST'])
 @login_required
 def chatbot_clear():

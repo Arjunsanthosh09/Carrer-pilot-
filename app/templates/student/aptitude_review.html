@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="shell">
+    {% include "student/_sidebar.html" %}
+
+    <div class="main">
+        <div class="page-head">
+            <div>
+                <h1>📊 Aptitude Test Review</h1>
+                <p class="sub">Review your answers and learn from the explanations.</p>
+            </div>
+            <div class="top-actions">
+                <a href="{{ url_for('student.aptitude') }}" class="btn-outline" style="text-decoration: none;">Back to Dashboard</a>
+            </div>
+        </div>
+
+        <!-- Score Summary -->
+        <div class="card" style="margin-bottom: 22px; display: flex; justify-content: space-between; align-items: center; background: {% if result.score >= (result.total_questions * 0.7) %}var(--green-light){% elif result.score >= (result.total_questions * 0.4) %}var(--amber-light){% else %}var(--coral-light){% endif %};">
+            <div>
+                <div style="font-size: 14px; font-weight: 600; color: var(--slate); text-transform: uppercase;">Your Score</div>
+                <div style="font-size: 32px; font-weight: 700; color: var(--ink);">{{ result.score }} / {{ result.total_questions }}</div>
+            </div>
+            <div style="font-size: 36px;">
+                {% if result.score >= (result.total_questions * 0.7) %}🏆{% elif result.score >= (result.total_questions * 0.4) %}👍{% else %}📚{% endif %}
+            </div>
+        </div>
+
+        <!-- AI Feedback -->
+        {% if result.ai_feedback %}
+        <div class="card" style="margin-bottom: 22px; border-left: 4px solid var(--amber);">
+            <div style="display: flex; gap: 14px;">
+                <div style="font-size: 24px;">🤖</div>
+                <div>
+                    <div style="font-weight: 700; color: var(--amber-dark); margin-bottom: 4px;">AI Analysis</div>
+                    <div style="font-size: 14px; color: var(--ink-3); line-height: 1.6;">{{ result.ai_feedback }}</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Question by Question Review -->
+        <div class="section-title" style="margin-top: 30px;">Detailed Solutions</div>
+        
+        {% for item in review_data %}
+        <div class="card" style="margin-bottom: 16px; border-left: 4px solid {% if item.is_correct %}var(--green){% else %}var(--coral){% endif %};">
+            
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                <div style="font-weight: 600; font-size: 15px; color: var(--ink); line-height: 1.5;">
+                    {{ loop.index }}. {{ item.question.question }}
+                </div>
+                <span class="pill {% if item.is_correct %}pill-green{% else %}pill-coral{% endif %}" style="white-space: nowrap;">
+                    {% if item.is_correct %}Correct{% else %}Incorrect{% endif %}
+                </span>
+            </div>
+
+            <div class="grid g2" style="gap: 12px; margin-bottom: 16px;">
+                <!-- Options -->
+                <div>
+                    <div style="font-size: 12px; color: var(--slate); font-weight: 600; margin-bottom: 4px;">OPTIONS:</div>
+                    <div style="font-size: 13.5px; line-height: 1.8;">
+                        A) {{ item.question.option_a }}<br>
+                        B) {{ item.question.option_b }}<br>
+                        C) {{ item.question.option_c }}<br>
+                        D) {{ item.question.option_d }}
+                    </div>
+                </div>
+                
+                <!-- Answers -->
+                <div style="background: var(--paper-2); padding: 12px; border-radius: 8px;">
+                    <div style="margin-bottom: 8px;">
+                        <span style="font-size: 12px; color: var(--slate); font-weight: 600;">YOUR ANSWER:</span>
+                        <span style="font-weight: 700; color: {% if item.is_correct %}var(--green-dark){% else %}var(--coral-dark){% endif %}; margin-left: 8px;">
+                            {{ item.user_answer }}
+                        </span>
+                    </div>
+                    {% if not item.is_correct %}
+                    <div>
+                        <span style="font-size: 12px; color: var(--slate); font-weight: 600;">CORRECT ANSWER:</span>
+                        <span style="font-weight: 700; color: var(--green-dark); margin-left: 8px;">
+                            {{ item.question.correct_option }}
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Explanation -->
+            <div style="background: #FFFBF3; border: 1px solid var(--amber-light); padding: 12px 16px; border-radius: 8px;">
+                <div style="font-size: 12px; color: var(--amber-dark); font-weight: 700; margin-bottom: 4px;">💡 EXPLANATION</div>
+                <div style="font-size: 13.5px; color: var(--ink-3); line-height: 1.5;">
+                    {{ item.question.explanation or 'No explanation provided for this question yet.' }}
+                </div>
+            </div>
+
+        </div>
+        {% endfor %}
+
+        <div style="text-align: center; margin-top: 30px; margin-bottom: 50px;">
+            <a href="{{ url_for('student.aptitude_start') }}" class="btn-ink" style="text-decoration: none; padding: 12px 30px;">Take Another Test</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

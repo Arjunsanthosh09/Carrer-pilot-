@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+    .test-header {
+        position: sticky; top: 0; background: var(--paper); z-index: 100;
+        padding: 16px 0; border-bottom: 1px solid var(--line); margin-bottom: 20px;
+        display: flex; justify-content: space-between; align-items: center;
+    }
+    .timer {
+        font-family: var(--font-display); font-size: 24px; font-weight: 700;
+        color: var(--amber-dark); background: var(--amber-light);
+        padding: 8px 16px; border-radius: 8px;
+    }
+    .timer.warning {
+        color: var(--coral-dark); background: var(--coral-light);
+        animation: pulse 1s infinite;
+    }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+    
+    .q-block {
+        background: var(--card); border: 1px solid var(--line);
+        border-radius: 12px; padding: 20px; margin-bottom: 16px;
+    }
+    .q-title { font-size: 15px; font-weight: 600; margin-bottom: 14px; color: var(--ink); line-height: 1.5; }
+    .option-label {
+        display: flex; align-items: center; gap: 10px;
+        padding: 10px 14px; border: 1px solid var(--line); border-radius: 8px;
+        margin-bottom: 8px; cursor: pointer; transition: all 0.15s;
+    }
+    .option-label:hover { background: var(--paper-2); }
+    .option-label input[type="radio"] { width: 16px; height: 16px; accent-color: var(--amber-dark); cursor: pointer; }
+    .option-text { font-size: 14px; color: var(--ink-3); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="shell">
+    {% include "student/_sidebar.html" %}
+
+    <div class="main">
+        <!-- Header -->
+        <div class="test-header">
+            <div>
+                <h1 style="font-family: var(--font-display); font-size: 22px;">Aptitude Assessment</h1>
+                <p class="sub" style="margin-top: 2px;">30 Questions • 3 Sections • 20 Minutes</p>
+            </div>
+            <div class="timer" id="timer-display">20:00</div>
+        </div>
+
+        <form id="aptitude-form">
+            
+            <!-- SECTION 1: LOGICAL REASONING -->
+            <div style="background: var(--ink); color: white; padding: 12px 20px; border-radius: 8px; margin-bottom: 16px; font-weight: 600;">
+                Section 1: Logical Reasoning (10 Questions)
+            </div>
+            {% for q in logical_qs %}
+            <div class="q-block">
+                <div class="q-title">Q{{ loop.index }}. {{ q.question }}</div>
+                <label class="option-label"><input type="radio" name="q_{{ q.id }}" value="A"><span class="option-text">A) {{ q.option_a }}</span></label>
+                <label class="option-label"><input type="radio" name="q_{{ q.id }}" value="B"><span class="option-text">B) {{ q.option_b }}</span></label>
+                <label class="option-label"><input type="radio" name="q_{{ q.id }}" value="C"><span class="option-text">C) {{ q.option_c }}</span></label>
+                <label class="option-label"><input type="radio" name="q_{{ q.id }}" value="D"><span class="option-text">D) {{ q.option_d }}</span></label>
+            </div>
+            {% endfor %}
+
+            <!-- SECTION 2: NUMERICAL APTITUDE -->
+            <div style="background: var(--ink); color: white; padding: 12px 20px; border-radius: 8px; margin: 30px 0 16px; font-weight: 600;">
+                Section 2: Numerical Aptitude (10 Questions)
+            </div>
+            {% for q in numerical_qs %}
+            <div class="q-block">
+                <div class="q-title">Q{{ loop.index + 10 }}. {{ q.question }}</div>
+                <label class="option-label"><input type="radio" name="q_{{ q.id }}" value="A"><span class="option-text">A) {{ q.option_a }}</span></label>
+                <label class="option-label"><input type="radio" name="q_{{ q.id }}" value="B"><span class="option-text">B) {{ q.option_b }}</span></label>
+                <label class="option-label"><input type="radio" name="q_{{ q.id }}" value="C"><span class="option-text">C) {{ q.option_c }}</span></label>
+                <label class="option-label"><input type="radio" name="q_{{ q.id }}" value="D"><span class="option-text">D) {{ q.option_d }}</span></label>
+            </div>
+            {% endfor %}
+
+            <!-- SECTION 3: VERBAL ABILITY -->
+            <div style="background: var(--ink); color: white; padding: 12px 20px; border-radius: 8px; margin: 30px 0 16px; font-weight: 600;">
+                Section 3: Verbal Ability (10 Questions)
+            </div>
+            {% for q in verbal_qs %}
+            <div class="q-block">
+                <div class="q-title">Q{{ loop.index + 20 }}. {{ q.question }}</div>
+                <label class="option-label"><input type="radio" name="q_{{ q.id }}" value="A"><span class="option-text">A) {{ q.option_a }}</span></label>
+                <label class="option-label"><input type="radio" name="q_{{ q.id }}" value="B"><span class="option-text">B) {{ q.option_b }}</span></label>
+                <label class="option-label"><input type="radio" name="q_{{ q.id }}" value="C"><span class="option-text">C) {{ q.option_c }}</span></label>
+                <label class="option-label"><input type="radio" name="q_{{ q.id }}" value="D"><span class="option-text">D) {{ q.option_d }}</span></label>
+            </div>
+            {% endfor %}
+
+            <div style="margin-top: 30px; text-align: right;">
+                <button type="button" onclick="submitTest()" class="btn-ink" style="padding: 12px 30px; font-size: 16px;">
+                    Submit Assessment
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // 20-minute timer (1200 seconds)
+    let timeLeft = 1200;
+    const timerDisplay = document.getElementById('timer-display');
+
+    const timerInterval = setInterval(() => {
+        timeLeft--;
+        
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        
+        timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+        if (timeLeft <= 60) {
+            timerDisplay.classList.add('warning');
+        }
+        
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            alert("Time is up! Submitting your test automatically.");
+            submitTest();
+        }
+    }, 1000);
+
+    function submitTest() {
+        // Prevent multiple submissions
+        if (timerInterval) clearInterval(timerInterval);
+        
+        const form = document.getElementById('aptitude-form');
+        const formData = new FormData(form);
+        const answers = {};
+        
+        let unanswered = 0;
+        // We pass total_questions from the backend route
+        const totalQuestions = {{ total_questions }}; 
+
+        formData.forEach((value, key) => {
+            // key is "q_123", we want "123"
+            const qid = key.replace('q_', '');
+            answers[qid] = value;
+        });
+
+        // Check if all answered
+        if (Object.keys(answers).length < totalQuestions) {
+            unanswered = totalQuestions - Object.keys(answers).length;
+            if (!confirm(`You have ${unanswered} unanswered question(s). Are you sure you want to submit?`)) {
+                // If they cancel, restart the timer logic (optional, but good for UX)
+                return;
+            }
+        }
+
+        // Send to backend
+        fetch('/student/aptitude/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ answers: answers })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                // Redirect to the new Review Page
+                window.location.href = `/student/aptitude/review/${data.result_id}`;
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(err => {
+            alert('Failed to submit test. Please try again.');
+        });
+    }
+</script>
+{% endblock %}

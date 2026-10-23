@@ -657,3 +657,35 @@ Return ONLY the answer text, no extra formatting.
 
     # Fallback
     return "I'm having trouble responding right now. Please try again in a moment, or check your profile for AI-powered suggestions."
+
+def generate_aptitude_feedback(score, total, category_scores):
+    """
+    Generate AI feedback based on aptitude test results.
+    category_scores format: {'Logical': '3/5', 'Numerical': '2/5', 'Verbal': '5/5'}
+    """
+    prompt = f"""
+    You are an expert placement trainer. A student just took an aptitude test.
+    
+    Overall Score: {score}/{total}
+    Category Breakdown:
+    - Logical Reasoning: {category_scores.get('Logical', '0/0')}
+    - Numerical Aptitude: {category_scores.get('Numerical', '0/0')}
+    - Verbal Ability: {category_scores.get('Verbal', '0/0')}
+    
+    Provide a 3-4 sentence analysis. Tell them:
+    1. Which area is their strongest.
+    2. Which area they need to focus on the most.
+    3. Give one specific tip for the weakest area.
+    
+    Keep it encouraging and direct. Return ONLY the feedback text, no JSON.
+    """
+    
+    try:
+        result = call_llm(prompt)
+        if result:
+            return result.strip()
+    except Exception as e:
+        print(f"AI Error: {e}")
+        
+    # Fallback
+    return "Great effort! Focus on practicing more questions in your weakest category to improve your speed and accuracy."

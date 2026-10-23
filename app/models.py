@@ -323,3 +323,29 @@ class ChatMessage(db.Model):
     role = db.Column(db.Enum('user','assistant'), nullable=False)
     message = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+# ============================================================
+# APTITUDE TEST MODELS
+# ============================================================
+
+class AptitudeQuestion(db.Model):
+    __tablename__ = 'aptitude_question'
+    id = db.Column(db.Integer, primary_key=True)
+    question = db.Column(db.Text, nullable=False)
+    option_a = db.Column(db.String(255), nullable=False)
+    option_b = db.Column(db.String(255), nullable=False)
+    option_c = db.Column(db.String(255), nullable=False)
+    option_d = db.Column(db.String(255), nullable=False)
+    correct_option = db.Column(db.String(1), nullable=False)
+    category = db.Column(db.String(50), default='General')
+    explanation = db.Column(db.Text, default=None) # 👈 NEW
+
+class AptitudeResult(db.Model):
+    __tablename__ = 'aptitude_result'
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    score = db.Column(db.Integer, nullable=False)
+    total_questions = db.Column(db.Integer, nullable=False)
+    date = db.Column(db.DateTime, default=datetime.utcnow)
+    ai_feedback = db.Column(db.Text, default=None)
+    answers_json = db.Column(db.JSON, default=None) # 👈 NEW
